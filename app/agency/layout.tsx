@@ -1,4 +1,5 @@
 import AgencySidebar from '@/components/agency/AgencySidebar';
+import AgencyNavbar from '@/components/agency/AgencyNavbar';
 
 export default function AgencyLayout({
   children,
@@ -8,9 +9,12 @@ export default function AgencyLayout({
   return (
     <div className="flex min-h-screen bg-[#F7F9FB]">
       <AgencySidebar />
-      <main className="flex-1 min-w-0 overflow-auto">
-        {children}
-      </main>
+      <div className="flex flex-col flex-1 min-w-0">
+        <AgencyNavbar />
+        <main className="flex-1 overflow-auto bg-surface">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

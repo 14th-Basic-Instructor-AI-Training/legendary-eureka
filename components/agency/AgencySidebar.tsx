@@ -5,188 +5,88 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import {
-  LayoutGrid,
-  MapPin,
-  Map,
-  Calendar,
-  Bell,
-  SlidersHorizontal,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
+  LayoutGrid, MapPin, Map, Calendar,
+  SlidersHorizontal, LogOut, ChevronLeft, ChevronRight,
   type LucideIcon,
 } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 import logo from '@/assets/transparent-bg-logo.png';
-
-/* ── Design tokens ─────────────────────────────────── */
-const AGENCY   = '#185FA5';
-const AG_LIGHT = '#E8F0FB';
-const NAVY     = '#0D233A';
-const BORDER   = '#E1E6EC';
-const DARK     = '#323D4D';
-const WHITE    = '#FFFFFF';
 
 type NavItem = {
   id: string;
   label: string;
   href: string;
   Icon: LucideIcon;
-  badge?: number;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'dashboard',     label: 'Dashboard',       href: '/agency/dashboard',     Icon: LayoutGrid },
-  { id: 'activities',    label: 'Activities',       href: '/agency/activities',    Icon: MapPin     },
-  { id: 'packages',      label: 'Tour Packages',    href: '/agency/packages',      Icon: Map        },
-  { id: 'bookings',      label: 'Bookings',         href: '/agency/bookings',      Icon: Calendar   },
-  { id: 'notifications', label: 'Notifications',    href: '/agency/notifications', Icon: Bell, badge: 5 },
+  { id: 'dashboard',  label: 'Dashboard',     href: '/agency/dashboard',  Icon: LayoutGrid },
+  { id: 'activities', label: 'Activities',    href: '/agency/activities', Icon: MapPin     },
+  { id: 'packages',   label: 'Tour Packages', href: '/agency/packages',   Icon: Map        },
+  { id: 'bookings',   label: 'Bookings',      href: '/agency/bookings',   Icon: Calendar   },
 ];
 
 const BOTTOM_ITEMS: NavItem[] = [
   { id: 'settings', label: 'Profile & Settings', href: '/agency/settings', Icon: SlidersHorizontal },
 ];
 
-/* ── Avatar ────────────────────────────────────────── */
-function Avatar({ size = 34 }: { size?: number }) {
-  return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        borderRadius: '50%',
-        background: AG_LIGHT,
-        color: AGENCY,
-        border: `1.5px solid ${AGENCY}20`,
-        flexShrink: 0,
-        fontSize: Math.round(size * 0.34),
-        letterSpacing: '0.01em',
-      }}
-      className="flex items-center justify-center font-bold"
-    >
-      KT
-    </div>
-  );
-}
-
-/* ── NavLink ───────────────────────────────────────── */
 function NavLink({
-  label, href, Icon, badge, active, collapsed,
+  label, href, Icon, active, collapsed,
 }: {
   label: string; href: string; Icon: LucideIcon;
-  badge?: number; active: boolean; collapsed: boolean;
+  active: boolean; collapsed: boolean;
 }) {
   return (
-    <Link
-      href={href}
-      title={collapsed ? label : undefined}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: collapsed ? 'center' : 'flex-start',
-        gap: collapsed ? 0 : 10,
-        padding: collapsed ? '9px 0' : '8px 12px',
-        borderRadius: 10,
-        background: active ? AGENCY : 'transparent',
-        color: active ? WHITE : DARK,
-        fontWeight: active ? 600 : 500,
-        fontSize: 13,
-        textDecoration: 'none',
-        transition: 'background 0.12s ease, color 0.12s ease',
-        userSelect: 'none',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-      }}
-      className={!active ? 'hover:bg-[#E8F0FB]! hover:text-[#185FA5]!' : ''}
-    >
-      <span className="relative inline-flex shrink-0">
-        <Icon size={17} strokeWidth={1.75} />
-        {badge && collapsed && (
-          <span
-            style={{
-              position: 'absolute', top: -5, right: -5,
-              background: '#EF4444', color: WHITE,
-              borderRadius: 999, minWidth: 14, height: 14,
-              fontSize: 8.5, fontWeight: 800,
-              padding: '0 2.5px', lineHeight: 1,
-              border: `1.5px solid ${WHITE}`,
-            }}
-            className="flex items-center justify-center"
-          >
-            {badge}
-          </span>
+    <Tooltip>
+      <TooltipTrigger
+        render={<Link href={href} />}
+        className={cn(
+          'flex items-center rounded-[10px] text-[13px] font-medium overflow-hidden whitespace-nowrap',
+          'transition-colors duration-120',
+          collapsed ? 'w-full justify-center py-2.25 px-0' : 'gap-2.5 px-3 py-2',
+          active
+            ? 'bg-agency text-white font-semibold'
+            : 'text-agency-dark hover:bg-agency-light hover:text-agency',
         )}
-      </span>
-
-      {!collapsed && (
-        <>
-          <span className="flex-1">{label}</span>
-          {badge && (
-            <span
-              style={{
-                background: active ? 'rgba(255,255,255,0.2)' : `${AGENCY}22`,
-                color: active ? WHITE : AGENCY,
-                borderRadius: 999, padding: '1px 7px',
-                fontSize: 10.5, fontWeight: 700,
-                minWidth: 20, textAlign: 'center',
-              }}
-            >
-              {badge}
-            </span>
-          )}
-        </>
-      )}
-    </Link>
+      >
+        <Icon size={17} strokeWidth={1.75} className="shrink-0" />
+        {!collapsed && <span className="flex-1">{label}</span>}
+      </TooltipTrigger>
+      {collapsed && <TooltipContent side="right">{label}</TooltipContent>}
+    </Tooltip>
   );
 }
 
-/* ── CollapseToggle ────────────────────────────────── */
 function CollapseToggle({
   collapsed, sidebarWidth, onClick,
 }: {
   collapsed: boolean; sidebarWidth: number; onClick: () => void;
 }) {
-  const [hov, setHov] = useState(false);
   const Chevron = collapsed ? ChevronRight : ChevronLeft;
-
   return (
-    <button
+    <Button
+      variant="outline"
       onClick={onClick}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
       title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      className="absolute top-5.5 z-20 size-6.5 rounded-full p-0 shadow-[0_1px_6px_rgba(13,35,58,0.13)] hover:bg-agency hover:text-white hover:border-agency"
       style={{
-        position: 'absolute',
         left: sidebarWidth - 13,
-        top: 22,
-        width: 26,
-        height: 26,
-        borderRadius: '50%',
-        background: hov ? AGENCY : WHITE,
-        border: `1.5px solid ${hov ? AGENCY : '#C8D0DA'}`,
-        color: hov ? WHITE : DARK,
-        boxShadow: '0 1px 6px rgba(13,35,58,0.13)',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        transition: 'left 0.22s ease, background 0.14s ease, border-color 0.14s ease, color 0.14s ease',
-        zIndex: 20,
-        padding: 0,
-        outline: 'none',
-        flexShrink: 0,
+        transition: 'left 0.22s ease, background-color 0.14s ease, border-color 0.14s ease, color 0.14s ease',
       }}
     >
       <Chevron size={11} strokeWidth={2.5} />
-    </button>
+    </Button>
   );
 }
 
-/* ── AgencySidebar ─────────────────────────────────── */
 export default function AgencySidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
-  // Auto-collapse on mobile on first mount
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
     setCollapsed(mq.matches);
@@ -199,113 +99,78 @@ export default function AgencySidebar() {
   const w = collapsed ? 64 : 240;
 
   return (
-    // Wrapper is relative so the toggle button can straddle the right border
-    <div style={{ position: 'relative', flexShrink: 0 }}>
+    <div className="relative shrink-0">
       <aside
-        style={{
-          width: w,
-          minWidth: w,
-          height: '100vh',
-          background: WHITE,
-          borderRight: `1px solid ${BORDER}`,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          transition: 'width 0.22s ease, min-width 0.22s ease',
-          position: 'sticky',
-          top: 0,
-        }}
+        className="sticky top-0 flex h-screen flex-col overflow-hidden border-r border-agency-border bg-white transition-[width,min-width] duration-220 ease-in-out"
+        style={{ width: w, minWidth: w }}
       >
-        {/* ── Zone 1: Platform logo ── */}
+        {/* Zone 1: Platform logo */}
         <div
-          style={{
-            padding: collapsed ? '16px 0' : '14px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderBottom: `1px solid ${BORDER}`,
-            minHeight: 72,
-            flexShrink: 0,
-          }}
+          className={cn(
+            'flex min-h-18 shrink-0 items-center justify-center border-b border-agency-border',
+            collapsed ? 'px-0 py-4' : 'px-4 py-3.5',
+          )}
         >
           {collapsed ? (
-            /* Collapsed: pin mark cropped from logo top-center */
-            <div style={{ width: 36, height: 36, position: 'relative', overflow: 'hidden', borderRadius: 6, flexShrink: 0 }}>
+            <div className="relative size-9 shrink-0 overflow-hidden rounded-[6px]">
               <Image
-                src={logo}
-                alt="Destination"
-                fill
+                src={logo} alt="Destination" fill
                 style={{ objectFit: 'cover', objectPosition: 'top center' }}
-                sizes="36px"
-                priority
+                sizes="36px" priority
               />
             </div>
           ) : (
-            /* Expanded: full logo flush-left */
-            <div style={{ position: 'relative', height: 52, width: 176, flexShrink: 0 }}>
+            <div className="relative h-13 w-44 shrink-0">
               <Image
-                src={logo}
-                alt="Destination"
-                fill
+                src={logo} alt="Destination" fill
                 style={{ objectFit: 'contain', objectPosition: 'left center' }}
-                sizes="176px"
-                priority
+                sizes="176px" priority
               />
             </div>
           )}
         </div>
 
-        {/* ── Zone 1b: Agency identity ── */}
+        {/* Zone 1b: Agency identity */}
         <div
-          style={{
-            padding: collapsed ? '12px 0' : '11px 14px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            gap: 10,
-            borderBottom: `1px solid ${BORDER}`,
-            flexShrink: 0,
-          }}
+          className={cn(
+            'flex shrink-0 items-center border-b border-agency-border',
+            collapsed ? 'justify-center px-0 py-3' : 'gap-2.5 px-3.5 py-2.75',
+          )}
         >
-          <Avatar size={collapsed ? 32 : 34} />
+          <Avatar className="size-8.5 shrink-0">
+            <AvatarFallback className="bg-agency-light text-agency text-[11.5px] font-bold tracking-[0.01em]">
+              KT
+            </AvatarFallback>
+          </Avatar>
           {!collapsed && (
-            <div style={{ overflow: 'hidden', minWidth: 0 }}>
-              <div style={{ fontWeight: 700, fontSize: 13, color: NAVY, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div className="min-w-0 overflow-hidden">
+              <p className="truncate text-[13px] font-bold leading-[1.3] text-agency-navy">
                 Khmer Tours Co.
-              </div>
-              <div style={{ fontSize: 11, color: AGENCY, fontWeight: 600, marginTop: 1, letterSpacing: '0.02em' }}>
+              </p>
+              <p className="mt-px text-[11px] font-semibold tracking-[0.02em] text-agency">
                 Tour Agency
-              </div>
+              </p>
             </div>
           )}
         </div>
 
-        {/* ── Zone 2: Main nav ── */}
-        <nav
-          style={{
-            flex: 1,
-            padding: 8,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-            overflowY: 'auto',
-          }}
-        >
+        {/* Zone 2: Main nav */}
+        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-2">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.id}
               label={item.label}
               href={item.href}
               Icon={item.Icon}
-              badge={item.badge}
               active={isActive(item.href)}
               collapsed={collapsed}
             />
           ))}
         </nav>
 
-        {/* ── Zone 3: Bottom actions ── */}
-        <div style={{ borderTop: `1px solid ${BORDER}`, padding: 8, display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0 }}>
+        {/* Zone 3: Bottom actions */}
+        <Separator />
+        <div className="flex shrink-0 flex-col gap-0.5 p-2">
           {BOTTOM_ITEMS.map((item) => (
             <NavLink
               key={item.id}
@@ -316,35 +181,22 @@ export default function AgencySidebar() {
               collapsed={collapsed}
             />
           ))}
-          <button
-            title={collapsed ? 'Log Out' : undefined}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              gap: collapsed ? 0 : 10,
-              padding: collapsed ? '9px 0' : '8px 12px',
-              borderRadius: 10,
-              color: DARK,
-              fontWeight: 500,
-              fontSize: 13,
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              width: '100%',
-              transition: 'background 0.12s ease, color 0.12s ease',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-            }}
-            className="hover:bg-[#E8F0FB]! hover:text-[#185FA5]!"
-          >
-            <LogOut size={17} strokeWidth={1.75} className="shrink-0" />
-            {!collapsed && <span className="flex-1 text-left">Log Out</span>}
-          </button>
+          <Tooltip>
+            <TooltipTrigger
+              render={<Button variant="ghost" />}
+              className={cn(
+                'w-full rounded-[10px] text-[13px] font-medium text-agency-dark hover:bg-agency-light hover:text-agency',
+                collapsed ? 'justify-center px-0 py-2.25 h-auto' : 'justify-start gap-2.5 px-3 py-2 h-auto',
+              )}
+            >
+              <LogOut size={17} strokeWidth={1.75} data-icon="inline-start" className="shrink-0" />
+              {!collapsed && <span className="flex-1 text-left">Log Out</span>}
+            </TooltipTrigger>
+            {collapsed && <TooltipContent side="right">Log Out</TooltipContent>}
+          </Tooltip>
         </div>
       </aside>
 
-      {/* ── Collapse toggle — straddles the right border, aligned with logo zone ── */}
       <CollapseToggle
         collapsed={collapsed}
         sidebarWidth={w}
