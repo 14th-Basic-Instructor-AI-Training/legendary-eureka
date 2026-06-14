@@ -11,7 +11,7 @@ export default function AgencyLayout({
       <AgencySidebar />
       <div className="flex flex-col flex-1 min-w-0">
         <AgencyNavbar />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto bg-surface">
           {children}
         </main>
       </div>
