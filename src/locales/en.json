@@ -1,4 +1,56 @@
 {
+  "discover": {
+    "title": "Discover Cambodia & beyond",
+    "subtitle": "Search destinations, things to do, food, and stays — then book a tour from a trusted local agency.",
+    "search": {
+      "placeholder": "Search places, food, experiences…",
+      "province": "Province",
+      "travelType": "Travel type",
+      "allProvinces": "All provinces",
+      "allTypes": "All travel types",
+      "submit": "Search",
+      "clear": "Clear filters"
+    },
+    "categories": {
+      "all": "All"
+    },
+    "travelTypes": {
+      "adventure": "Adventure",
+      "cultural": "Cultural",
+      "relaxation": "Relaxation",
+      "food": "Food",
+      "nature": "Nature"
+    },
+    "sections": {
+      "results": "Places to explore",
+      "resultsCount_one": "{{count, number}} result",
+      "resultsCount_other": "{{count, number}} results",
+      "featuredTours": "Featured tours",
+      "featuredToursSubtitle": "Multi-day trips curated by local agencies.",
+      "topAgencies": "Top agencies",
+      "topAgenciesSubtitle": "Trusted partners with the highest traveler ratings.",
+      "recentReviews": "Recent traveler reviews",
+      "recentReviewsSubtitle": "What travelers are saying after their trips."
+    },
+    "states": {
+      "empty": "No matches. Try clearing a filter.",
+      "error": "We couldn't load results."
+    },
+    "agency": {
+      "tours_one": "{{count, number}} tour",
+      "tours_other": "{{count, number}} tours",
+      "verified": "Verified",
+      "reviews_one": "{{count, number}} review",
+      "reviews_other": "{{count, number}} reviews"
+    },
+    "review": {
+      "for": "on {{place}}"
+    },
+    "cta": {
+      "planTrip": "Plan a trip",
+      "loginToPlan": "Log in to plan a trip"
+    }
+  },
   "common": {
     "appName": "Jalat",
     "loading": "Loading…",
@@ -28,7 +80,8 @@
     "dismissed": "Dismissed",
     "active": "Active",
     "suspended": "Suspended",
-    "banned": "Banned"
+    "banned": "Banned",
+    "cancelled": "Cancelled"
   },
   "roles": {
     "admin": "Admin",
@@ -113,6 +166,12 @@
     }
   },
   "landing": {
+    "loginPrompt": {
+      "title": "Log in to continue",
+      "body": "Create trip plans and save your favourite places by logging in to your Jalat account.",
+      "login": "Log in",
+      "cancel": "Cancel"
+    },
     "hero": {
       "title": "Discover your next journey across Asia",
       "subtitle": "Hand-picked destinations, local experiences, and tours from trusted agencies — all in one place.",
@@ -123,11 +182,28 @@
       "cta": "Book a trip now",
       "followUs": "Follow us",
       "popularNow": "Popular places",
-      "popularCount": "1.2k+ trips booked"
+      "popularCount": "1.2k+ trips booked",
+      "badgeListings": "3K+ tours listed",
+      "exploreCard": "Unlock the true potential of your next trip",
+      "happyValue": "1.5K+",
+      "happyClients": "Happy travelers & successful trips",
+      "actions": {
+        "explore": "Explore Now",
+        "plan": "Plan a Trip",
+        "loginToPlan": "Log in to plan a trip",
+        "pathAnchor": "Your path starts here"
+      },
+      "cards": {
+        "bookNow": "Book now",
+        "exploreTours": "Explore tours"
+      }
     },
     "featured": {
       "title": "Top destinations",
       "subtitle": "The places travelers love most right now."
+    },
+    "card": {
+      "explore": "Explore"
     },
     "trending": {
       "title": "Trending now",
@@ -286,6 +362,60 @@
         "title": "Discover the world one step at a time"
       },
       "cta": "Start your trip"
+    },
+    "heroSearch": {
+      "tabs": {
+        "tours": "Tours",
+        "destinations": "Destinations",
+        "activities": "Activities"
+      },
+      "placeholder": {
+        "tours": "Search tours & packages",
+        "destinations": "Where do you want to go?",
+        "activities": "Search things to do"
+      },
+      "keyword": "Keyword",
+      "location": "Location",
+      "date": "Date",
+      "travelers": "Travelers",
+      "travelersValue_one": "{{count}} traveler",
+      "travelersValue_other": "{{count}} travelers",
+      "exploreNow": "Explore now",
+      "planTrip": "Plan a trip",
+      "loginToPlan": "Log in to plan",
+      "dateFrom": "Check-in",
+      "dateTo": "Check-out"
+    },
+    "trendingTours": {
+      "title": "Trending tours",
+      "subtitle": "The multi-day trips travelers are booking most right now."
+    },
+    "topAgencies": {
+      "title": "Top-rated agencies",
+      "subtitle": "Trusted local partners with the highest traveler ratings."
+    },
+    "inspiration": {
+      "title": "Trip inspiration",
+      "subtitle": "Not sure where to start? Let a theme spark your next journey.",
+      "cta": "Get inspired",
+      "items": {
+        "adventure": {
+          "title": "Adventure escapes",
+          "desc": "Trek, climb, and chase the horizon."
+        },
+        "cultural": {
+          "title": "Culture & heritage",
+          "desc": "Temples, history, and living traditions."
+        },
+        "food": {
+          "title": "Food journeys",
+          "desc": "Taste your way across the region."
+        },
+        "nature": {
+          "title": "Into nature",
+          "desc": "Coastlines, jungles, and quiet retreats."
+        }
+      }
     }
   },
   "destinations": {
@@ -323,6 +453,106 @@
       "perPerson": "per person",
       "book": "Book this experience",
       "loginToBook": "Log in to book"
+    }
+  },
+  "tours": {
+    "states": {
+      "notFound": "Tour not found",
+      "error": "We couldn't load this tour."
+    },
+    "detail": {
+      "back": "Back to tours",
+      "gallery": {
+        "viewAll_one": "View {{count}} photo",
+        "viewAll_other": "View all {{count}} photos",
+        "close": "Close gallery"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "itinerary": "Itinerary",
+        "agency": "Agency",
+        "reviews": "Reviews"
+      },
+      "quickInfo": {
+        "duration_one": "{{count}} day",
+        "duration_other": "{{count}} days",
+        "groupSize": "Up to {{count}} people",
+        "cancellationFree": "Free cancellation",
+        "cancellationNonRefundable": "Non-refundable"
+      },
+      "overview": {
+        "about": "About this tour",
+        "highlights": "Highlights",
+        "included": "What's included",
+        "excluded": "Not included"
+      },
+      "travelPlan": {
+        "title": "Travel plan",
+        "day": "Day {{day}}"
+      },
+      "agency": {
+        "about": "About the agency",
+        "viewProfile": "View full profile",
+        "otherTours": "Other tours by this agency",
+        "contact": "Contact",
+        "tours_one": "{{count}} tour",
+        "tours_other": "{{count}} tours"
+      },
+      "reviews": {
+        "title": "Traveler reviews",
+        "basedOn_one": "Based on {{count}} review",
+        "basedOn_other": "Based on {{count}} reviews",
+        "sortLabel": "Sort by",
+        "sort": {
+          "recent": "Most recent",
+          "highest": "Highest rated",
+          "lowest": "Lowest rated"
+        },
+        "verified": "Verified booking",
+        "photoAlt": "Review photo",
+        "empty": "No reviews yet. Be the first to share your experience.",
+        "writeCta": "Write a review",
+        "loginPrompt": "Log in to write a review",
+        "completedOnly": "You can review this tour after your trip is completed.",
+        "prev": "Previous",
+        "next": "Next",
+        "page": "Page {{page}} of {{total}}",
+        "modal": {
+          "title": "Write a review",
+          "ratingLabel": "Your rating",
+          "commentLabel": "Your review",
+          "commentPlaceholder": "Tell other travelers about your experience…",
+          "submit": "Submit review",
+          "success": "Thanks! Your review has been posted."
+        }
+      },
+      "booking": {
+        "from": "From",
+        "perPerson": "per person",
+        "date": "Travel date",
+        "adults": "Adults",
+        "adultsHint": "Age 12+",
+        "children": "Children",
+        "childrenHint": "Age 2–11",
+        "unitPrice": "{{price}} × {{count}}",
+        "platformFee": "Platform fee",
+        "total": "Total",
+        "availability": {
+          "available": "Available",
+          "limited": "Limited spots",
+          "full": "Fully booked"
+        },
+        "request": "Request booking",
+        "requestSent": "Booking requested",
+        "requestSentHint": "The agency will confirm your request shortly.",
+        "loginToBook": "Log in to book",
+        "save": "Save",
+        "saved": "Saved"
+      }
+    },
+    "similar": {
+      "title": "Similar tours",
+      "subtitle": "More trips you might like."
     }
   },
   "agency": {
@@ -681,6 +911,194 @@
           "title": "Bookmarks",
           "desc": "Posts and activities you've saved."
         }
+      }
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "nav": {
+      "profile": "Profile"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "bookmarks": "Bookmarks",
+      "tripPlans": "Trip plans",
+      "bookings": "Booking history",
+      "reviews": "Reviews",
+      "settings": "Settings"
+    },
+    "badge": {
+      "explorer": "Explorer",
+      "adventurer": "Adventurer",
+      "globetrotter": "Globetrotter",
+      "pioneer": "Pioneer"
+    },
+    "header": {
+      "editCover": "Edit cover",
+      "editAvatar": "Change photo",
+      "editProfile": "Edit profile",
+      "joined": "Joined {{date}}",
+      "uploadComingSoon": "Photo uploads arrive with the next release.",
+      "bio": "Bio",
+      "bioEmpty": "Add a short bio to tell others about your travels."
+    },
+    "stats": {
+      "countries": "Countries visited",
+      "trips": "Trips completed",
+      "reviews": "Reviews written",
+      "bookmarks": "Bookmarks saved"
+    },
+    "states": {
+      "error": "Something went wrong loading this."
+    },
+    "overview": {
+      "upcoming": "Upcoming trips",
+      "noUpcoming": "No upcoming trips yet.",
+      "recentActivity": "Recent activity",
+      "noActivity": "No recent activity yet.",
+      "activity": {
+        "bookmark": "Saved {{subject}}",
+        "review": "Reviewed {{subject}}",
+        "completedTrip": "Completed {{subject}}"
+      }
+    }
+  },
+  "bookmarks": {
+    "empty": "No bookmarks yet — tap the heart on places and tours to save them here.",
+    "subtabs": {
+      "destinations": "Destinations",
+      "tours": "Tours",
+      "tripPlans": "Trip plans"
+    }
+  },
+  "tripPlans": {
+    "create": "Create new plan",
+    "visibility": {
+      "public": "Public",
+      "private": "Private"
+    },
+    "itemCount_one": "{{count}} item",
+    "itemCount_other": "{{count}} items",
+    "empty": "No trip plans yet.",
+    "emptyHint": "Build a day-by-day itinerary for your next adventure.",
+    "placeholder": {
+      "subtitle": "The trip plan builder is coming soon.",
+      "back": "Back to trip plans",
+      "newTitle": "New trip plan",
+      "detailTitle": "Trip plan"
+    }
+  },
+  "bookings": {
+    "segments": {
+      "upcoming": "Upcoming",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "byAgency": "by {{agency}}",
+    "travelers_one": "{{count}} traveler",
+    "travelers_other": "{{count}} travelers",
+    "actions": {
+      "viewDetails": "View details",
+      "cancel": "Cancel",
+      "leaveReview": "Leave review",
+      "downloadReceipt": "Download receipt"
+    },
+    "refund": {
+      "pending": "Refund pending",
+      "refunded": "Refunded",
+      "denied": "Refund denied"
+    },
+    "receiptComingSoon": "Receipts will be downloadable once the backend is connected.",
+    "empty": {
+      "upcoming": "No upcoming bookings.",
+      "completed": "No completed trips yet.",
+      "cancelled": "No cancelled bookings."
+    },
+    "cancelConfirm": {
+      "title": "Cancel this booking?",
+      "description": "Cancelling “{{tour}}” may be subject to the agency’s refund policy. This can’t be undone.",
+      "confirm": "Cancel booking"
+    }
+  },
+  "reviews": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "editWindowExpired": "Editing closed (7-day limit)",
+    "empty": "You haven’t written any reviews yet.",
+    "emptyHint": "Reviews you leave after completed trips show up here.",
+    "editModal": {
+      "title": "Edit review",
+      "rating": "Rating",
+      "ratingValue": "{{count}}-star rating",
+      "comment": "Your review"
+    },
+    "deleteConfirm": {
+      "title": "Delete this review?",
+      "description": "Your review will be permanently removed. This can’t be undone.",
+      "confirm": "Delete review"
+    }
+  },
+  "settings": {
+    "saved": "Saved",
+    "personalInfo": {
+      "title": "Personal info",
+      "description": "Update how you appear across Jalat.",
+      "name": "Display name",
+      "email": "Email",
+      "phone": "Phone",
+      "phonePlaceholder": "+855 …",
+      "avatar": "Avatar URL",
+      "bio": "Bio",
+      "save": "Save changes"
+    },
+    "password": {
+      "title": "Password",
+      "description": "Choose a strong, unique password.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "save": "Update password",
+      "updated": "Password updated"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Choose what we email you about.",
+      "bookingUpdates": {
+        "label": "Booking updates",
+        "description": "Approvals, rejections, and reminders for your bookings."
+      },
+      "tripReminders": {
+        "label": "Trip reminders",
+        "description": "Heads-up before an upcoming trip starts."
+      },
+      "reviewReplies": {
+        "label": "Review replies",
+        "description": "When an agency responds to your review."
+      },
+      "promotions": {
+        "label": "Promotions",
+        "description": "Deals and seasonal offers from agencies."
+      },
+      "productNews": {
+        "label": "Product news",
+        "description": "New Jalat features and announcements."
+      }
+    },
+    "privacy": {
+      "title": "Privacy",
+      "defaultVisibility": "Default trip plan visibility",
+      "description": "Applies to new trip plans you create.",
+      "publicHint": "Anyone with the link can view.",
+      "privateHint": "Only you can view."
+    },
+    "danger": {
+      "title": "Danger zone",
+      "description": "Permanently delete your account and all of your data.",
+      "deleteAccount": "Delete account",
+      "confirm": {
+        "title": "Delete your account?",
+        "description": "This permanently deletes your profile, bookings, trip plans, and reviews. This can’t be undone.",
+        "confirm": "Delete account"
       }
     }
   }

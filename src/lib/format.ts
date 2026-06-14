@@ -32,3 +32,9 @@ export function formatRating(value: number, lng: string): string {
     maximumFractionDigits: 1,
   }).format(value);
 }
+
+export function formatDate(value: string | number | Date, lng: string): string {
+  return new Intl.DateTimeFormat(intlLocale(lng), { dateStyle: "medium" }).format(
+    new Date(value),
+  );
+}

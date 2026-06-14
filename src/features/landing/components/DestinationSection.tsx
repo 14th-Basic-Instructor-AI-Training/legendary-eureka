@@ -1,8 +1,9 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Reveal, Skeleton } from "@/ui";
-import { DestinationCard } from "@/features/destinations/components/DestinationCard";
+import { PopularDestinationCard } from "@/features/destinations/components/PopularDestinationCard";
 import { useResource } from "@/features/destinations/hooks";
 import type { Result } from "@/features/destinations/data";
 import type { Destination } from "@/features/destinations/schema";
@@ -10,7 +11,7 @@ import { SectionHeading } from "./SectionHeading";
 
 function CardSkeleton() {
   return (
-    <div className="bg-surface border-border overflow-hidden rounded-2xl border">
+    <div className="bg-background shadow-primary overflow-hidden rounded-2xl">
       <Skeleton className="aspect-[4/3] w-full rounded-none" />
       <div className="flex flex-col gap-2 p-4">
         <Skeleton className="h-4 w-2/3" />
@@ -31,11 +32,13 @@ export function DestinationSection({
   title,
   subtitle,
   fetcher,
+  renderCard = (destination) => <PopularDestinationCard destination={destination} />,
 }: {
   id: string;
   title: string;
   subtitle?: string;
   fetcher: () => Promise<Result<Destination[]>>;
+  renderCard?: (destination: Destination) => ReactNode;
 }) {
   const { t } = useTranslation();
   const { status, data, reload } = useResource(fetcher);
@@ -65,7 +68,7 @@ export function DestinationSection({
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {data.map((destination, i) => (
             <Reveal key={destination.id} delay={Math.min(i, 4) * 0.06}>
-              <DestinationCard destination={destination} />
+              {renderCard(destination)}
             </Reveal>
           ))}
         </div>

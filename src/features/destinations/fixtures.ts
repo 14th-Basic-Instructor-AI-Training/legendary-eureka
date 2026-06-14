@@ -1,8 +1,12 @@
 import {
   DestinationSchema,
   FeaturedTourSchema,
+  AgencyProfileSchema,
+  ReviewSchema,
   type Destination,
   type FeaturedTour,
+  type AgencyProfile,
+  type Review,
 } from "./schema";
 
 /**
@@ -37,10 +41,14 @@ const img = (seed: string, w = 800, h = 600) => {
     : `https://picsum.photos/seed/${seed}/${w}/${h}`;
 };
 
+/** Stable avatar for review authors (no API key needed). */
+const avatar = (n: number) => `https://i.pravatar.cc/120?img=${n}`;
+
 /**
  * Curated mock travel catalog (trip.com-style). Cambodia + Korea heavy to match
  * the KH/KR locales, with a few global picks. Each entry parses through
- * DestinationSchema so it can't drift from the schema.
+ * DestinationSchema so it can't drift from the schema. `province` + `travelType`
+ * drive the Discover-page search filters.
  */
 const RAW_DESTINATIONS = [
   {
@@ -49,7 +57,9 @@ const RAW_DESTINATIONS = [
     name: "Angkor Wat",
     country: "Cambodia",
     city: "Siem Reap",
+    province: "Siem Reap",
     category: "destination",
+    travelType: "CULTURAL",
     shortDescription: "The world's largest religious monument at sunrise.",
     heroImage: img("angkor-wat"),
     rating: 4.9,
@@ -68,7 +78,9 @@ const RAW_DESTINATIONS = [
     name: "Jeju Island",
     country: "South Korea",
     city: "Jeju",
+    province: "Jeju",
     category: "destination",
+    travelType: "NATURE",
     shortDescription: "Volcanic beaches, waterfalls, and crater hikes.",
     heroImage: img("jeju-island"),
     rating: 4.8,
@@ -87,7 +99,9 @@ const RAW_DESTINATIONS = [
     name: "Bukchon Hanok Village",
     country: "South Korea",
     city: "Seoul",
+    province: "Seoul",
     category: "destination",
+    travelType: "CULTURAL",
     shortDescription: "Traditional hanok lanes between two royal palaces.",
     heroImage: img("seoul-hanok"),
     rating: 4.7,
@@ -106,7 +120,9 @@ const RAW_DESTINATIONS = [
     name: "Tonlé Sap Floating Villages",
     country: "Cambodia",
     city: "Siem Reap",
+    province: "Siem Reap",
     category: "destination",
+    travelType: "NATURE",
     shortDescription: "Stilt houses and floating markets on Southeast Asia's largest lake.",
     heroImage: img("tonle-sap"),
     rating: 4.5,
@@ -125,7 +141,9 @@ const RAW_DESTINATIONS = [
     name: "Fushimi Inari Shrine",
     country: "Japan",
     city: "Kyoto",
+    province: "Kyoto",
     category: "destination",
+    travelType: "CULTURAL",
     shortDescription: "Thousands of vermilion torii gates up the mountainside.",
     heroImage: img("fushimi-inari"),
     rating: 4.8,
@@ -144,7 +162,9 @@ const RAW_DESTINATIONS = [
     name: "Tegallalang Rice Terraces",
     country: "Indonesia",
     city: "Bali",
+    province: "Bali",
     category: "destination",
+    travelType: "NATURE",
     shortDescription: "Emerald stepped paddies in the heart of Ubud.",
     heroImage: img("ubud-rice"),
     rating: 4.6,
@@ -164,7 +184,9 @@ const RAW_DESTINATIONS = [
     name: "Khmer Cooking Class",
     country: "Cambodia",
     city: "Siem Reap",
+    province: "Siem Reap",
     category: "thingToDo",
+    travelType: "FOOD",
     shortDescription: "Market tour then cook amok and lok lak with a local chef.",
     heroImage: img("khmer-cooking"),
     rating: 4.9,
@@ -183,7 +205,9 @@ const RAW_DESTINATIONS = [
     name: "Han River Night Cruise",
     country: "South Korea",
     city: "Seoul",
+    province: "Seoul",
     category: "thingToDo",
+    travelType: "RELAXATION",
     shortDescription: "City skyline and Banpo Bridge rainbow fountain by boat.",
     heroImage: img("han-river"),
     rating: 4.6,
@@ -203,7 +227,9 @@ const RAW_DESTINATIONS = [
     name: "Cuisine Wat Damnak",
     country: "Cambodia",
     city: "Siem Reap",
+    province: "Siem Reap",
     category: "food",
+    travelType: "FOOD",
     shortDescription: "Seasonal Cambodian tasting menus in a leafy garden setting.",
     heroImage: img("wat-damnak"),
     rating: 4.8,
@@ -221,7 +247,9 @@ const RAW_DESTINATIONS = [
     name: "Gwangjang Market Street Food",
     country: "South Korea",
     city: "Seoul",
+    province: "Seoul",
     category: "food",
+    travelType: "FOOD",
     shortDescription: "Bindaetteok, mayak gimbap, and live octopus stalls.",
     heroImage: img("gwangjang"),
     rating: 4.7,
@@ -240,7 +268,9 @@ const RAW_DESTINATIONS = [
     name: "Park Hyatt Siem Reap",
     country: "Cambodia",
     city: "Siem Reap",
+    province: "Siem Reap",
     category: "stay",
+    travelType: "RELAXATION",
     shortDescription: "Colonial-chic rooms steps from Pub Street and the Old Market.",
     heroImage: img("park-hyatt"),
     rating: 4.8,
@@ -259,7 +289,9 @@ const RAW_DESTINATIONS = [
     name: "The Shilla Jeju",
     country: "South Korea",
     city: "Jeju",
+    province: "Jeju",
     category: "stay",
+    travelType: "RELAXATION",
     shortDescription: "Oceanfront resort with subtropical gardens and infinity pools.",
     heroImage: img("shilla-jeju"),
     rating: 4.7,
@@ -284,6 +316,7 @@ const RAW_TOURS = [
     slug: "angkor-discovery-3d2n",
     title: "Angkor Discovery — Temples & Sunrise",
     agencyName: "Angkor Trails Agency",
+    travelType: "CULTURAL",
     image: img("tour-angkor", 1200, 800),
     days: 3,
     priceFrom: 289,
@@ -296,6 +329,7 @@ const RAW_TOURS = [
     slug: "jeju-nature-escape-4d3n",
     title: "Jeju Nature Escape",
     agencyName: "Hallasan Tours",
+    travelType: "NATURE",
     image: img("tour-jeju", 1200, 800),
     days: 4,
     priceFrom: 540,
@@ -308,6 +342,7 @@ const RAW_TOURS = [
     slug: "seoul-culture-food-2d1n",
     title: "Seoul Culture & Street Food",
     agencyName: "Hangang Journeys",
+    travelType: "FOOD",
     image: img("tour-seoul", 1200, 800),
     days: 2,
     priceFrom: 175,
@@ -320,6 +355,7 @@ const RAW_TOURS = [
     slug: "kyoto-shrines-3d2n",
     title: "Kyoto Shrines & Gardens",
     agencyName: "Sakura Voyages",
+    travelType: "CULTURAL",
     image: img("tour-kyoto", 1200, 800),
     days: 3,
     priceFrom: 460,
@@ -332,3 +368,132 @@ const RAW_TOURS = [
 export const FEATURED_TOURS: FeaturedTour[] = RAW_TOURS.map((t) =>
   FeaturedTourSchema.parse(t),
 );
+
+/** Top tour agencies for the Discover "Top agencies" strip. */
+const RAW_AGENCIES = [
+  {
+    id: "ag-angkor",
+    slug: "angkor-trails-agency",
+    name: "Angkor Trails Agency",
+    logo: img("agency-angkor", 160, 160),
+    province: "Siem Reap",
+    status: "APPROVED",
+    rating: 4.9,
+    reviewCount: 412,
+    tourCount: 8,
+  },
+  {
+    id: "ag-hallasan",
+    slug: "hallasan-tours",
+    name: "Hallasan Tours",
+    logo: img("agency-hallasan", 160, 160),
+    province: "Jeju",
+    status: "APPROVED",
+    rating: 4.8,
+    reviewCount: 318,
+    tourCount: 6,
+  },
+  {
+    id: "ag-hangang",
+    slug: "hangang-journeys",
+    name: "Hangang Journeys",
+    logo: img("agency-hangang", 160, 160),
+    province: "Seoul",
+    status: "APPROVED",
+    rating: 4.7,
+    reviewCount: 256,
+    tourCount: 5,
+  },
+  {
+    id: "ag-sakura",
+    slug: "sakura-voyages",
+    name: "Sakura Voyages",
+    logo: img("agency-sakura", 160, 160),
+    province: "Kyoto",
+    status: "APPROVED",
+    rating: 4.9,
+    reviewCount: 389,
+    tourCount: 7,
+  },
+  {
+    id: "ag-mekong",
+    slug: "mekong-explorer",
+    name: "Mekong Explorer",
+    logo: img("agency-mekong", 160, 160),
+    province: "Phnom Penh",
+    status: "PENDING",
+    rating: 4.5,
+    reviewCount: 64,
+    tourCount: 2,
+  },
+] satisfies Array<Record<string, unknown>>;
+
+export const AGENCIES: AgencyProfile[] = RAW_AGENCIES.map((a) =>
+  AgencyProfileSchema.parse(a),
+);
+
+/** Recent traveler reviews for the Discover "Recent reviews" section. */
+const RAW_REVIEWS = [
+  {
+    id: "rv-1",
+    authorName: "Sophea Chan",
+    authorAvatar: avatar(12),
+    rating: 5,
+    comment: "Sunrise over Angkor Wat was unreal. Our guide knew every hidden corner.",
+    targetSlug: "angkor-wat",
+    travelType: "CULTURAL",
+    createdAt: "2026-05-28T08:15:00.000Z",
+  },
+  {
+    id: "rv-2",
+    authorName: "Min-jun Park",
+    authorAvatar: avatar(33),
+    rating: 5,
+    comment: "Jeju's crater hike and coastline were the highlight of our trip.",
+    targetSlug: "jeju-island",
+    travelType: "NATURE",
+    createdAt: "2026-05-22T13:40:00.000Z",
+  },
+  {
+    id: "rv-3",
+    authorName: "Dara Sok",
+    authorAvatar: avatar(45),
+    rating: 5,
+    comment: "Cooked amok from scratch after the market tour — so much fun and delicious.",
+    targetSlug: "khmer-cooking-class",
+    travelType: "FOOD",
+    createdAt: "2026-05-19T05:05:00.000Z",
+  },
+  {
+    id: "rv-4",
+    authorName: "Hana Kim",
+    authorAvatar: avatar(5),
+    rating: 4,
+    comment: "Loved wandering the hanok lanes early before the crowds arrived.",
+    targetSlug: "seoul-old-town",
+    travelType: "CULTURAL",
+    createdAt: "2026-05-11T22:30:00.000Z",
+  },
+  {
+    id: "rv-5",
+    authorName: "Vibol Meas",
+    authorAvatar: avatar(60),
+    rating: 4,
+    comment: "Floating villages on Tonlé Sap felt like a different world. Go at sunset.",
+    targetSlug: "tonle-sap",
+    travelType: "NATURE",
+    createdAt: "2026-05-03T10:00:00.000Z",
+  },
+  {
+    id: "rv-6",
+    authorName: "Ji-woo Lee",
+    authorAvatar: avatar(20),
+    rating: 5,
+    comment: "Gwangjang market was a street-food paradise. The mayak gimbap is a must.",
+    targetSlug: "gwangjang-market",
+    travelType: "FOOD",
+    createdAt: "2026-04-27T16:20:00.000Z",
+  },
+] satisfies Array<Record<string, unknown>>;
+
+export const REVIEWS: Review[] = RAW_REVIEWS.map((r) => ReviewSchema.parse(r));

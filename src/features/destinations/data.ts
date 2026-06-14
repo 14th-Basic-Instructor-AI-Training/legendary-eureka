@@ -1,5 +1,13 @@
-import { DESTINATIONS, FEATURED_TOURS } from "./fixtures";
-import type { Destination, DestinationCategory, FeaturedTour } from "./schema";
+import { DESTINATIONS, FEATURED_TOURS, AGENCIES, REVIEWS } from "./fixtures";
+import type {
+  AgencyProfile,
+  Destination,
+  DestinationCategory,
+  DiscoverFilter,
+  FeaturedTour,
+  Review,
+  TravelType,
+} from "./schema";
 
 /**
  * The ONE data seam for destinations. Components import from here, never from
@@ -52,4 +60,60 @@ export async function getDestinationBySlug(
 export async function getFeaturedTours(): Promise<Result<FeaturedTour[]>> {
   await delay();
   return { ok: true, data: FEATURED_TOURS };
+}
+
+/** All travel types, in display order — populates the Discover travel-type filter. */
+export const TRAVEL_TYPES: readonly TravelType[] = [
+  "ADVENTURE",
+  "CULTURAL",
+  "RELAXATION",
+  "FOOD",
+  "NATURE",
+];
+
+/** Distinct provinces present in the catalog — populates the Discover province filter. */
+export const PROVINCES: readonly string[] = Array.from(
+  new Set(DESTINATIONS.map((d) => d.province)),
+).sort((a, b) => a.localeCompare(b));
+
+/** Pure filter predicate, shared by the data getter and tests. */
+export function matchesFilter(d: Destination, filter: DiscoverFilter): boolean {
+  if (filter.category && d.category !== filter.category) return false;
+  if (filter.province && d.province !== filter.province) return false;
+  if (filter.travelType && d.travelType !== filter.travelType) return false;
+  const q = filter.query.trim().toLowerCase();
+  if (q) {
+    const haystack =
+      `${d.name} ${d.city} ${d.country} ${d.province} ${d.shortDescription} ${d.tags.join(" ")}`.toLowerCase();
+    if (!haystack.includes(q)) return false;
+  }
+  return true;
+}
+
+/**
+ * Discover-page search. Filters the catalog by query + province + travel type +
+ * category (mirrors the backend `/search`). Returns a typed result like every
+ * other getter so the loading/empty/error states are exercised.
+ */
+export async function searchDestinations(
+  filter: DiscoverFilter,
+): Promise<Result<Destination[]>> {
+  await delay();
+  return { ok: true, data: DESTINATIONS.filter((d) => matchesFilter(d, filter)) };
+}
+
+/** Top tour agencies for the Discover "Top agencies" strip (approved, best rated first). */
+export async function getTopAgencies(): Promise<Result<AgencyProfile[]>> {
+  await delay();
+  const data = AGENCIES.filter((a) => a.status === "APPROVED").sort(
+    (a, b) => b.rating - a.rating,
+  );
+  return { ok: true, data };
+}
+
+/** Recent traveler reviews for the Discover "Recent reviews" section (newest first). */
+export async function getRecentReviews(): Promise<Result<Review[]>> {
+  await delay();
+  const data = [...REVIEWS].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return { ok: true, data };
 }

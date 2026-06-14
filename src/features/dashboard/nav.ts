@@ -45,5 +45,8 @@ export const SIDEBAR_NAV: Record<Role, NavItem[]> = {
     { labelKey: "agency.tabs.activities", Icon: Category, tab: "activities" },
     { labelKey: "agency.tabs.packages", Icon: Calendar, tab: "packages" },
   ],
-  traveler: [{ labelKey: "nav.dashboard", Icon: Star1 }],
+  traveler: [
+    { labelKey: "nav.dashboard", Icon: Star1, href: "/traveler" },
+    { labelKey: "profile.nav.profile", Icon: Profile2User, href: "/traveler/profile" },
+  ],
 };
