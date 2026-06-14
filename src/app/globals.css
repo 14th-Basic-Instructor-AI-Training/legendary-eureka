@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 /* HeroUI v3 styles — must come after Tailwind (provides theme tokens: background, foreground, surface, primary, muted, border…) */
-@import "@heroui/styles";
+@import "@heroui/styles/css";
 
 /* Project fonts wired to Tailwind's font tokens */
 @theme inline {

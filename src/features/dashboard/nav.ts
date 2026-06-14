@@ -33,9 +33,9 @@ export interface NavItem {
 export const SIDEBAR_NAV: Record<Role, NavItem[]> = {
   admin: [
     { labelKey: "admin.nav.overview", Icon: Chart2, href: "/admin" },
+    { labelKey: "admin.nav.content", Icon: Category, href: "/admin/content" },
     { labelKey: "admin.nav.requests", Icon: Buildings, href: "/admin/requests" },
     { labelKey: "admin.tabs.reports", Icon: Flag, href: "/admin/reports" },
-    { labelKey: "admin.nav.content", Icon: Category, href: "/admin/content" },
     { labelKey: "admin.tabs.users", Icon: Profile2User, href: "/admin/users" },
     { labelKey: "admin.nav.bookings", Icon: Receipt21, href: "/admin/bookings" },
     { labelKey: "admin.nav.settings", Icon: Setting2, href: "/admin/settings" },

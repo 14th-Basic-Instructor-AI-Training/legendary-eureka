@@ -8,13 +8,18 @@ import { formatPrice } from "@/lib/format";
 import { useSession } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 import { useAdminStore } from "../store";
+import { TourApprovalsQueue } from "@/features/tours/components/TourApprovalsQueue";
 import type { AdminPackageStatus } from "../schema";
 
-const STATUS_FILTERS: Array<{ value: "all" | AdminPackageStatus; labelKey: string }> = [
+/** Catalog status filters plus the package-approval queue ("approvals"). */
+type PackageFilter = "all" | AdminPackageStatus | "approvals";
+
+const STATUS_FILTERS: Array<{ value: PackageFilter; labelKey: string }> = [
   { value: "all", labelKey: "common.all" },
   { value: "published", labelKey: "status.published" },
   { value: "draft", labelKey: "status.draft" },
   { value: "archived", labelKey: "status.archived" },
+  { value: "approvals", labelKey: "tours.nav.approvals" },
 ];
 
 export function PackagesAdmin() {
@@ -27,7 +32,9 @@ export function PackagesAdmin() {
 
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | AdminPackageStatus>("all");
+  const [statusFilter, setStatusFilter] = useState<PackageFilter>("all");
+
+  const showApprovals = statusFilter === "approvals";
 
   const filtered = packages.filter((p) => {
     const matchesStatus = statusFilter === "all" || p.status === statusFilter;
@@ -56,21 +63,23 @@ export function PackagesAdmin() {
 
       {/* Search + filter */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-48 flex-1">
-          <SearchNormal1
-            size={16}
-            color="currentColor"
-            className="text-muted pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
-          />
-          <input
-            aria-label={t("admin.packages.searchPlaceholder")}
-            placeholder={t("admin.packages.searchPlaceholder")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border-border bg-surface text-foreground placeholder:text-muted w-full rounded-xl border px-3 py-2 pl-9 text-sm outline-none focus:ring-1 focus:ring-[var(--primary)]"
-          />
-        </div>
-        <div className="flex gap-1.5">
+        {!showApprovals ? (
+          <div className="relative min-w-48 flex-1">
+            <SearchNormal1
+              size={16}
+              color="currentColor"
+              className="text-muted pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
+            />
+            <input
+              aria-label={t("admin.packages.searchPlaceholder")}
+              placeholder={t("admin.packages.searchPlaceholder")}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="border-border bg-surface text-foreground placeholder:text-muted w-full rounded-xl border px-3 py-2 pl-9 text-sm outline-none focus:ring-1 focus:ring-[var(--primary)]"
+            />
+          </div>
+        ) : null}
+        <div className="flex flex-wrap gap-1.5">
           {STATUS_FILTERS.map((f) => (
             <button
               key={f.value}
@@ -89,8 +98,10 @@ export function PackagesAdmin() {
         </div>
       </div>
 
-      {/* List */}
-      {filtered.length === 0 ? (
+      {/* Package-approval requests live under the "Request approval" filter */}
+      {showApprovals ? (
+        <TourApprovalsQueue />
+      ) : filtered.length === 0 ? (
         <p className="text-muted py-8 text-center text-sm">{t("admin.packages.empty")}</p>
       ) : (
         <ul className="flex flex-col gap-2">

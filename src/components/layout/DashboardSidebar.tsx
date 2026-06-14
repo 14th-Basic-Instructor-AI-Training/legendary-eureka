@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { LogoutCurve } from "iconsax-reactjs";
+import { LogoutCurve, UserSquare } from "iconsax-reactjs";
 import { LocaleLink } from "@/components/LocaleLink";
 import {
   Sidebar,
@@ -88,6 +88,24 @@ export function DashboardSidebar({ role }: { role: Role }) {
 
       <SidebarFooter className="pb-6">
         <SidebarMenu>
+          {role === "agency" && (() => {
+            const profileHref = "/agency/profile";
+            const profileActive = pathname.endsWith(profileHref);
+            return (
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild active={profileActive}>
+                  <LocaleLink href={profileHref} title={t("agency.profile.title")}>
+                    <UserSquare
+                      size={20}
+                      color="currentColor"
+                      variant={profileActive ? "Bold" : "Linear"}
+                    />
+                    <SidebarLabel>{t("agency.profile.title")}</SidebarLabel>
+                  </LocaleLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })()}
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={handleLogout}

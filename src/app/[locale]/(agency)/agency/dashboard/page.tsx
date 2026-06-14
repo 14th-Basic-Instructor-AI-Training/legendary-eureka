@@ -1,272 +1,457 @@
-import { Map, MapPin, Clock, Star, Plus, Layers, type LucideIcon } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+"use client";
 
-/* ── Mock data ──────────────────────────────────────────── */
-const BOOKINGS = [
-  { id: 1, traveler: 'Maria Santos',  initials: 'MS', pkg: '7-Day Bali Retreat',    date: 'Jun 12, 2026', status: 'pending'  },
-  { id: 2, traveler: 'James Kim',     initials: 'JK', pkg: 'Angkor Wat Explorer',    date: 'Jun 10, 2026', status: 'approved' },
-  { id: 3, traveler: 'Priya Nair',    initials: 'PN', pkg: 'Mekong River Journey',   date: 'Jun 09, 2026', status: 'approved' },
-  { id: 4, traveler: 'Lucas Dupont',  initials: 'LD', pkg: 'Siem Reap Highlights',   date: 'Jun 08, 2026', status: 'rejected' },
-  { id: 5, traveler: 'Aisha Hassan',  initials: 'AH', pkg: 'Phnom Penh City Tour',   date: 'Jun 07, 2026', status: 'pending'  },
-  { id: 6, traveler: 'Mohammed Ali',  initials: 'MA', pkg: 'Phnom Penh City Tour',   date: 'Jun 07, 2026', status: 'pending'  }
-] as const;
+import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
+import {
+  Layer,
+  Clock,
+  Category,
+  Star1,
+  Add,
+  Bag,
+} from "iconsax-reactjs";
+import { Avatar, StatusChip, Skeleton } from "@/ui";
+import { useSession } from "@/lib/auth";
+import { useAgencyStore } from "@/features/agency/store";
+import { useResource } from "@/lib/useResource";
+import { useLocalizedRouter } from "@/lib/locale";
+import { getDashboardStats, getRecentReviews } from "@/features/agency/data";
+import { axisProps, gridProps, tooltipProps } from "@/features/admin/components/dashboard/chartTheme";
+import type {
+  AgencyDashboardStats,
+  AgencyReview,
+  BookingRequest,
+} from "@/features/agency/schema";
 
-const REVIEWS = [
-  { id: 1, traveler: 'Sarah Lim',     initials: 'SL', rating: 5, comment: 'Absolutely breathtaking. Our guide was knowledgeable and the itinerary was perfectly paced.' },
-  { id: 2, traveler: 'Tom Weber',     initials: 'TW', rating: 4, comment: 'Great overall trip. The accommodations were comfortable and the food exceeded expectations.' },
-  { id: 3, traveler: 'Yuki Tanaka',   initials: 'YT', rating: 5, comment: 'Exceeded all expectations! Would definitely book again with this agency without hesitation.' },
+/* ── Mock chart data ────────────────────────────────────── */
+
+const MONTHLY_BOOKINGS = [
+  { month: "Jan", bookings: 18 },
+  { month: "Feb", bookings: 26 },
+  { month: "Mar", bookings: 38 },
+  { month: "Apr", bookings: 31 },
+  { month: "May", bookings: 42 },
+  { month: "Jun", bookings: 34 },
 ];
 
-type BookingStatus = 'pending' | 'approved' | 'rejected';
-
-const STATUS_CONFIG: Record<BookingStatus, { badge: string; dot: string; label: string }> = {
-  pending:  { badge: 'bg-amber-100 text-amber-700',    dot: 'bg-amber-400',   label: 'Pending'  },
-  approved: { badge: 'bg-emerald-100 text-emerald-800', dot: 'bg-emerald-500', label: 'Approved' },
-  rejected: { badge: 'bg-red-100 text-red-800',         dot: 'bg-red-500',     label: 'Rejected' },
-};
-
-// Deterministic avatar color per initials pair
-const AVATAR_PALETTES = [
-  { bg: '#EBF2FC', color: '#185FA5' },
-  { bg: '#CCFBF1', color: '#0D9488' },
-  { bg: '#F3E8FF', color: '#7E22CE' },
-  { bg: '#FFF0E0', color: '#C2410C' },
-  { bg: '#FEE2E2', color: '#991B1B' },
-  { bg: '#D1FAE5', color: '#065F46' },
+const BOOKING_STATUS_DATA = [
+  { name: "Approved", value: 48 },
+  { name: "Pending", value: 12 },
+  { name: "Rejected", value: 5 },
 ];
 
-/* ── Sub-components ─────────────────────────────────────── */
+const DONUT_COLORS = [
+  "var(--primary-lightskyblue)",
+  "var(--orange)",
+  "var(--red)",
+];
 
-function TravelerAvatar({ initials }: { initials: string }) {
-  const idx = (initials.charCodeAt(0) + (initials.charCodeAt(1) ?? 0)) % AVATAR_PALETTES.length;
-  const { bg, color } = AVATAR_PALETTES[idx];
+/* ── Helpers ────────────────────────────────────────────── */
+
+function initialsOf(name: string) {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+/* ── Panel wrapper ──────────────────────────────────────── */
+
+function Panel({
+  title,
+  action,
+  children,
+}: {
+  title: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
-    <Avatar className="size-7 shrink-0">
-      <AvatarFallback className="text-[9.5px] font-bold" style={{ background: bg, color }}>
-        {initials}
-      </AvatarFallback>
-    </Avatar>
+    <section className="bg-surface border-border rounded-2xl border p-5">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <h2
+          className="text-lg font-bold tracking-tight"
+          style={{ color: "var(--primary-lightskyblue)" }}
+        >
+          {title}
+        </h2>
+        {action}
+      </div>
+      {children}
+    </section>
   );
 }
 
-function StatusBadge({ status }: { status: BookingStatus }) {
-  const { badge, dot, label } = STATUS_CONFIG[status];
-  return (
-    <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold whitespace-nowrap', badge)}>
-      <span className={cn('size-[5px] shrink-0 rounded-full', dot)} />
-      {label}
-    </span>
-  );
-}
-
-function StarRating({ value, size = 12 }: { value: number; size?: number }) {
-  return (
-    <span className="inline-flex gap-px">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <span key={i} style={{ fontSize: size, color: i <= value ? '#FFA827' : '#E1E6EC' }}>★</span>
-      ))}
-    </span>
-  );
-}
+/* ── Stat card ──────────────────────────────────────────── */
 
 interface StatCardProps {
   label: string;
   value: string | number;
-  icon: LucideIcon;
-  iconStyle?: React.CSSProperties;
-  sub?: string;
+  icon: React.ElementType;
+  tintBg: string;
+  tintColor: string;
   urgent?: boolean;
 }
 
-function StatCard({ label, value, icon: Icon, iconStyle, sub, urgent }: StatCardProps) {
+function StatCard({ label, value, icon: Icon, tintBg, tintColor, urgent }: StatCardProps) {
   return (
-    <div className={cn(
-      'rounded-xl border p-5',
-      urgent ? 'border-amber-400 bg-amber-50' : 'border-agency-border bg-white',
-    )}>
-      <div className="mb-3.5 flex items-start justify-between gap-2">
-        <span className={cn(
-          'max-w-[120px] text-xs font-semibold leading-snug',
-          urgent ? 'text-amber-900' : 'text-agency-muted',
-        )}>
-          {label}
-        </span>
-        <div
-          className="flex size-8.5 shrink-0 items-center justify-center rounded-[9px]"
-          style={urgent ? { background: '#FEF3C7', color: '#D97706' } : iconStyle}
-        >
-          <Icon size={16} strokeWidth={1.75} />
-        </div>
-      </div>
-
-      <p className={cn(
-        'text-[34px] font-extrabold leading-none tracking-tight',
-        urgent ? 'text-amber-600' : 'text-agency-navy',
-      )}>
-        {value}
-      </p>
-
-      {sub && (
-        <p className={cn(
-          'mt-2 flex items-center gap-1 text-[11px] font-semibold',
-          urgent ? 'text-amber-700' : 'text-agency-muted',
-        )}>
-          {urgent && <span className="inline-block size-1.5 shrink-0 rounded-full bg-amber-400" />}
-          {sub}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function RecentBookings() {
-  return (
-    <div className="min-w-0 overflow-hidden rounded-[14px] border border-agency-border bg-white" style={{ flex: '1.25' }}>
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-agency-border px-5 py-4">
-        <h2 className="text-[15px] font-bold tracking-tight text-agency-navy">Recent Bookings</h2>
-        <span className="cursor-pointer text-xs font-semibold text-agency hover:underline">View All</span>
-      </div>
-
-      {/* Column headers */}
+    <div
+      className="bg-surface border-border flex items-start gap-4 rounded-2xl border p-6 transition-shadow hover:shadow-primary"
+      style={
+        urgent
+          ? ({ borderColor: "var(--yellow)", background: "var(--bg-yellow)" } as CSSProperties)
+          : undefined
+      }
+    >
       <div
-        className="grid items-center gap-x-4 bg-surface px-5 py-2"
-        style={{ gridTemplateColumns: '1.8fr 1.8fr 1fr auto' }}
+        className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+        style={{ backgroundColor: tintBg, color: tintColor } as CSSProperties}
       >
-        {['Traveler', 'Package', 'Date', 'Status'].map((h) => (
-          <span key={h} className="text-[10.5px] font-bold uppercase tracking-widest text-agency-muted">{h}</span>
-        ))}
+        <Icon size={24} variant="Bold" />
       </div>
-
-      {/* Rows */}
-      {BOOKINGS.map((b, i) => (
-        <div
-          key={b.id}
-          className={cn('grid items-center gap-x-4 px-5 py-2.75', i > 0 && 'border-t border-agency-border')}
-          style={{ gridTemplateColumns: '1.8fr 1.8fr 1fr auto' }}
+      <div>
+        <p className="text-muted mb-1.5 text-xs font-bold uppercase tracking-widest">{label}</p>
+        <p
+          className="text-3xl font-black leading-none tracking-tight"
+          style={{ color: "var(--primary-lightskyblue)" }}
         >
-          <div className="flex min-w-0 items-center gap-2.5">
-            <TravelerAvatar initials={b.initials} />
-            <span className="truncate text-[13px] font-semibold text-agency-dark">{b.traveler}</span>
-          </div>
-          <span className="truncate text-[12.5px] text-agency-muted">{b.pkg}</span>
-          <span className="whitespace-nowrap text-xs text-agency-muted">{b.date}</span>
-          <StatusBadge status={b.status} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function RecentReviews() {
-  return (
-    <div className="min-w-0 flex-1 overflow-hidden rounded-[14px] border border-agency-border bg-white">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-agency-border px-5 py-4">
-        <h2 className="text-[15px] font-bold tracking-tight text-agency-navy">Recent Reviews</h2>
-        <div className="flex items-center gap-1.5">
-          <StarRating value={5} size={11} />
-          <span className="text-xs font-bold text-agency-dark">4.6</span>
-        </div>
+          {value}
+        </p>
       </div>
+    </div>
+  );
+}
 
-      {/* Review items */}
-      {REVIEWS.map((r, i) => (
-        <div key={r.id} className={cn('px-5 py-3.25', i > 0 && 'border-t border-agency-border')}>
-          <div className="mb-1.5 flex items-center gap-2.5">
-            <TravelerAvatar initials={r.initials} />
-            <div>
-              <p className="text-[12.5px] font-bold leading-tight text-agency-dark">{r.traveler}</p>
-              <StarRating value={r.rating} size={11} />
-            </div>
-          </div>
-          <p className="text-xs leading-relaxed text-agency-muted">
-            &ldquo;{r.comment}&rdquo;
-          </p>
-        </div>
+function StatsGridSkeleton() {
+  return (
+    <div className="grid grid-cols-4 gap-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Skeleton key={i} className="h-[96px] rounded-2xl" />
       ))}
     </div>
   );
 }
+
+function StatsGrid({ stats }: { stats: AgencyDashboardStats }) {
+  const { t } = useTranslation();
+  return (
+    <div className="grid grid-cols-4 gap-4">
+      <StatCard
+        label={t("agency.dashboard.totalPackages")}
+        value={stats.totalPackages}
+        icon={Layer}
+        tintBg="var(--bg-blue)"
+        tintColor="var(--blue)"
+      />
+      <StatCard
+        label={t("agency.dashboard.pendingBookings")}
+        value={stats.pendingBookings}
+        icon={Clock}
+        tintBg="var(--bg-seashell)"
+        tintColor="var(--orange)"
+        urgent
+      />
+      <StatCard
+        label={t("agency.dashboard.totalActivities")}
+        value={stats.totalActivities}
+        icon={Category}
+        tintBg="var(--bg-lightgreen)"
+        tintColor="var(--green)"
+      />
+      <StatCard
+        label={t("agency.dashboard.avgRating")}
+        value={stats.averageRating.toFixed(1)}
+        icon={Star1}
+        tintBg="var(--bg-yellow)"
+        tintColor="var(--yellow)"
+      />
+    </div>
+  );
+}
+
+/* ── Charts row ─────────────────────────────────────────── */
+
+function BookingsTrendChart() {
+  const { t } = useTranslation();
+  return (
+    <Panel title={t("agency.dashboard.bookingsTrend")}>
+      <ResponsiveContainer width="100%" height={200}>
+        <BarChart data={MONTHLY_BOOKINGS} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+          <CartesianGrid {...gridProps} />
+          <XAxis dataKey="month" {...axisProps} />
+          <YAxis {...axisProps} />
+          <Tooltip {...tooltipProps} />
+          <Bar
+            dataKey="bookings"
+            fill="var(--primary-lightskyblue)"
+            radius={[4, 4, 0, 0]}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    </Panel>
+  );
+}
+
+function BookingStatusChart() {
+  const { t } = useTranslation();
+  return (
+    <Panel title={t("agency.dashboard.bookingStatus")}>
+      <ResponsiveContainer width="100%" height={200}>
+        <PieChart>
+          <Pie
+            data={BOOKING_STATUS_DATA}
+            cx="50%"
+            cy="50%"
+            innerRadius={55}
+            outerRadius={80}
+            paddingAngle={2}
+            dataKey="value"
+          >
+            {BOOKING_STATUS_DATA.map((_, i) => (
+              <Cell key={i} fill={DONUT_COLORS[i]} />
+            ))}
+          </Pie>
+          <Legend
+            iconType="circle"
+            iconSize={10}
+            formatter={(value) => (
+              <span style={{ color: "var(--text-secondary)", fontSize: 12 }}>{value}</span>
+            )}
+          />
+          <Tooltip {...tooltipProps} />
+        </PieChart>
+      </ResponsiveContainer>
+    </Panel>
+  );
+}
+
+/* ── Recent bookings table ──────────────────────────────── */
+
+function RecentBookingsTable({ bookings }: { bookings: BookingRequest[] }) {
+  const { t } = useTranslation();
+
+  if (bookings.length === 0) {
+    return (
+      <p className="text-muted py-8 text-center text-sm">{t("agency.bookings.empty")}</p>
+    );
+  }
+
+  return (
+    <table className="w-full text-sm">
+      <thead>
+        <tr className="border-border border-b">
+          {[
+            t("agency.dashboard.colTraveler"),
+            t("agency.dashboard.colPackage"),
+            t("agency.dashboard.colDate"),
+            t("agency.dashboard.colStatus"),
+          ].map((h) => (
+            <th
+              key={h}
+              className="text-muted pb-3 text-left text-xs font-bold uppercase tracking-wider"
+            >
+              {h}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {bookings.slice(0, 6).map((b) => (
+          <tr key={b.id} className="border-border/60 border-b last:border-0 hover:bg-bg-ghostwhite">
+            <td className="py-3 pr-4">
+              <div className="flex items-center gap-2.5">
+                <Avatar size="sm">
+                  <Avatar.Fallback>{initialsOf(b.travelerName)}</Avatar.Fallback>
+                </Avatar>
+                <span
+                  className="font-bold"
+                  style={{ color: "var(--primary-lightskyblue)" }}
+                >
+                  {b.travelerName}
+                </span>
+              </div>
+            </td>
+            <td className="text-muted py-3 pr-4 text-xs">{b.packageTitle}</td>
+            <td className="text-muted py-3 pr-4 text-xs whitespace-nowrap">{b.datesLabel}</td>
+            <td className="py-3">
+              <StatusChip status={b.status} />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+/* ── Recent reviews ─────────────────────────────────────── */
+
+function ReviewCard({ review }: { review: AgencyReview }) {
+  return (
+    <div className="bg-surface border-border flex gap-4 rounded-2xl border p-4 transition-shadow hover:shadow-primary">
+      <Avatar size="md">
+        <Avatar.Fallback>{initialsOf(review.travelerName)}</Avatar.Fallback>
+      </Avatar>
+      <div className="min-w-0 flex-1">
+        <div className="mb-1.5 flex items-center justify-between gap-2">
+          <p
+            className="font-bold text-sm"
+            style={{ color: "var(--primary-lightskyblue)" }}
+          >
+            {review.travelerName}
+          </p>
+          <span
+            className="flex items-center gap-0.5 text-sm font-bold"
+            style={{ color: "var(--yellow)" }}
+          >
+            <Star1 size={14} variant="Bold" />
+            {review.rating.toFixed(1)}
+          </span>
+        </div>
+        <p className="text-muted text-xs leading-relaxed">
+          &ldquo;{review.comment}&rdquo;
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ReviewsSkeleton() {
+  return (
+    <div className="flex flex-col gap-3">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <Skeleton key={i} className="h-20 rounded-2xl" />
+      ))}
+    </div>
+  );
+}
+
+/* ── Quick actions ──────────────────────────────────────── */
 
 function QuickActions() {
+  const { t } = useTranslation();
+  const router = useLocalizedRouter();
   return (
-    <div className="flex items-center justify-between gap-4 rounded-[14px] border border-agency-border bg-white px-6 py-5">
-      <div>
-        <h2 className="mb-1 text-[15px] font-bold tracking-tight text-agency-navy">Quick Actions</h2>
-        <p className="text-[12.5px] leading-relaxed text-agency-muted">
-          Create and publish content to attract more travelers to your packages.
-        </p>
-      </div>
-      <div className="flex shrink-0 gap-2.5">
-        <Button
-          variant="outline"
-          className="h-auto gap-1.5 rounded-full border-agency px-4.5 py-2.25 text-[13px] text-agency hover:bg-agency-light hover:border-agency"
+    <Panel title={t("agency.dashboard.quickActions")}>
+      <p className="text-muted mb-5 text-sm">{t("agency.dashboard.quickActionsSub")}</p>
+      <div className="grid grid-cols-2 gap-4">
+        <button
+          onClick={() => router.push("/agency")}
+          className="flex flex-col items-center justify-center gap-3 rounded-2xl py-8 font-bold text-base text-white transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
+          style={{ backgroundColor: "var(--primary-lightskyblue)" }}
         >
-          <Plus size={15} strokeWidth={1.75} data-icon="inline-start" />
-          Create Activity
-        </Button>
-        <Button
-          className="h-auto gap-1.5 rounded-full bg-agency px-4.5 py-2.25 text-[13px] text-white hover:bg-agency/90"
+          <Add size={28} variant="Bold" />
+          {t("agency.dashboard.createActivity")}
+        </button>
+        <button
+          onClick={() => router.push("/agency")}
+          className="flex flex-col items-center justify-center gap-3 rounded-2xl py-8 font-bold text-base text-white transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
+          style={{ backgroundColor: "var(--primary-lightskyblue)" }}
         >
-          <Layers size={15} strokeWidth={1.75} data-icon="inline-start" />
-          Create Package
-        </Button>
+          <Bag size={28} variant="Bold" />
+          {t("agency.dashboard.createPackage")}
+        </button>
       </div>
-    </div>
+    </Panel>
   );
 }
 
 /* ── Page ───────────────────────────────────────────────── */
+
 export default function DashboardPage() {
+  const { t } = useTranslation();
+  const { user } = useSession();
+
+  const bookings = useAgencyStore((s) => s.bookings);
+  const statsState = useResource(getDashboardStats);
+  const reviewsState = useResource(getRecentReviews);
+
   return (
-    <div className="px-7 py-7 pb-12">
-      {/* Page header */}
-      <div className="mb-6">
-        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-agency-navy">
-          Dashboard
+    <div className="flex flex-col gap-6 px-8 py-8 pb-12">
+      {/* Header */}
+      <div>
+        <h1
+          className="text-4xl font-black tracking-tight"
+          style={{ color: "var(--primary-lightskyblue)" }}
+        >
+          {t("agency.dashboard.title")}
         </h1>
-        <p className="mt-px text-[12.5px] text-agency-muted">Saturday, June 14, 2026</p>
+        <p className="text-muted mt-1 text-sm">
+          {user
+            ? t("agency.dashboard.welcome", { name: user.name })
+            : t("agency.dashboard.subtitle")}
+        </p>
       </div>
 
-      {/* Stat cards */}
-      <div className="mb-5 grid grid-cols-4 gap-3.5">
-        <StatCard
-          label="Total Tour Packages"
-          value={24}
-          icon={Map}
-          iconStyle={{ background: '#EBF2FC', color: '#185FA5' }}
-          sub="8 currently active"
-        />
-        <StatCard
-          label="Pending Booking Requests"
-          value={8}
-          icon={Clock}
-          urgent
-          sub="8 awaiting review"
-        />
-        <StatCard
-          label="Total Activities"
-          value={47}
-          icon={MapPin}
-          iconStyle={{ background: '#CCFBF1', color: '#1CA1A7' }}
-          sub="Across 12 categories"
-        />
-        <StatCard
-          label="Average Rating"
-          value="4.6★"
-          icon={Star}
-          iconStyle={{ background: '#FFF4E0', color: '#FFA827' }}
-          sub="Based on 84 reviews"
-        />
+      {/* Stats */}
+      {statsState.status === "loading" && <StatsGridSkeleton />}
+      {statsState.status === "error" && (
+        <p className="text-muted text-sm">
+          {t("common.error")}{" "}
+          <button
+            onClick={statsState.reload}
+            className="text-primary-lightskyblue underline"
+          >
+            {t("common.retry")}
+          </button>
+        </p>
+      )}
+      {statsState.status === "success" && statsState.data && (
+        <StatsGrid stats={statsState.data} />
+      )}
+
+      {/* Charts */}
+      <div className="grid grid-cols-[3fr_2fr] gap-6">
+        <BookingsTrendChart />
+        <BookingStatusChart />
       </div>
 
-      {/* Middle zone */}
-      <div className="mb-4 flex items-start gap-4">
-        <RecentBookings />
-        <RecentReviews />
+      {/* Bookings table + reviews */}
+      <div className="grid grid-cols-2 gap-6">
+        <Panel
+          title={t("agency.dashboard.recentBookings")}
+          action={
+            <button className="text-primary-lightskyblue text-sm hover:underline">
+              {t("agency.dashboard.viewAll")}
+            </button>
+          }
+        >
+          <RecentBookingsTable bookings={bookings} />
+        </Panel>
+
+        <div className="flex flex-col gap-4">
+          <h2
+            className="text-lg font-bold tracking-tight"
+            style={{ color: "var(--text-primary)" }}
+          >
+            {t("agency.dashboard.recentReviews")}
+          </h2>
+          {reviewsState.status === "loading" && <ReviewsSkeleton />}
+          {reviewsState.status === "error" && (
+            <p className="text-muted text-center text-sm">{t("common.error")}</p>
+          )}
+          {reviewsState.status === "success" && reviewsState.data && (
+            <div className="flex flex-col gap-3">
+              {reviewsState.data.map((r) => (
+                <ReviewCard key={r.id} review={r} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Quick actions */}
