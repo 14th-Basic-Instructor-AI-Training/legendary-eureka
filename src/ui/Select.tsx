@@ -19,6 +19,11 @@ import { cn } from "@/lib/utils";
  *   </Select>
  */
 
+/** Trigger with the Input's border radius baked in (a className still merges). */
+function Trigger({ className, ...props }: ComponentProps<typeof HeroSelect.Trigger>) {
+  return <HeroSelect.Trigger className={cn("rounded-lg", className)} {...props} />;
+}
+
 /** Trigger arrow with the default input color baked in (a className still merges). */
 function Indicator({ className, ...props }: ComponentProps<typeof HeroSelect.Indicator>) {
   return <HeroSelect.Indicator className={cn("text-text-input-color", className)} {...props} />;
@@ -30,7 +35,7 @@ function Root(props: ComponentProps<typeof HeroSelect>) {
 }
 
 export const Select = Object.assign(Root, {
-  Trigger: HeroSelect.Trigger,
+  Trigger,
   Value: HeroSelect.Value,
   Indicator,
   Popover: HeroSelect.Popover,
