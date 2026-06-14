@@ -19,11 +19,16 @@ export const AgencyRequestSchema = z.object({
   country: z.string(),
   submittedAtLabel: z.string(),
   status: AgencyRequestStatusSchema,
+  /** Why the applicant wants to become an agency — shown in the review card. */
+  description: z.string().optional(),
 });
 export type AgencyRequest = z.infer<typeof AgencyRequestSchema>;
 
 export const ReportStatusSchema = z.enum(["open", "resolved", "dismissed"]);
 export type ReportStatus = z.infer<typeof ReportStatusSchema>;
+
+export const ReportSeveritySchema = z.enum(["low", "medium", "high"]);
+export type ReportSeverity = z.infer<typeof ReportSeveritySchema>;
 
 export const ReportSchema = z.object({
   id: z.string(),
@@ -32,6 +37,8 @@ export const ReportSchema = z.object({
   reason: z.string(),
   submittedAtLabel: z.string(),
   status: ReportStatusSchema,
+  severity: ReportSeveritySchema.default("medium"),
+  adminNote: z.string().optional(),
 });
 export type Report = z.infer<typeof ReportSchema>;
 
@@ -150,3 +157,96 @@ export const AdminDashboardSchema = z.object({
   feed: z.array(ActivityFeedItemSchema),
 });
 export type AdminDashboard = z.infer<typeof AdminDashboardSchema>;
+
+/* ------------------------------------------------------------------ *
+ * Agency edit requests (agencies request changes to published activities).
+ * ------------------------------------------------------------------ */
+
+export const EditRequestStatusSchema = z.enum(["pending", "approved", "rejected"]);
+export type EditRequestStatus = z.infer<typeof EditRequestStatusSchema>;
+
+export const EditRequestSchema = z.object({
+  id: z.string(),
+  activityTitle: z.string(),
+  agencyName: z.string(),
+  /** What the field currently says (shown alongside requestedChanges). */
+  currentValue: z.string().optional(),
+  requestedChanges: z.string(),
+  submittedAtLabel: z.string(),
+  status: EditRequestStatusSchema,
+});
+export type EditRequest = z.infer<typeof EditRequestSchema>;
+
+/* ------------------------------------------------------------------ *
+ * Admin packages view — all tour packages across agencies.
+ * ------------------------------------------------------------------ */
+
+export const AdminPackageStatusSchema = z.enum(["draft", "published", "archived"]);
+export type AdminPackageStatus = z.infer<typeof AdminPackageStatusSchema>;
+
+export const AdminPackageSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  agencyName: z.string(),
+  days: z.number().int().positive(),
+  priceFrom: z.number().nonnegative(),
+  currency: z.string().default("USD"),
+  status: AdminPackageStatusSchema,
+  activityCount: z.number().int().nonnegative(),
+  bookingsCount: z.number().int().nonnegative(),
+});
+export type AdminPackage = z.infer<typeof AdminPackageSchema>;
+
+/* ------------------------------------------------------------------ *
+ * Admin bookings monitoring — all bookings platform-wide (read-only).
+ * ------------------------------------------------------------------ */
+
+export const AdminBookingStatusSchema = z.enum(["pending", "approved", "rejected", "completed"]);
+export type AdminBookingStatus = z.infer<typeof AdminBookingStatusSchema>;
+
+export const AdminBookingSchema = z.object({
+  id: z.string(),
+  travelerName: z.string(),
+  agencyName: z.string(),
+  packageTitle: z.string(),
+  datesLabel: z.string(),
+  guests: z.number().int().positive(),
+  total: z.number().nonnegative(),
+  currency: z.string().default("USD"),
+  status: AdminBookingStatusSchema,
+  requestedAtLabel: z.string(),
+});
+export type AdminBooking = z.infer<typeof AdminBookingSchema>;
+
+/* ------------------------------------------------------------------ *
+ * System settings — platform-wide config that only admins can change.
+ * ------------------------------------------------------------------ */
+
+export const SystemSettingsSchema = z.object({
+  commissionRate: z.number().min(0).max(100),
+  maxPackageDays: z.number().int().positive(),
+  minActivityPriceUsd: z.number().nonnegative(),
+  /** Platform feature flags — toggled live by admin. */
+  registrationOpen: z.boolean().default(true),
+  bookingEnabled: z.boolean().default(true),
+  maintenanceMode: z.boolean().default(false),
+});
+export type SystemSettings = z.infer<typeof SystemSettingsSchema>;
+
+export const SystemSettingsFormSchema = z.object({
+  commissionRate: z.coerce.number().min(0, "Must be ≥ 0").max(100, "Must be ≤ 100"),
+  maxPackageDays: z.coerce.number().int().min(1, "Must be at least 1 day"),
+  minActivityPriceUsd: z.coerce.number().min(0, "Must be ≥ 0"),
+  registrationOpen: z.boolean(),
+  bookingEnabled: z.boolean(),
+  maintenanceMode: z.boolean(),
+});
+export type SystemSettingsFormValues = z.input<typeof SystemSettingsFormSchema>;
+
+/** Quick pending-count summary — used by the Requests page header. */
+export const AdminStatsSchema = z.object({
+  pendingAgencyRequests: z.number(),
+  pendingEditRequests: z.number(),
+  openReports: z.number(),
+});
+export type AdminStats = z.infer<typeof AdminStatsSchema>;

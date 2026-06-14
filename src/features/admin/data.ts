@@ -1,15 +1,23 @@
 import {
   ADMIN_ACTIVITIES,
   ADMIN_AGENCY_REQUESTS,
+  ADMIN_BOOKINGS,
   ADMIN_DASHBOARD,
+  ADMIN_EDIT_REQUESTS,
+  ADMIN_PACKAGES,
   ADMIN_REPORTS,
   ADMIN_USERS,
+  INITIAL_SYSTEM_SETTINGS,
 } from "./fixtures";
 import type {
+  AdminBooking,
   AdminDashboard,
+  AdminPackage,
   AgencyRequest,
+  EditRequest,
   PlatformActivity,
   Report,
+  SystemSettings,
   UserSummary,
 } from "./schema";
 
@@ -44,4 +52,20 @@ export function initialActivities(): PlatformActivity[] {
 
 export function initialUsers(): UserSummary[] {
   return ADMIN_USERS;
+}
+
+export function initialEditRequests(): EditRequest[] {
+  return ADMIN_EDIT_REQUESTS;
+}
+
+export function initialAdminPackages(): AdminPackage[] {
+  return ADMIN_PACKAGES;
+}
+
+export function initialAdminBookings(): AdminBooking[] {
+  return ADMIN_BOOKINGS;
+}
+
+export function initialSystemSettings(): SystemSettings {
+  return INITIAL_SYSTEM_SETTINGS;
 }

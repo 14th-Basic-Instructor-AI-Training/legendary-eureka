@@ -12,11 +12,13 @@
     "confirm": "Confirm",
     "save": "Save",
     "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "hidePassword": "Hide password",
+    "all": "All"
   },
   "status": {
     "draft": "Draft",
     "published": "Published",
+    "archived": "Archived",
     "pending": "Pending",
     "approved": "Approved",
     "rejected": "Rejected",
@@ -308,7 +310,9 @@
       "overview": "Overview",
       "highlights": "Highlights",
       "location": "Location",
-      "mapSoon": "Interactive 3D map coming soon.",
+      "mapLabel": "3D map of {{name}}",
+      "mapLoading": "Loading the 3D map…",
+      "mapError": "We couldn't load the map.",
       "reviews": "Traveler reviews",
       "reviewsSoon": "Reviews appear here once travelers complete their trips.",
       "facts": "Good to know",
@@ -398,7 +402,27 @@
       "empty": "No agency requests right now.",
       "by": "by {{name}}",
       "approve": "Approve",
-      "reject": "Reject"
+      "reject": "Reject",
+      "pendingCount": "{{count}} pending",
+      "searchPlaceholder": "Search by agency, applicant, or country…",
+      "applicationNote": "Application note",
+      "tabs": {
+        "agencies": "Agency onboarding",
+        "editRequests": "Edit requests"
+      }
+    },
+    "editRequests": {
+      "title": "Agency edit requests",
+      "empty": "No edit requests right now.",
+      "for": "Edit request for \"{{title}}\"",
+      "by": "by {{agency}}",
+      "changes": "Requested changes",
+      "approve": "Approve",
+      "reject": "Reject",
+      "pendingCount": "{{count}} pending",
+      "searchPlaceholder": "Search by activity or agency…",
+      "current": "Current",
+      "proposed": "Proposed"
     },
     "reports": {
       "title": "Traveler reports",
@@ -406,13 +430,26 @@
       "against": "Against {{agency}}",
       "by": "Reported by {{name}}",
       "resolve": "Resolve",
-      "dismiss": "Dismiss"
+      "dismiss": "Dismiss",
+      "openCount": "{{count}} open reports need attention",
+      "searchPlaceholder": "Search by agency or reporter…",
+      "addNote": "Add an admin note (optional)",
+      "adminNote": "Admin note",
+      "agencyCount": "{{count}} reports against this agency",
+      "severity": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      }
     },
     "activities": {
       "title": "All platform activities",
       "empty": "No activities on the platform yet.",
       "by": "by {{agency}}",
       "deleteConfirm": "Delete this activity?",
+      "publishedCount": "published",
+      "totalCount": "total",
+      "searchPlaceholder": "Search by title or agency…",
       "actions": {
         "edit": "Edit",
         "delete": "Delete",
@@ -429,10 +466,39 @@
         }
       }
     },
+    "packages": {
+      "title": "All tour packages",
+      "empty": "No packages on the platform yet.",
+      "by": "by {{agency}}",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "activities_one": "{{count}} activity",
+      "activities_other": "{{count}} activities",
+      "bookings_one": "{{count}} booking",
+      "bookings_other": "{{count}} bookings",
+      "publishedCount": "published",
+      "totalBookings": "total bookings",
+      "searchPlaceholder": "Search by title or agency…",
+      "deleteConfirm": "Delete this package?",
+      "actions": {
+        "publish": "Publish",
+        "archive": "Archive",
+        "delete": "Delete",
+        "confirmDelete": "Yes, delete"
+      }
+    },
     "users": {
       "title": "Users",
       "empty": "No users found.",
       "joined": "Joined {{date}}",
+      "totalCount": "total users",
+      "suspendedCount": "suspended",
+      "bannedCount": "banned",
+      "searchPlaceholder": "Search by name or email…",
+      "filterRole": "Role",
+      "filterStatus": "Status",
+      "changeRole": "Change role",
+      "roleDowngrade": "Downgrade to Traveler",
       "actions": {
         "suspend": "Suspend",
         "ban": "Ban",
@@ -505,20 +571,77 @@
       }
     },
     "nav": {
-      "overview": "Overview"
+      "overview": "Overview",
+      "requests": "Requests",
+      "content": "Content",
+      "bookings": "Bookings",
+      "settings": "Settings"
+    },
+    "content": {
+      "tabs": {
+        "activities": "Activities",
+        "packages": "Packages"
+      }
+    },
+    "bookings": {
+      "title": "Bookings & revenue",
+      "empty": "No bookings on the platform yet.",
+      "revenue": "Confirmed revenue",
+      "confirmedCount_one": "{{count}} confirmed",
+      "confirmedCount_other": "{{count}} confirmed",
+      "by": "Agency: {{agency}}",
+      "traveler": "Traveler: {{name}}",
+      "guests_one": "{{count}} guest",
+      "guests_other": "{{count}} guests",
+      "totalRevenue": "Total revenue",
+      "confirmedRevenue": "Completed revenue",
+      "pendingRevenue": "Pending revenue",
+      "searchPlaceholder": "Search by package, traveler, or agency…",
+      "cancel": "Cancel booking"
+    },
+    "settings": {
+      "title": "System settings",
+      "saved": "Settings saved.",
+      "sections": {
+        "pricingFees": "Pricing & Fees",
+        "pricingFeesDesc": "Set the platform commission and minimum pricing.",
+        "contentPolicy": "Content Policy",
+        "contentPolicyDesc": "Limits on what agencies can create and publish.",
+        "platformFeatures": "Platform Features",
+        "platformFeaturesDesc": "Toggle platform-wide capabilities."
+      },
+      "fields": {
+        "commissionRate": "Platform commission rate (%)",
+        "maxPackageDays": "Max tour package duration (days)",
+        "minActivityPriceUsd": "Minimum activity price (USD)",
+        "registrationOpen": "Open registration",
+        "registrationOpenDesc": "Allow new travelers and agencies to sign up.",
+        "bookingEnabled": "Booking enabled",
+        "bookingEnabledDesc": "Allow travelers to request and book tours.",
+        "maintenanceMode": "Maintenance mode",
+        "maintenanceModeDesc": "Take the platform offline for all non-admin users."
+      },
+      "maintenanceWarning": "Enabling maintenance mode will make the platform inaccessible to all travelers and agencies.",
+      "save": "Save settings"
     },
     "pages": {
-      "agencies": {
-        "subtitle": "Review and confirm become-an-agency requests."
+      "requests": {
+        "subtitle": "Review agency onboarding applications and activity edit requests."
       },
       "reports": {
         "subtitle": "Investigate and act on traveler reports."
       },
-      "activities": {
-        "subtitle": "Edit or remove any activity on the platform."
+      "content": {
+        "subtitle": "Moderate all activities and tour packages on the platform."
       },
       "users": {
         "subtitle": "Manage members — suspend, ban, or reactivate accounts."
+      },
+      "bookings": {
+        "subtitle": "Monitor all bookings and platform revenue."
+      },
+      "settings": {
+        "subtitle": "Configure platform-wide settings and commission rates."
       }
     }
   },

@@ -12,11 +12,13 @@
     "confirm": "បញ្ជាក់",
     "save": "រក្សាទុក",
     "showPassword": "បង្ហាញពាក្យសម្ងាត់",
-    "hidePassword": "លាក់ពាក្យសម្ងាត់"
+    "hidePassword": "លាក់ពាក្យសម្ងាត់",
+    "all": "ទាំងអស់"
   },
   "status": {
     "draft": "ព្រាង",
     "published": "បានផ្សាយ",
+    "archived": "ទុកក្នុងប័ណ្ណសារ",
     "pending": "កំពុងរង់ចាំ",
     "approved": "បានអនុម័ត",
     "rejected": "បានបដិសេធ",
@@ -308,7 +310,9 @@
       "overview": "ទិដ្ឋភាពទូទៅ",
       "highlights": "ចំណុចសំខាន់ៗ",
       "location": "ទីតាំង",
-      "mapSoon": "ផែនទី 3D អន្តរកម្មនឹងមកដល់ឆាប់ៗនេះ។",
+      "mapLabel": "ផែនទី 3D នៃ {{name}}",
+      "mapLoading": "កំពុងផ្ទុកផែនទី 3D…",
+      "mapError": "យើងមិនអាចផ្ទុកផែនទីបានទេ។",
       "reviews": "ការវាយតម្លៃពីអ្នកធ្វើដំណើរ",
       "reviewsSoon": "ការវាយតម្លៃនឹងបង្ហាញនៅទីនេះ បន្ទាប់ពីអ្នកធ្វើដំណើរបញ្ចប់ដំណើររបស់ពួកគេ។",
       "facts": "គួរដឹង",
@@ -398,7 +402,27 @@
       "empty": "មិនមានសំណើភ្នាក់ងារឥឡូវនេះទេ។",
       "by": "ដោយ {{name}}",
       "approve": "អនុម័ត",
-      "reject": "បដិសេធ"
+      "reject": "បដិសេធ",
+      "pendingCount": "{{count}} កំពុងរង់ចាំ",
+      "searchPlaceholder": "ស្វែងរកតាមភ្នាក់ងារ អ្នកស្នើ ឬប្រទេស…",
+      "applicationNote": "ចំណាំពីការស្នើសុំ",
+      "tabs": {
+        "agencies": "ការចូលរួមជាភ្នាក់ងារ",
+        "editRequests": "សំណើរកែប្រែ"
+      }
+    },
+    "editRequests": {
+      "title": "សំណើរកែប្រែពីភ្នាក់ងារ",
+      "empty": "មិនមានសំណើរកែប្រែឥឡូវនេះ។",
+      "for": "សំណើរកែប្រែសម្រាប់ \"{{title}}\"",
+      "by": "ដោយ {{agency}}",
+      "changes": "ការផ្លាស់ប្ដូរដែលបានស្នើ",
+      "approve": "អនុម័ត",
+      "reject": "បដិសេធ",
+      "pendingCount": "{{count}} កំពុងរង់ចាំ",
+      "searchPlaceholder": "ស្វែងរកតាមសកម្មភាព ឬភ្នាក់ងារ…",
+      "current": "បច្ចុប្បន្ន",
+      "proposed": "ការស្នើ"
     },
     "reports": {
       "title": "របាយការណ៍អ្នកធ្វើដំណើរ",
@@ -406,13 +430,26 @@
       "against": "ប្រឆាំង {{agency}}",
       "by": "រាយការណ៍ដោយ {{name}}",
       "resolve": "ដោះស្រាយ",
-      "dismiss": "បដិសេធ"
+      "dismiss": "បដិសេធ",
+      "openCount": "{{count}} របាយការណ៍បើកចំហត្រូវការចំណាប់អារម្មណ៍",
+      "searchPlaceholder": "ស្វែងរកតាមភ្នាក់ងារ ឬអ្នករាយការណ៍…",
+      "addNote": "បន្ថែមចំណាំ (ជាជម្រើស)",
+      "adminNote": "ចំណាំរបស់អ្នកគ្រប់គ្រង",
+      "agencyCount": "{{count}} របាយការណ៍ប្រឆាំងភ្នាក់ងារនេះ",
+      "severity": {
+        "low": "ទាប",
+        "medium": "មធ្យម",
+        "high": "ខ្ពស់"
+      }
     },
     "activities": {
       "title": "សកម្មភាពទាំងអស់នៅលើវេទិកា",
       "empty": "មិនទាន់មានសកម្មភាពនៅលើវេទិកាទេ។",
       "by": "ដោយ {{agency}}",
       "deleteConfirm": "លុបសកម្មភាពនេះ?",
+      "publishedCount": "បានផ្សាយ",
+      "totalCount": "សរុប",
+      "searchPlaceholder": "ស្វែងរកតាមចំណងជើង ឬភ្នាក់ងារ…",
       "actions": {
         "edit": "កែសម្រួល",
         "delete": "លុប",
@@ -429,10 +466,39 @@
         }
       }
     },
+    "packages": {
+      "title": "កញ្ចប់ទ្រដ្ឋទាំងអស់",
+      "empty": "មិនទាន់មានកញ្ចប់ទ្រដ្ឋនៅលើវេទិកានៅឡើយទេ។",
+      "by": "ដោយ {{agency}}",
+      "days_one": "{{count}} ថ្ងៃ",
+      "days_other": "{{count}} ថ្ងៃ",
+      "activities_one": "{{count}} សកម្មភាព",
+      "activities_other": "{{count}} សកម្មភាព",
+      "bookings_one": "{{count}} ការកក់",
+      "bookings_other": "{{count}} ការកក់",
+      "publishedCount": "បានផ្សាយ",
+      "totalBookings": "ការកក់សរុប",
+      "searchPlaceholder": "ស្វែងរកតាមចំណងជើង ឬភ្នាក់ងារ…",
+      "deleteConfirm": "លុបកញ្ចប់ទ្រដ្ឋនេះ?",
+      "actions": {
+        "publish": "បោះពុម្ពផ្សាយ",
+        "archive": "ផ្ទុកទុក",
+        "delete": "លុប",
+        "confirmDelete": "បាទ/ចាស លុប"
+      }
+    },
     "users": {
       "title": "អ្នកប្រើប្រាស់",
       "empty": "រកមិនឃើញអ្នកប្រើប្រាស់ទេ។",
       "joined": "ចូលរួម {{date}}",
+      "totalCount": "អ្នកប្រើប្រាស់សរុប",
+      "suspendedCount": "ត្រូវបានផ្អាក",
+      "bannedCount": "ត្រូវបានហាមឃាត់",
+      "searchPlaceholder": "ស្វែងរកតាមឈ្មោះ ឬអ៊ីមែល…",
+      "filterRole": "តួនាទី",
+      "filterStatus": "ស្ថានភាព",
+      "changeRole": "ផ្លាស់ប្ដូរតួនាទី",
+      "roleDowngrade": "បន្ទាបទៅជាអ្នកដំណើរ",
       "actions": {
         "suspend": "ផ្អាក",
         "ban": "ហាមឃាត់",
@@ -505,20 +571,77 @@
       }
     },
     "nav": {
-      "overview": "ទិដ្ឋភាពទូទៅ"
+      "overview": "ទិដ្ឋភាពទូទៅ",
+      "requests": "សំណើ",
+      "content": "មាតិកា",
+      "bookings": "ការកក់",
+      "settings": "ការកំណត់"
     },
     "pages": {
-      "agencies": {
-        "subtitle": "ពិនិត្យ និងបញ្ជាក់សំណើក្លាយជាភ្នាក់ងារ។"
+      "requests": {
+        "subtitle": "ពិនិត្យការស្នើសុំភ្នាក់ងារ និងសំណើរកែប្រែសកម្មភាព។"
       },
       "reports": {
         "subtitle": "ស៊ើបអង្កេត និងដោះស្រាយរបាយការណ៍អ្នកដំណើរ។"
       },
-      "activities": {
-        "subtitle": "កែសម្រួល ឬលុបសកម្មភាពណាមួយនៅលើវេទិកា។"
+      "content": {
+        "subtitle": "ត្រួតពិនិត្យសកម្មភាព និងកញ្ចប់ទ្រដ្ឋទាំងអស់នៅលើវេទិកា។"
       },
       "users": {
         "subtitle": "គ្រប់គ្រងសមាជិក — ផ្អាក ហាមឃាត់ ឬបើកដំណើរការគណនីឡើងវិញ។"
+      },
+      "bookings": {
+        "subtitle": "ត្រួតពិនិត្យការកក់ និងចំណូលវេទិកាទាំងអស់។"
+      },
+      "settings": {
+        "subtitle": "កំណត់ការកំណត់ទូទៅរបស់វេទិកា និងអត្រាកំរៃ។"
+      }
+    },
+    "bookings": {
+      "title": "ការកក់ & ចំណូល",
+      "empty": "មិនទាន់មានការកក់នៅលើវេទិកានៅឡើយទេ។",
+      "revenue": "ចំណូលបានបញ្ជាក់",
+      "confirmedCount_one": "{{count}} បានបញ្ជាក់",
+      "confirmedCount_other": "{{count}} បានបញ្ជាក់",
+      "by": "ភ្នាក់ងារ: {{agency}}",
+      "traveler": "អ្នកដំណើរ: {{name}}",
+      "guests_one": "{{count}} ភ្ញៀវ",
+      "guests_other": "{{count}} ភ្ញៀវ",
+      "totalRevenue": "ចំណូលសរុប",
+      "confirmedRevenue": "ចំណូលបានបញ្ចប់",
+      "pendingRevenue": "ចំណូលកំពុងរង់ចាំ",
+      "searchPlaceholder": "ស្វែងរកតាមកញ្ចប់ អ្នកដំណើរ ឬភ្នាក់ងារ…",
+      "cancel": "បោះបង់ការកក់"
+    },
+    "settings": {
+      "title": "ការកំណត់ប្រព័ន្ធ",
+      "saved": "ការកំណត់បានរក្សាទុក។",
+      "sections": {
+        "pricingFees": "តម្លៃ & ថ្លៃ",
+        "pricingFeesDesc": "កំណត់កំរៃវេទិកា និងតម្លៃអប្បបរមា។",
+        "contentPolicy": "គោលការណ៍មាតិកា",
+        "contentPolicyDesc": "ដែនកំណត់នៃអ្វីដែលភ្នាក់ងារអាចបង្កើត និងផ្សាយ។",
+        "platformFeatures": "មុខងារវេទិកា",
+        "platformFeaturesDesc": "ប្ដូរបើក/បិទសមត្ថភាពវេទិកា។"
+      },
+      "fields": {
+        "commissionRate": "អត្រាកំរៃវេទិកា (%)",
+        "maxPackageDays": "រយៈពេលអតិបរមាសម្រាប់កញ្ចប់ (ថ្ងៃ)",
+        "minActivityPriceUsd": "តម្លៃអប្បបរមាសម្រាប់សកម្មភាព (USD)",
+        "registrationOpen": "បើកការចុះឈ្មោះ",
+        "registrationOpenDesc": "អនុញ្ញាតឱ្យអ្នកធ្វើដំណើរ និងភ្នាក់ងារថ្មីចុះឈ្មោះ។",
+        "bookingEnabled": "បើកការកក់",
+        "bookingEnabledDesc": "អនុញ្ញាតឱ្យអ្នកដំណើរស្នើ និងកក់ដំណើរ។",
+        "maintenanceMode": "របៀបថែទាំ",
+        "maintenanceModeDesc": "បិទវេទិកាសម្រាប់អ្នកប្រើប្រាស់ដែលមិនមែនជាអ្នកគ្រប់គ្រង។"
+      },
+      "maintenanceWarning": "ការបើករបៀបថែទាំនឹងធ្វើឱ្យវេទិកាមិនអាចចូលប្រើបានសម្រាប់អ្នកដំណើរ និងភ្នាក់ងារទាំងអស់។",
+      "save": "រក្សាទុកការកំណត់"
+    },
+    "content": {
+      "tabs": {
+        "activities": "សកម្មភាព",
+        "packages": "កញ្ចប់ទ្រដ្ឋ"
       }
     }
   },

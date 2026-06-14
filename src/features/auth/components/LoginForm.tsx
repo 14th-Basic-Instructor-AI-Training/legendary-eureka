@@ -56,9 +56,9 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-md">
       <div className="mb-8 text-center">
-        <span className="bg-primary inline-flex h-11 items-center rounded-xl px-4 text-lg font-bold tracking-tight text-white">
+        {/* <span className="bg-primary inline-flex h-11 items-center rounded-xl px-4 text-lg font-bold tracking-tight text-white">
           {t("common.appName")}
-        </span>
+        </span> */}
         <h1 className="text-primary mt-6 text-2xl font-semibold tracking-tight">
           {t("auth.title")}
         </h1>

@@ -31,7 +31,7 @@ export const DestinationSchema = z.object({
   tags: z.array(z.string()).default([]),
   featured: z.boolean().default(false),
   trending: z.boolean().default(false),
-  /** Reserved for the future MapLibre 3D map; unused in the static-UI phase. */
+  /** Drives the MapLibre 3D map on the destination detail page. */
   lat: z.number(),
   lng: z.number(),
 });
