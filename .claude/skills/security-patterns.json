@@ -1,0 +1,56 @@
+{
+  "$schema-note": "Grep catalog for the Jalat frontend security-scan. Each pattern is a JS regex (string form). Used by .claude/hooks/security-scan.py and the security-scan skill.",
+  "version": 1,
+  "fileGlobs": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.cjs"],
+  "exclude": ["node_modules/**", ".next/**", ".heroui-docs/**", "**/*.test.*"],
+  "patterns": [
+    {
+      "id": "xss-dangerous-html",
+      "severity": "high",
+      "regex": "dangerouslySetInnerHTML",
+      "message": "dangerouslySetInnerHTML — XSS risk. Sanitize or avoid rendering raw HTML, especially user content (comments, feedback, trip plans, agency profiles)."
+    },
+    {
+      "id": "eval",
+      "severity": "high",
+      "regex": "\\beval\\s*\\(",
+      "message": "eval() executes arbitrary code — remove it."
+    },
+    {
+      "id": "new-function",
+      "severity": "high",
+      "regex": "new\\s+Function\\s*\\(",
+      "message": "new Function() is dynamic code execution — remove it."
+    },
+    {
+      "id": "hardcoded-secret",
+      "severity": "critical",
+      "regex": "(?i)(api[_-]?key|secret|password|token)\\s*[:=]\\s*['\"][A-Za-z0-9_\\-]{12,}['\"]",
+      "message": "Hardcoded secret/credential in client code. Move it to server-side env."
+    },
+    {
+      "id": "public-env-secret",
+      "severity": "critical",
+      "regex": "(?i)NEXT_PUBLIC_[A-Z0-9_]*(SECRET|KEY|TOKEN|PASSWORD)",
+      "message": "NEXT_PUBLIC_* is exposed to the browser — never put secrets behind it."
+    },
+    {
+      "id": "url-embedded-credentials",
+      "severity": "high",
+      "regex": "https?://[^'\"\\s]*:[^'\"\\s]*@",
+      "message": "Credentials embedded in a URL."
+    },
+    {
+      "id": "non-tls-remote",
+      "severity": "medium",
+      "regex": "http://(?!localhost|127\\.0\\.0\\.1)",
+      "message": "Non-TLS http:// endpoint to a remote host — use https://."
+    },
+    {
+      "id": "inline-role-check",
+      "severity": "medium",
+      "regex": "role\\s*===\\s*['\"](admin|agency|traveler|guest)['\"]",
+      "message": "Inline role comparison — route authorization through lib/permissions.ts instead of re-deriving it here."
+    }
+  ]
+}

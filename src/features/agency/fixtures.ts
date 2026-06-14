@@ -1,0 +1,100 @@
+import {
+  ActivitySchema,
+  BookingRequestSchema,
+  PackageSchema,
+  type Activity,
+  type BookingRequest,
+  type Package,
+} from "./schema";
+
+export const AGENCY_ACTIVITIES: Activity[] = [
+  {
+    id: "a-1",
+    title: "Angkor Wat Sunrise Tour",
+    category: "thingToDo",
+    location: "Siem Reap, Cambodia",
+    priceFrom: 38,
+    currency: "USD",
+    status: "published",
+    rating: 4.9,
+  },
+  {
+    id: "a-2",
+    title: "Tonlé Sap Floating Village Boat Trip",
+    category: "thingToDo",
+    location: "Siem Reap, Cambodia",
+    priceFrom: 25,
+    currency: "USD",
+    status: "published",
+    rating: 4.5,
+  },
+  {
+    id: "a-3",
+    title: "Cuisine Wat Damnak Tasting Menu",
+    category: "food",
+    location: "Siem Reap, Cambodia",
+    priceFrom: 30,
+    currency: "USD",
+    status: "draft",
+    rating: 4.8,
+  },
+].map((a) => ActivitySchema.parse(a));
+
+export const AGENCY_PACKAGES: Package[] = [
+  {
+    id: "p-1",
+    title: "Angkor Discovery — Temples & Sunrise",
+    days: 3,
+    priceFrom: 289,
+    currency: "USD",
+    status: "published",
+    activityCount: 4,
+    bookingsCount: 12,
+  },
+  {
+    id: "p-2",
+    title: "Siem Reap Food & Culture Weekend",
+    days: 2,
+    priceFrom: 165,
+    currency: "USD",
+    status: "draft",
+    activityCount: 3,
+    bookingsCount: 0,
+  },
+].map((p) => PackageSchema.parse(p));
+
+export const AGENCY_BOOKINGS: BookingRequest[] = [
+  {
+    id: "b-1",
+    travelerName: "Dara Traveler",
+    packageTitle: "Angkor Discovery — Temples & Sunrise",
+    datesLabel: "Jul 12 – Jul 14, 2026",
+    guests: 2,
+    total: 578,
+    currency: "USD",
+    status: "pending",
+    requestedAtLabel: "2 hours ago",
+  },
+  {
+    id: "b-2",
+    travelerName: "Min-jun Kim",
+    packageTitle: "Angkor Discovery — Temples & Sunrise",
+    datesLabel: "Aug 03 – Aug 05, 2026",
+    guests: 4,
+    total: 1156,
+    currency: "USD",
+    status: "pending",
+    requestedAtLabel: "Yesterday",
+  },
+  {
+    id: "b-3",
+    travelerName: "Sophea Chan",
+    packageTitle: "Siem Reap Food & Culture Weekend",
+    datesLabel: "Jun 28 – Jun 29, 2026",
+    guests: 2,
+    total: 330,
+    currency: "USD",
+    status: "approved",
+    requestedAtLabel: "3 days ago",
+  },
+].map((b) => BookingRequestSchema.parse(b));

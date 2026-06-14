@@ -1,5 +1,44 @@
 {
-  "enabledPlugins": {
-    "frontend-design@claude-plugins-official": true
+  "$comment": "Jalat project Claude Code settings. Wires the .claude/hooks/* scripts. Hooks no-op cleanly until the Next.js app is scaffolded (they check for package.json). Mirrors the backend team's .claude structure, adapted for Next.js/TypeScript.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/git-guard.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/protect-files.py\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/typecheck-after-edit.py\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/eslint-format.py\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/security-scan.py\""
+          }
+        ]
+      }
+    ]
   }
 }

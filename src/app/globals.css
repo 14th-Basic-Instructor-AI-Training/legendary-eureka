@@ -1,0 +1,262 @@
+/* Tailwind CSS v4 — must come first */
+@import "tailwindcss";
+
+/* HeroUI v3 styles — must come after Tailwind (provides theme tokens: background, foreground, surface, primary, muted, border…) */
+@import "@heroui/styles";
+
+/* Project fonts wired to Tailwind's font tokens */
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--text-primary);
+  --color-primary: var(--primary-lightskyblue);
+  --color-primary-foreground: #ffffff;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--text-secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Single project shadow — `shadow-primary` utility */
+  --shadow-primary: 0px 0px 10px 0px rgba(0, 0, 0, 0.07);
+
+  /* Custom Figma Color System */
+  /* Primary Colors */
+  --color-primary-lightskyblue: var(--primary-lightskyblue);
+  --color-secondary-lightskyblue-slate: var(--secondary-lightskyblue-slate);
+  
+  /* Text Colors */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-slate: var(--text-slate);
+  --color-text-input-color: var(--text-input-color);
+  --color-text-filter: var(--text-filter);
+  --text-filter: #858590;
+  
+  /* Background Colors */
+  --color-bg-aliceblue: var(--bg-aliceblue);
+  --color-bg-yellow: var(--bg-yellow);
+  --color-bg-purple: var(--bg-purple);
+  --color-bg-blue: var(--bg-blue);
+  --color-bg-ghostwhite: var(--bg-ghostwhite);
+  --color-bg-seashell: var(--bg-seashell);
+  --color-bg-dashboard: var(--bg-dashboard);
+  
+  /* Vibrant Colors */
+  --color-red: var(--red);
+  --color-yellow: var(--yellow);
+  --color-orange: var(--orange);
+  --color-purple: var(--purple);
+  --color-blue: var(--blue);
+  --color-green: var(--green);
+  
+  /* Neutral Colors */
+  --color-powderblue: var(--powderblue);
+  --color-lightgray: var(--lightgray);
+  --color-gray: var(--gray);
+  
+  /* Light Backgrounds */
+  --color-lightpurple: var(--lightpurple);
+  --color-lightblue: var(--lightblue);
+  --color-lightgreen: var(--lightgreen);
+  --color-lightorange: var(--lightorange);
+
+  /* Agency dashboard tokens (ported from the destination app) */
+  --color-agency: #185fa5;
+  --color-agency-light: #e8f0fb;
+  --color-agency-navy: #0d233a;
+  --color-agency-dark: #323d4d;
+  --color-agency-muted: #9ba8b5;
+  --color-agency-border: #e1e6ec;
+}
+
+:root {
+  --radius: 0.625rem;
+  /* oklch() is supported in Chrome 111+ and Brave (Chromium-based) */
+  /* For maximum compatibility, browsers that don't support oklch will fall back gracefully */
+  --background: oklch(0.99 0.005 240);
+  --foreground: oklch(0.15 0.02 240);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.02 240);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.02 240);
+  --primary: oklch(0.55 0.15 220);
+  --primary-foreground: oklch(0.98 0.005 240);
+  --secondary: oklch(0.96 0.02 240);
+  --secondary-foreground: oklch(0.25 0.02 240);
+  --muted: oklch(0.96 0.01 240);
+  --muted-foreground: oklch(0.5 0.02 240);
+  --accent: oklch(0.92 0.03 200);
+  --accent-foreground: oklch(0.25 0.02 240);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.9 0.02 240);
+  --input: oklch(0.9 0.02 240);
+  --ring: oklch(0.55 0.15 220);
+  --chart-1: oklch(0.55 0.15 220);
+  --chart-2: oklch(0.6 0.12 180);
+  --chart-3: oklch(0.45 0.1 200);
+  --chart-4: oklch(0.7 0.15 160);
+  --chart-5: oklch(0.65 0.12 140);
+  --sidebar: oklch(0.98 0.01 240);
+  --sidebar-foreground: oklch(0.15 0.02 240);
+  --sidebar-primary: oklch(0.55 0.15 220);
+  --sidebar-primary-foreground: oklch(0.98 0.005 240);
+  --sidebar-accent: oklch(0.96 0.02 240);
+  --sidebar-accent-foreground: oklch(0.25 0.02 240);
+  --sidebar-border: oklch(0.9 0.02 240);
+  --sidebar-ring: oklch(0.55 0.15 220);
+
+  /* Custom Color System from Figma */
+  /* Primary Colors */
+  --primary-lightskyblue: #4FB5DB;
+  --secondary-lightskyblue-slate: #84CDE9;
+  
+  /* Text Colors */
+  --text-primary: #324C5B;
+  --text-secondary: #6C757D;
+  --text-slate: #E2E8F0;
+  --text-input-color: #A0AEC0;
+  
+  /* Background Colors */
+  --bg-aliceblue: #EEF9FF;
+  --bg-yellow: #FFF5E4;
+  --bg-purple: #FAF2FF;
+  --bg-blue: #E8F0FF;
+  --bg-ghostwhite: #F8F9FE;
+  --bg-seashell: #FFF4EE;
+  --bg-dashboard: #F3F7FB;
+  --bg-lightgreen: #DCFFDF;
+  --bg-lightred: #FFE8E8;
+  
+  /* Vibrant Colors */
+  --yellow: #FFCD38;
+  --orange: #F48D5D;
+  --purple: #C486F4;
+  --blue: #556EEB;
+  --green: #5FC381;
+  --red: #FF0C3C;
+  
+  /* Neutral Colors */
+  --powderblue: #9BE0E7;
+  --gray: #B6CCDA;
+  
+  /* Light Background Variations */
+  --lightpurple: #FBE8FF;
+  --lightblue: #DFEFFF;
+  --lightgreen: #DCFFDF;
+  --lightorange: #FFFDEC;
+  --lightgray: #C8DCE5;
+  --lightred: #FFE8E8;
+  
+  --bg-lightgreen: #DCFFDF;
+  --bg-lightred: #FFE8E8;
+  
+  /* Gradients */
+  --gradient-blue-purple: linear-gradient(135deg, #93C5FD 0%, #C4B5FD 100%);
+  
+  /* Shadows */
+  --shadow-primary: 0px 0px 10px 0px rgba(0, 0, 0, 0.07);
+}
+
+.dark {
+  --background: oklch(0.12 0.02 240);
+  --foreground: oklch(0.95 0.01 240);
+  --card: oklch(0.16 0.02 240);
+  --card-foreground: oklch(0.95 0.01 240);
+  --popover: oklch(0.16 0.02 240);
+  --popover-foreground: oklch(0.95 0.01 240);
+  --primary: oklch(0.65 0.15 200);
+  --primary-foreground: oklch(0.12 0.02 240);
+  --secondary: oklch(0.2 0.02 240);
+  --secondary-foreground: oklch(0.9 0.01 240);
+  --muted: oklch(0.2 0.02 240);
+  --muted-foreground: oklch(0.65 0.01 240);
+  --accent: oklch(0.24 0.03 220);
+  --accent-foreground: oklch(0.9 0.01 240);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(0.25 0.02 240);
+  --input: oklch(0.25 0.02 240);
+  --ring: oklch(0.65 0.15 200);
+  --chart-1: oklch(0.65 0.15 200);
+  --chart-2: oklch(0.7 0.12 180);
+  --chart-3: oklch(0.55 0.1 220);
+  --chart-4: oklch(0.75 0.15 160);
+  --chart-5: oklch(0.7 0.12 140);
+  --sidebar: oklch(0.14 0.02 240);
+  --sidebar-foreground: oklch(0.95 0.01 240);
+  --sidebar-primary: oklch(0.65 0.15 200);
+  --sidebar-primary-foreground: oklch(0.12 0.02 240);
+  --sidebar-accent: oklch(0.2 0.02 240);
+  --sidebar-accent-foreground: oklch(0.9 0.01 240);
+  --sidebar-border: oklch(0.25 0.02 240);
+  --sidebar-ring: oklch(0.65 0.15 200);
+}
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Gentle float used by floating cards on the landing hero. */
+@keyframes jalat-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: jalat-float 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float {
+    animation: none;
+  }
+}
+
+/* In-page navigation: header anchors and hash links smooth-scroll to sections,
+ * and section tops clear the fixed 4rem marketing header (h-16). */
+html {
+  scroll-behavior: smooth;
+}
+
+section[id] {
+  scroll-margin-top: 5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

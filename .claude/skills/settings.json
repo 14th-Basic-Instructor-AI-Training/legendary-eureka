@@ -1,0 +1,30 @@
+{
+  "$comment": "Skills-layer config for Jalat (mirrors the backend team's skills/settings.json). Documents the local skill set and the external agent skills to install. The functional hook wiring lives in .claude/settings.json, not here.",
+  "project": "jalat",
+  "phase": "static-ui-first",
+  "localSkills": [
+    "jalat-build",
+    "plan",
+    "component-design",
+    "nextjs-feature",
+    "code-review",
+    "security-scan",
+    "tdd",
+    "testing",
+    "deploy",
+    "ui-ux-pro-max",
+    "heroui-react"
+  ],
+  "externalAgentSkills": {
+    "installed": [
+      { "name": "heroui-react", "via": "npx skills add heroui-inc/heroui", "note": "web v3 docs; native/migration variants removed" }
+    ],
+    "recommendedNow": [
+      { "name": "shadcn", "install": "npx skills add shadcn/ui --skill shadcn --agent claude-code" }
+    ],
+    "deferUntilNeeded": [
+      { "name": "knock", "type": "mcp", "endpoint": "mcp.knock.app/mcp", "when": "notifications phase" },
+      { "name": "next-devtools-mcp", "type": "mcp", "when": "debugging a running app" }
+    ]
+  }
+}

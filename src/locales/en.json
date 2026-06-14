@@ -1,0 +1,458 @@
+{
+  "common": {
+    "appName": "Jalat",
+    "loading": "Loading…",
+    "logout": "Log out",
+    "language": "Language",
+    "signedInAs": "Signed in as",
+    "retry": "Try again",
+    "viewAll": "View all",
+    "free": "Free",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
+  },
+  "status": {
+    "draft": "Draft",
+    "published": "Published",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "completed": "Completed",
+    "open": "Open",
+    "resolved": "Resolved",
+    "dismissed": "Dismissed"
+  },
+  "roles": {
+    "admin": "Admin",
+    "agency": "Tour Agency",
+    "traveler": "Traveler"
+  },
+  "nav": {
+    "destinations": "Destinations",
+    "thingsToDo": "Things to do",
+    "tours": "Tours",
+    "tripPlans": "Trip plans",
+    "about": "About",
+    "login": "Log in",
+    "signup": "Sign up",
+    "dashboard": "Dashboard",
+    "workspace": "Workspace",
+    "controlPanel": "Control panel",
+    "menu": "Menu",
+    "toggleSidebar": "Toggle sidebar",
+    "backToSite": "Back to Jalat"
+  },
+  "auth": {
+    "title": "Welcome back",
+    "subtitle": "Sign in to your Jalat account",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "Your password",
+    "submit": "Sign in",
+    "signingIn": "Signing in…",
+    "invalid": "Invalid email or password.",
+    "demoTitle": "Demo accounts",
+    "demoHint": "Use one of the seeded accounts below to preview each role.",
+    "forgotLink": "Forgot password?",
+    "noAccount": "New to Jalat?",
+    "createAccount": "Create an account",
+    "register": {
+      "title": "Create your account",
+      "subtitle": "Join Jalat to book tours and plan trips.",
+      "name": "Full name",
+      "namePlaceholder": "Your name",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "accountTypeLabel": "I want to",
+      "accountTypeTraveler": "Travel & book tours",
+      "accountTypeAgency": "Run a tour agency",
+      "agencyHint": "We'll send your agency request to our team for approval.",
+      "acceptTerms": "I agree to the Terms and Privacy Policy.",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "emailTaken": "An account with this email already exists."
+    },
+    "otp": {
+      "title": "Verify your email",
+      "subtitle": "Enter the 6-digit code we sent to {{email}}.",
+      "codeLabel": "Verification code",
+      "codePlaceholder": "------",
+      "submit": "Verify",
+      "submitting": "Verifying…",
+      "invalid": "That code isn't right. Try again.",
+      "resend": "Resend code",
+      "demoHint": "Demo code: 123456"
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "subtitle": "Enter your email and we'll send a reset code.",
+      "submit": "Send reset code",
+      "submitting": "Sending…",
+      "sent": "If that email exists, a reset code is on its way.",
+      "backToLogin": "Back to sign in"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "subtitle": "Choose a new password for your account.",
+      "newPassword": "New password",
+      "submit": "Update password",
+      "submitting": "Updating…",
+      "success": "Your password has been updated.",
+      "goToLogin": "Continue to sign in"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Discover your next journey across Asia",
+      "subtitle": "Hand-picked destinations, local experiences, and tours from trusted agencies — all in one place.",
+      "searchPlaceholder": "Where do you want to go?",
+      "searchCta": "Search",
+      "guestCta": "Start exploring",
+      "kicker": "Elevate your travel journey",
+      "cta": "Book a trip now",
+      "followUs": "Follow us",
+      "popularNow": "Popular places",
+      "popularCount": "1.2k+ trips booked"
+    },
+    "featured": {
+      "title": "Top destinations",
+      "subtitle": "The places travelers love most right now."
+    },
+    "trending": {
+      "title": "Trending now",
+      "subtitle": "Rising fast with travelers this season."
+    },
+    "thingsToDo": {
+      "title": "Things to do",
+      "subtitle": "Experiences worth building a trip around."
+    },
+    "tours": {
+      "title": "Featured tours",
+      "subtitle": "Multi-day trips curated by local agencies.",
+      "from": "from",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "by": "by {{agency}}"
+    },
+    "why": {
+      "title": "Why Jalat",
+      "items": {
+        "local": {
+          "title": "Local experts",
+          "desc": "Tours built and run by agencies who know the ground."
+        },
+        "trusted": {
+          "title": "Trusted reviews",
+          "desc": "Ratings from travelers who completed the trip."
+        },
+        "flexible": {
+          "title": "Flexible planning",
+          "desc": "Save places, build trip plans, book when you're ready."
+        },
+        "support": {
+          "title": "Support in your language",
+          "desc": "Khmer, Korean, and English from start to finish."
+        }
+      }
+    },
+    "recommended": {
+      "title": "Recommended for you, {{name}}",
+      "subtitle": "Based on where travelers like you are heading."
+    },
+    "ctaAgency": {
+      "title": "Run tours? Grow with Jalat.",
+      "desc": "Publish activities, build packages, and reach travelers across the region.",
+      "button": "Become a tour agency"
+    },
+    "ctaTraveler": {
+      "title": "Plan your perfect trip",
+      "desc": "Bookmark destinations and turn them into a shareable trip plan.",
+      "button": "Plan your trip"
+    },
+    "footer": {
+      "tagline": "Travel across Asia, planned with locals.",
+      "explore": "Explore",
+      "company": "Company",
+      "support": "Support",
+      "rights": "© {{year}} Jalat. All rights reserved.",
+      "travel": "Travel",
+      "resources": "Resources",
+      "extra": "Extra links",
+      "links": {
+        "tourGuide": "Tour guide",
+        "packages": "Packages",
+        "contact": "Contact us",
+        "cambodia": "Cambodia",
+        "korea": "South Korea",
+        "japan": "Japan",
+        "ebooks": "Free e-books",
+        "travelGuide": "Travel guide",
+        "blog": "How-to blog",
+        "support": "Customer support",
+        "terms": "Terms & conditions",
+        "privacy": "Privacy policy"
+      }
+    },
+    "popular": {
+      "title": "Popular destinations",
+      "subtitle": "Unleash your wanderlust with Jalat."
+    },
+    "journey": {
+      "title": "Your journey, made simple",
+      "subtitle": "Discover new places and learn about different cultures — all in a few taps.",
+      "find": {
+        "title": "Find your destination",
+        "desc": "Browse hand-picked places across the region."
+      },
+      "book": {
+        "title": "Book a ticket",
+        "desc": "Reserve tours and stays from trusted local agencies.",
+        "cta": "Learn more"
+      },
+      "play": {
+        "title": "Play & journey",
+        "desc": "Pack your bags and enjoy an unforgettable trip."
+      }
+    },
+    "unleash": {
+      "title": "Unleash wanderlust with Jalat",
+      "desc": "Travelling is a wonderful way to explore new places, learn about different cultures, and gain unique experiences.",
+      "badge": "20% OFF",
+      "deadline": "Limited seasonal offer",
+      "cta": "Book a flight now"
+    },
+    "about": {
+      "kicker": "About us",
+      "title": "Travelling is a wonderful way to explore new places and gain unique experiences.",
+      "body": "Explore breathtaking landscapes, immerse yourself in diverse cultures, and create unforgettable memories. Travelling opens doors to unique experiences, connecting you with the beauty of nature.",
+      "stats": {
+        "experience": {
+          "value": "10+",
+          "label": "Years of experience"
+        },
+        "clients": {
+          "value": "12K",
+          "label": "Happy travelers"
+        },
+        "rating": {
+          "value": "4.8",
+          "label": "Overall rating"
+        }
+      }
+    },
+    "discover": {
+      "title": "Discover the world from above",
+      "subtitle": "Travelling is a wonderful way to explore new places and learn about different cultures.",
+      "items": {
+        "variety": {
+          "title": "Various destinations",
+          "desc": "Hundreds of curated places across Asia and beyond."
+        },
+        "inclusive": {
+          "title": "Everything included",
+          "desc": "Stays, activities, and guides bundled in one booking."
+        },
+        "affordable": {
+          "title": "Affordable prices",
+          "desc": "Transparent pricing with no hidden fees, ever."
+        }
+      }
+    },
+    "testimonials": {
+      "title": "Loved by thousand travelers",
+      "role": "Verified traveler",
+      "items": {
+        "one": "I just returned from the most amazing trip. From the first message the team was incredibly helpful and made sure the itinerary suited my interests and budget.",
+        "two": "Booking was effortless and every detail was taken care of. I can't wait to plan my next adventure with Jalat.",
+        "three": "The local guides were wonderful and the whole experience felt personal. Easily the smoothest trip I've ever booked."
+      }
+    },
+    "explore": {
+      "confidence": {
+        "title": "Explore the skies with confidence"
+      },
+      "oneStep": {
+        "title": "Discover the world one step at a time"
+      },
+      "cta": "Start your trip"
+    }
+  },
+  "destinations": {
+    "card": {
+      "from": "from",
+      "reviews_one": "{{count, number}} review",
+      "reviews_other": "{{count, number}} reviews"
+    },
+    "categories": {
+      "destination": "Places",
+      "thingToDo": "Things to do",
+      "food": "Food",
+      "stay": "Stays"
+    },
+    "states": {
+      "empty": "No destinations to show yet.",
+      "error": "We couldn't load destinations.",
+      "notFound": "We couldn't find that destination."
+    },
+    "detail": {
+      "back": "Back to explore",
+      "overview": "Overview",
+      "highlights": "Highlights",
+      "location": "Location",
+      "mapSoon": "Interactive 3D map coming soon.",
+      "reviews": "Traveler reviews",
+      "reviewsSoon": "Reviews appear here once travelers complete their trips.",
+      "facts": "Good to know",
+      "duration": "Duration",
+      "rating": "Rating",
+      "category": "Category",
+      "priceFrom": "Price from",
+      "perPerson": "per person",
+      "book": "Book this experience",
+      "loginToBook": "Log in to book"
+    }
+  },
+  "agency": {
+    "title": "Agency Workspace",
+    "subtitle": "Manage your activities, build tour packages, and confirm bookings.",
+    "tabs": {
+      "activities": "Activities",
+      "packages": "Packages",
+      "bookings": "Booking requests"
+    },
+    "stats": {
+      "published": "Published activities",
+      "pendingBookings": "Pending bookings",
+      "packages": "Active packages"
+    },
+    "activities": {
+      "title": "Your activities",
+      "new": "New activity",
+      "requestEdit": "Request edit",
+      "empty": "You haven't created any activities yet.",
+      "form": {
+        "title": "New activity",
+        "name": "Activity title",
+        "namePlaceholder": "e.g. Sunset kayak tour",
+        "category": "Category",
+        "location": "Location",
+        "locationPlaceholder": "City, Country",
+        "price": "Price from (USD)",
+        "submit": "Create activity"
+      },
+      "editRequest": {
+        "title": "Request an edit",
+        "body": "Published activities can't be edited directly. Send an edit request for \"{{title}}\" to the Jalat admin team?",
+        "confirm": "Send request",
+        "sent": "Edit request sent to admin."
+      }
+    },
+    "packages": {
+      "title": "Your tour packages",
+      "empty": "No packages yet.",
+      "activitiesCount_one": "{{count}} activity",
+      "activitiesCount_other": "{{count}} activities",
+      "bookingsCount_one": "{{count}} booking",
+      "bookingsCount_other": "{{count}} bookings",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days"
+    },
+    "bookings": {
+      "title": "Booking requests",
+      "empty": "No booking requests right now.",
+      "guests_one": "{{count}} guest",
+      "guests_other": "{{count}} guests",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approveTitle": "Approve booking?",
+      "approveBody": "Confirm {{traveler}}'s booking for \"{{package}}\".",
+      "rejectTitle": "Reject booking?",
+      "rejectBody": "Decline {{traveler}}'s booking for \"{{package}}\". This can't be undone."
+    }
+  },
+  "admin": {
+    "title": "Admin Console",
+    "subtitle": "Moderate the platform, approve agencies, and act on reports.",
+    "tabs": {
+      "requests": "Agency requests",
+      "reports": "Reports",
+      "activities": "Activities",
+      "users": "Users"
+    },
+    "stats": {
+      "pendingRequests": "Pending agency requests",
+      "openReports": "Open reports",
+      "activities": "Activities"
+    },
+    "requests": {
+      "title": "Become-an-agency requests",
+      "empty": "No agency requests right now.",
+      "by": "by {{name}}",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "reports": {
+      "title": "Traveler reports",
+      "empty": "No reports to review.",
+      "against": "Against {{agency}}",
+      "by": "Reported by {{name}}",
+      "resolve": "Resolve",
+      "dismiss": "Dismiss"
+    },
+    "activities": {
+      "title": "All platform activities",
+      "empty": "No activities on the platform yet.",
+      "by": "by {{agency}}"
+    },
+    "users": {
+      "title": "Users",
+      "empty": "No users found.",
+      "joined": "Joined {{date}}"
+    }
+  },
+  "dashboard": {
+    "greeting": "Welcome back, {{name}}",
+    "admin": {
+      "title": "Admin Console",
+      "subtitle": "Moderate the platform, approve agencies, and act on reports.",
+      "cards": {
+        "agencies": {
+          "title": "Pending agency requests",
+          "desc": "Travelers waiting to become tour agencies."
+        },
+        "reports": {
+          "title": "Open reports",
+          "desc": "Traveler reports awaiting your review."
+        },
+        "activities": {
+          "title": "Activities",
+          "desc": "Destinations, food, and stays across the platform."
+        }
+      }
+    },
+    "traveler": {
+      "title": "Explore Jalat",
+      "subtitle": "Discover destinations, book tours, and plan your trips.",
+      "cards": {
+        "newsfeed": {
+          "title": "Newsfeed",
+          "desc": "Trending destinations and top-rated activities."
+        },
+        "trips": {
+          "title": "My trips",
+          "desc": "Your upcoming and past bookings."
+        },
+        "bookmarks": {
+          "title": "Bookmarks",
+          "desc": "Posts and activities you've saved."
+        }
+      }
+    }
+  }
+}
