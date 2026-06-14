@@ -14,6 +14,7 @@
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "all": "All",
+    "noResults": "No results found",
     "confirmDialog": {
       "logoutTitle": "Log out?",
       "logoutDescription": "You'll need to sign in again to access your account.",
@@ -308,6 +309,27 @@
       "food": "Food",
       "stay": "Stays"
     },
+    "provinces": {
+      "PHNOM_PENH": "Phnom Penh",
+      "SIEM_REAP": "Siem Reap",
+      "BATTAMBANG": "Battambang",
+      "PREAH_SIHANOUK": "Preah Sihanouk",
+      "KAMPOT": "Kampot",
+      "KEP": "Kep",
+      "KOH_KONG": "Koh Kong",
+      "MONDULKIRI": "Mondulkiri",
+      "RATANAKIRI": "Ratanakiri",
+      "KRATIE": "Kratie"
+    },
+    "travelTypes": {
+      "ADVENTURE": "Adventure",
+      "CULTURAL": "Cultural",
+      "NATURE": "Nature",
+      "BEACH": "Beach",
+      "HISTORICAL": "Historical",
+      "RELAXATION": "Relaxation",
+      "WILDLIFE": "Wildlife"
+    },
     "states": {
       "empty": "No destinations to show yet.",
       "error": "We couldn't load destinations.",
@@ -479,6 +501,7 @@
       "publishedCount": "published",
       "totalCount": "total",
       "searchPlaceholder": "Search by title or agency…",
+      "create": "Create destination",
       "actions": {
         "edit": "Edit",
         "delete": "Delete",
@@ -486,12 +509,25 @@
       },
       "editModal": {
         "title": "Edit activity",
+        "createTitle": "Create destination",
         "save": "Save changes",
+        "create": "Create",
         "cancel": "Cancel",
+        "searchProvince": "Search provinces…",
         "fields": {
           "title": "Title",
+          "name": "Name",
+          "namePlaceholder": "e.g. Angkor Wat Sunrise Tour",
+          "description": "Description",
+          "province": "Province",
+          "travelType": "Travel type",
           "category": "Category",
-          "status": "Status"
+          "status": "Status",
+          "coverImageUrl": "Cover image URL",
+          "priceFrom": "Price from",
+          "currency": "Currency",
+          "latitude": "Latitude",
+          "longitude": "Longitude"
         }
       }
     },
@@ -626,7 +662,41 @@
       "confirmedRevenue": "Completed revenue",
       "pendingRevenue": "Pending revenue",
       "searchPlaceholder": "Search by package, traveler, or agency…",
-      "cancel": "Cancel booking"
+      "cancel": "Cancel booking",
+      "overview": {
+        "viewAll": "View all",
+        "stats": {
+          "total": {
+            "title": "Total Bookings",
+            "desc": "All booking requests across the platform."
+          },
+          "completed": {
+            "title": "Completed",
+            "desc": "Trips finished and settled."
+          },
+          "revenue": {
+            "title": "Revenue",
+            "desc": "Total value of all bookings."
+          }
+        },
+        "recent": "Recent Bookings",
+        "cols": {
+          "booking": "Booking",
+          "amount": "Amount",
+          "agency": "Agency",
+          "status": "Status"
+        },
+        "trend": {
+          "title": "Bookings Overview",
+          "week": "Week",
+          "month": "Month",
+          "year": "Year"
+        },
+        "revenue": {
+          "title": "Revenue Overview",
+          "total": "Total"
+        }
+      }
     },
     "settings": {
       "title": "System settings",
@@ -710,6 +780,91 @@
           "title": "Bookmarks",
           "desc": "Posts and activities you've saved."
         }
+      }
+    }
+  },
+  "tours": {
+    "nav": {
+      "tours": "Tours",
+      "destinations": "Destinations",
+      "approvals": "Package approvals"
+    },
+    "agency": {
+      "title": "Tour builder",
+      "subtitle": "Create destinations, build packages, and request approval."
+    },
+    "flow": {
+      "title": "How it works",
+      "adminTitle": "Admin destination",
+      "agencyTitle": "Your destination",
+      "steps": {
+        "adminCreates": "Admin creates destination",
+        "agencySelects": "Select a destination",
+        "agencyCreatesOwn": "Create your destination",
+        "buildPackage": "Build tour package",
+        "requestApproval": "Request approval"
+      }
+    },
+    "tabs": {
+      "destinations": "Destinations",
+      "packages": "Packages"
+    },
+    "destinations": {
+      "title": "Available destinations",
+      "new": "New destination",
+      "empty": "No destinations yet. Create the first one.",
+      "buildPackage": "Build package",
+      "from": "From",
+      "origin": {
+        "admin": "Admin",
+        "agency": "Agency"
+      },
+      "form": {
+        "name": "Name",
+        "namePlaceholder": "e.g. Angkor Wat",
+        "province": "Province",
+        "travelType": "Travel type",
+        "summary": "Description",
+        "summaryPlaceholder": "Short description of the place",
+        "price": "Price from (USD)",
+        "submit": "Create destination"
+      }
+    },
+    "packages": {
+      "title": "Your tour packages",
+      "new": "New package",
+      "empty": "No packages yet. Build one from a destination.",
+      "requestApproval": "Request approval",
+      "approvalSent": "Approval requested",
+      "justNow": "Just now",
+      "byAgency": "by {{name}}",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "form": {
+        "name": "Package title",
+        "namePlaceholder": "e.g. 3-day Angkor explorer",
+        "destination": "Destination",
+        "selectDestination": "Select a destination",
+        "days": "Days",
+        "price": "Price from (USD)",
+        "submit": "Create package"
+      }
+    },
+    "admin": {
+      "destinations": {
+        "title": "Destinations",
+        "subtitle": "Create destinations agencies can build tour packages on.",
+        "new": "New destination",
+        "empty": "No destinations yet."
+      },
+      "approvals": {
+        "title": "Package approvals",
+        "subtitle": "Review tour packages agencies submitted for approval.",
+        "empty": "No package approval requests.",
+        "pendingCount": "{{count}} awaiting approval",
+        "approve": "Approve",
+        "reject": "Reject",
+        "search": "Search packages…"
       }
     }
   }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Edit2, Trash, CloseCircle, SearchNormal1 } from "iconsax-reactjs";
+import { Edit2, Trash, CloseCircle, SearchNormal1, AddCircle } from "iconsax-reactjs";
 import { Button, Chip, StatusChip } from "@/ui";
 import { formatRating } from "@/lib/format";
 import { useSession } from "@/lib/auth";
@@ -33,6 +33,7 @@ export function ActivitiesAdmin() {
   const canEdit = can(role, "editAnyActivity");
 
   const [editing, setEditing] = useState<PlatformActivity | null>(null);
+  const [creating, setCreating] = useState(false);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | ActivityStatus>("all");
@@ -51,7 +52,7 @@ export function ActivitiesAdmin() {
     <>
       <div className="flex flex-col gap-4">
         {/* Summary */}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="bg-surface border-border flex items-center gap-2 rounded-xl border px-4 py-2">
             <span className="text-primary text-lg font-bold">{publishedCount}</span>
             <span className="text-muted text-sm">{t("admin.activities.publishedCount")}</span>
@@ -60,6 +61,17 @@ export function ActivitiesAdmin() {
             <span className="text-foreground text-lg font-bold">{activities.length}</span>
             <span className="text-muted text-sm">{t("admin.activities.totalCount")}</span>
           </div>
+          {canEdit ? (
+            <Button
+              variant="primary"
+              size="sm"
+              className="ml-auto"
+              onPress={() => setCreating(true)}
+            >
+              <AddCircle size={16} color="currentColor" />
+              {t("admin.activities.create")}
+            </Button>
+          ) : null}
         </div>
 
         {/* Search + filter */}
@@ -176,7 +188,14 @@ export function ActivitiesAdmin() {
         )}
       </div>
 
-      <ActivityEditModal activity={editing} onClose={() => setEditing(null)} />
+      <ActivityEditModal
+        isOpen={creating || editing !== null}
+        activity={editing}
+        onClose={() => {
+          setCreating(false);
+          setEditing(null);
+        }}
+      />
     </>
   );
 }

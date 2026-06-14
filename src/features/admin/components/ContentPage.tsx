@@ -6,6 +6,8 @@ import { Tabs } from "@/ui";
 import { useLocalizedRouter } from "@/lib/locale";
 import { ActivitiesAdmin } from "./ActivitiesAdmin";
 import { PackagesAdmin } from "./PackagesAdmin";
+import { AdminDestinationsManager } from "@/features/tours/components/AdminDestinationsManager";
+import { TourApprovalsQueue } from "@/features/tours/components/TourApprovalsQueue";
 
 export function ContentPage() {
   const { t } = useTranslation();
@@ -29,13 +31,21 @@ export function ContentPage() {
       >
         <Tabs.List aria-label={t("admin.nav.content")}>
           <Tabs.Tab id="activities">{t("admin.content.tabs.activities")}</Tabs.Tab>
+          <Tabs.Tab id="destinations">{t("tours.nav.destinations")}</Tabs.Tab>
           <Tabs.Tab id="packages">{t("admin.content.tabs.packages")}</Tabs.Tab>
+          <Tabs.Tab id="approvals">{t("tours.nav.approvals")}</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel id="activities" className="pt-5">
           <ActivitiesAdmin />
         </Tabs.Panel>
+        <Tabs.Panel id="destinations" className="pt-5">
+          <AdminDestinationsManager />
+        </Tabs.Panel>
         <Tabs.Panel id="packages" className="pt-5">
           <PackagesAdmin />
+        </Tabs.Panel>
+        <Tabs.Panel id="approvals" className="pt-5">
+          <TourApprovalsQueue />
         </Tabs.Panel>
       </Tabs>
     </div>

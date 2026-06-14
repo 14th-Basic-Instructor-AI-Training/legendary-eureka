@@ -11,8 +11,10 @@ import {
   initialUsers,
 } from "./data";
 import type { Role } from "@/features/auth/schema";
+import { draftToActivityFields } from "./schema";
 import type {
-  ActivityEdit,
+  ActivityDraft,
+  ActivityPatch,
   AdminBooking,
   AdminBookingStatus,
   AdminPackage,
@@ -49,8 +51,9 @@ interface AdminState {
   /** Act on a traveler report. */
   resolveReport: (actor: Actor | null, id: string) => boolean;
   dismissReport: (actor: Actor | null, id: string) => boolean;
-  /** Content moderation — admin may edit or delete any activity. */
-  updateActivity: (actor: Actor | null, id: string, patch: ActivityEdit) => boolean;
+  /** Content moderation — admin may create, edit, or delete any activity. */
+  createActivity: (actor: Actor | null, draft: ActivityDraft) => boolean;
+  updateActivity: (actor: Actor | null, id: string, patch: ActivityPatch) => boolean;
   deleteActivity: (actor: Actor | null, id: string) => boolean;
   /** User moderation — suspend / ban / reactivate accounts. */
   suspendUser: (actor: Actor | null, id: string) => boolean;
@@ -86,6 +89,9 @@ const setUserStatus = (list: UserSummary[], id: string, status: UserStatus) =>
 
 const setEditRequestStatus = (list: EditRequest[], id: string, status: EditRequest["status"]) =>
   list.map((r) => (r.id === id ? { ...r, status } : r));
+
+/** Author stamped on admin-created destinations (no agency owns them). */
+const PLATFORM_AUTHOR = "Jalat";
 
 export const useAdminStore = create<AdminState>((set) => ({
   agencyRequests: initialAgencyRequests(),
@@ -126,6 +132,18 @@ export const useAdminStore = create<AdminState>((set) => ({
   dismissReport: (actor, id) => {
     if (!can(actor, "manageReports")) return false;
     set((s) => ({ reports: setReportStatus(s.reports, id, "dismissed") }));
+    return true;
+  },
+
+  createActivity: (actor, draft) => {
+    if (!can(actor, "editAnyActivity")) return false;
+    const activity: PlatformActivity = {
+      id: crypto.randomUUID(),
+      agencyName: PLATFORM_AUTHOR,
+      rating: 0,
+      ...draftToActivityFields(draft),
+    };
+    set((s) => ({ activities: [activity, ...s.activities] }));
     return true;
   },
 

@@ -14,6 +14,52 @@ export const DestinationCategorySchema = z.enum([
 ]);
 export type DestinationCategory = z.infer<typeof DestinationCategorySchema>;
 
+/** Cambodian province a destination sits in — matches the API enum (UPPER_SNAKE). */
+export const ProvinceSchema = z.enum([
+  "PHNOM_PENH",
+  "SIEM_REAP",
+  "BATTAMBANG",
+  "PREAH_SIHANOUK",
+  "KAMPOT",
+  "KEP",
+  "KOH_KONG",
+  "MONDULKIRI",
+  "RATANAKIRI",
+  "KRATIE",
+]);
+export type Province = z.infer<typeof ProvinceSchema>;
+
+/** Style of trip a destination suits — matches the API enum (UPPER_SNAKE). */
+export const TravelTypeSchema = z.enum([
+  "ADVENTURE",
+  "CULTURAL",
+  "NATURE",
+  "BEACH",
+  "HISTORICAL",
+  "RELAXATION",
+  "WILDLIFE",
+]);
+export type TravelType = z.infer<typeof TravelTypeSchema>;
+
+/**
+ * The create/edit payload for a destination — mirrors the backend POST body
+ * 1:1 so this same schema validates the form today and the request later
+ * (Zod is the single source of truth). Number fields coerce so they bind to
+ * native `<input type="number">` string values.
+ */
+export const DestinationDraftSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().min(1),
+  province: ProvinceSchema,
+  travelType: TravelTypeSchema,
+  coverImageUrl: z.string().url(),
+  priceFrom: z.coerce.number().nonnegative(),
+  currency: z.string().min(1).max(8).default("USD"),
+  latitude: z.coerce.number().min(-90).max(90),
+  longitude: z.coerce.number().min(-180).max(180),
+});
+export type DestinationDraft = z.infer<typeof DestinationDraftSchema>;
+
 export const DestinationSchema = z.object({
   id: z.string(),
   slug: z.string(),

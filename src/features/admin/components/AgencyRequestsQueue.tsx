@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TickCircle, CloseCircle, Buildings, SearchNormal1 } from "iconsax-reactjs";
-import { Button, Input, StatusChip, Tabs, Table, useConfirm } from "@/ui";
+import { Button, Input, Pagination, StatusChip, Tabs, Table, useConfirm } from "@/ui";
 import { useSession } from "@/lib/auth";
 import { useAdminStore } from "../store";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,9 @@ const ARC: Record<AgencyRequestStatus, { from: string; to: string; dot: string; 
   approved: { from: "#5FC381", to: "#9BE0E7", dot: "#5FC381", soft: "bg-green/10", text: "text-green" },
   rejected: { from: "#FF0C3C", to: "#F48D5D", dot: "#FF0C3C", soft: "bg-red/10", text: "text-red" },
 };
+
+/** Cards per page in the card view. */
+const PAGE_SIZE = 9;
 
 type Props = { view: "card" | "table" };
 
@@ -67,6 +70,13 @@ export function AgencyRequestsQueue({ view }: Props) {
     return matchesStatus && matchesSearch;
   });
 
+  // Client-side pagination for the card view. `page` is clamped at render so it
+  // stays valid when the filtered set shrinks (no setState-in-effect needed).
+  const [page, setPage] = useState(1);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   return (
     <div className="flex flex-col gap-4">
       {/* search + filters */}
@@ -81,13 +91,19 @@ export function AgencyRequestsQueue({ view }: Props) {
             aria-label={t("admin.requests.searchPlaceholder")}
             placeholder={t("admin.requests.searchPlaceholder")}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             className="pl-9"
           />
         </div>
         <Tabs
           selectedKey={statusFilter}
-          onSelectionChange={(key) => setStatusFilter(key as "all" | AgencyRequestStatus)}
+          onSelectionChange={(key) => {
+            setStatusFilter(key as "all" | AgencyRequestStatus);
+            setPage(1);
+          }}
         >
           <Tabs.ListContainer>
             <Tabs.List
@@ -113,25 +129,35 @@ export function AgencyRequestsQueue({ view }: Props) {
           </span>
           <p className="text-muted text-sm">{t("admin.requests.empty")}</p>
         </div>
-      ) : view === "table" ? (
-        <TableView
-          filtered={filtered}
-          onApprove={onApprove}
-          onReject={onReject}
-          t={t}
-        />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((r) => (
-            <RouteCard
-              key={r.id}
-              request={r}
+        <>
+          {view === "table" ? (
+            <TableView
+              filtered={paged}
               onApprove={onApprove}
               onReject={onReject}
               t={t}
             />
-          ))}
-        </div>
+          ) : (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+              {paged.map((r) => (
+                <RouteCard
+                  key={r.id}
+                  request={r}
+                  onApprove={onApprove}
+                  onReject={onReject}
+                  t={t}
+                />
+              ))}
+            </div>
+          )}
+          <Pagination
+            page={currentPage}
+            total={pageCount}
+            onChange={setPage}
+            className="mt-2"
+          />
+        </>
       )}
     </div>
   );

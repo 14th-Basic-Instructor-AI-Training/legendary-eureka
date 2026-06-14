@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Flag, SearchNormal1 } from "iconsax-reactjs";
-import { Input, Tabs } from "@/ui";
+import { Input, Pagination, Tabs } from "@/ui";
 import { cn } from "@/lib/utils";
 import { useAdminStore } from "../store";
 import { useReportRealtime } from "../hooks";
@@ -20,6 +20,9 @@ const STATUS_FILTERS: Array<{ value: "all" | ReportStatus; labelKey: string }> =
 function agencyReportCount(reports: Report[], agency: string) {
   return reports.filter((r) => r.targetAgency === agency).length;
 }
+
+/** Report cards per page. */
+const PAGE_SIZE = 9;
 
 /** A single summary metric tile in the header strip. */
 function StatTile({
@@ -67,6 +70,13 @@ export function ReportsQueue() {
     return matchesStatus && matchesSearch;
   });
 
+  // Client-side pagination. `page` is clamped at render so it stays valid when
+  // the filtered set shrinks (no setState-in-effect needed).
+  const [page, setPage] = useState(1);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   const openCount = reports.filter((r) => r.status === "open").length;
   const highCount = reports.filter((r) => r.status === "open" && r.severity === "high").length;
   const resolvedCount = reports.filter((r) => r.status === "resolved").length;
@@ -100,13 +110,19 @@ export function ReportsQueue() {
             aria-label={t("admin.reports.searchPlaceholder")}
             placeholder={t("admin.reports.searchPlaceholder")}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             className="pl-9"
           />
         </div>
         <Tabs
           selectedKey={statusFilter}
-          onSelectionChange={(key) => setStatusFilter(key as "all" | ReportStatus)}
+          onSelectionChange={(key) => {
+            setStatusFilter(key as "all" | ReportStatus);
+            setPage(1);
+          }}
         >
           <Tabs.ListContainer>
             <Tabs.List aria-label={t("admin.reports.title")} className="bg-primary/15!">
@@ -130,15 +146,23 @@ export function ReportsQueue() {
           <p className="text-muted text-sm">{t("admin.reports.empty")}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((r) => (
-            <ReportCard
-              key={r.id}
-              report={r}
-              agencyReportCount={agencyReportCount(reports, r.targetAgency)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {paged.map((r) => (
+              <ReportCard
+                key={r.id}
+                report={r}
+                agencyReportCount={agencyReportCount(reports, r.targetAgency)}
+              />
+            ))}
+          </div>
+          <Pagination
+            page={currentPage}
+            total={pageCount}
+            onChange={setPage}
+            className="mt-2"
+          />
+        </>
       )}
     </div>
   );

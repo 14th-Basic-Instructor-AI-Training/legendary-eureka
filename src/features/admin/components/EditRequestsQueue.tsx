@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TickCircle, CloseCircle, NoteText, SearchNormal1 } from "iconsax-reactjs";
-import { Button, Input, StatusChip, Table, Tabs } from "@/ui";
+import { Button, Input, Pagination, StatusChip, Table, Tabs } from "@/ui";
 import { useSession } from "@/lib/auth";
 import { useAdminStore } from "../store";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,9 @@ const ARC: Record<EditRequestStatus, { from: string; to: string; dot: string; so
   approved: { from: "#5FC381", to: "#9BE0E7", dot: "#5FC381", soft: "bg-green/10", text: "text-green" },
   rejected: { from: "#FF0C3C", to: "#F48D5D", dot: "#FF0C3C", soft: "bg-red/10", text: "text-red" },
 };
+
+/** Cards per page in the card view. */
+const PAGE_SIZE = 9;
 
 type Props = { view: "card" | "table" };
 
@@ -45,6 +48,13 @@ export function EditRequestsQueue({ view }: Props) {
     return matchesStatus && matchesSearch;
   });
 
+  // Client-side pagination for the card view. `page` is clamped at render so it
+  // stays valid when the filtered set shrinks (no setState-in-effect needed).
+  const [page, setPage] = useState(1);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   return (
     <div className="flex flex-col gap-4">
       {/* search + filters */}
@@ -59,13 +69,19 @@ export function EditRequestsQueue({ view }: Props) {
             aria-label={t("admin.editRequests.searchPlaceholder")}
             placeholder={t("admin.editRequests.searchPlaceholder")}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             className="pl-9"
           />
         </div>
         <Tabs
           selectedKey={statusFilter}
-          onSelectionChange={(key) => setStatusFilter(key as "all" | EditRequestStatus)}
+          onSelectionChange={(key) => {
+            setStatusFilter(key as "all" | EditRequestStatus);
+            setPage(1);
+          }}
         >
           <Tabs.ListContainer>
             <Tabs.List
@@ -91,22 +107,32 @@ export function EditRequestsQueue({ view }: Props) {
           </span>
           <p className="text-muted text-sm">{t("admin.editRequests.empty")}</p>
         </div>
-      ) : view === "table" ? (
-        <TableView
-          filtered={filtered}
-          role={role}
-          approveEditRequest={approveEditRequest}
-          rejectEditRequest={rejectEditRequest}
-          t={t}
-        />
       ) : (
-        <CardView
-          filtered={filtered}
-          role={role}
-          approveEditRequest={approveEditRequest}
-          rejectEditRequest={rejectEditRequest}
-          t={t}
-        />
+        <>
+          {view === "table" ? (
+            <TableView
+              filtered={paged}
+              role={role}
+              approveEditRequest={approveEditRequest}
+              rejectEditRequest={rejectEditRequest}
+              t={t}
+            />
+          ) : (
+            <CardView
+              filtered={paged}
+              role={role}
+              approveEditRequest={approveEditRequest}
+              rejectEditRequest={rejectEditRequest}
+              t={t}
+            />
+          )}
+          <Pagination
+            page={currentPage}
+            total={pageCount}
+            onChange={setPage}
+            className="mt-2"
+          />
+        </>
       )}
     </div>
   );
@@ -126,7 +152,7 @@ type QueueViewProps = {
 
 function CardView({ filtered, role, approveEditRequest, rejectEditRequest, t }: QueueViewProps) {
   return (
-    <ul className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <ul className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
       {filtered.map((r) => {
         const cfg = ARC[r.status];
         return (

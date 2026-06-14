@@ -14,6 +14,7 @@
     "showPassword": "បង្ហាញពាក្យសម្ងាត់",
     "hidePassword": "លាក់ពាក្យសម្ងាត់",
     "all": "ទាំងអស់",
+    "noResults": "រកមិនឃើញលទ្ធផល",
     "confirmDialog": {
       "logoutTitle": "ចាកចេញ?",
       "logoutDescription": "អ្នកនឹងត្រូវចូលម្ដងទៀត ដើម្បីចូលប្រើគណនីរបស់អ្នក។",
@@ -308,6 +309,27 @@
       "food": "ម្ហូប",
       "stay": "កន្លែងស្នាក់នៅ"
     },
+    "provinces": {
+      "PHNOM_PENH": "ភ្នំពេញ",
+      "SIEM_REAP": "សៀមរាប",
+      "BATTAMBANG": "បាត់ដំបង",
+      "PREAH_SIHANOUK": "ព្រះសីហនុ",
+      "KAMPOT": "កំពត",
+      "KEP": "កែប",
+      "KOH_KONG": "កោះកុង",
+      "MONDULKIRI": "មណ្ឌលគិរី",
+      "RATANAKIRI": "រតនគិរី",
+      "KRATIE": "ក្រចេះ"
+    },
+    "travelTypes": {
+      "ADVENTURE": "ផ្សងព្រេង",
+      "CULTURAL": "វប្បធម៌",
+      "NATURE": "ធម្មជាតិ",
+      "BEACH": "ឆ្នេរ",
+      "HISTORICAL": "ប្រវត្តិសាស្ត្រ",
+      "RELAXATION": "សម្រាក",
+      "WILDLIFE": "សត្វព្រៃ"
+    },
     "states": {
       "empty": "មិនទាន់មានគោលដៅសម្រាប់បង្ហាញ។",
       "error": "យើងមិនអាចផ្ទុកគោលដៅបានទេ។",
@@ -479,6 +501,7 @@
       "publishedCount": "បានផ្សាយ",
       "totalCount": "សរុប",
       "searchPlaceholder": "ស្វែងរកតាមចំណងជើង ឬភ្នាក់ងារ…",
+      "create": "បង្កើតគោលដៅ",
       "actions": {
         "edit": "កែសម្រួល",
         "delete": "លុប",
@@ -486,12 +509,25 @@
       },
       "editModal": {
         "title": "កែសម្រួលសកម្មភាព",
+        "createTitle": "បង្កើតគោលដៅ",
         "save": "រក្សាទុកការផ្លាស់ប្ដូរ",
+        "create": "បង្កើត",
         "cancel": "បោះបង់",
+        "searchProvince": "ស្វែងរកខេត្ត…",
         "fields": {
           "title": "ចំណងជើង",
+          "name": "ឈ្មោះ",
+          "namePlaceholder": "ឧ. ដំណើរទស្សនាប្រាសាទអង្គរវត្តពេលថ្ងៃរះ",
+          "description": "ការពិពណ៌នា",
+          "province": "ខេត្ត",
+          "travelType": "ប្រភេទដំណើរ",
           "category": "ប្រភេទ",
-          "status": "ស្ថានភាព"
+          "status": "ស្ថានភាព",
+          "coverImageUrl": "តំណរូបភាពគម្រប",
+          "priceFrom": "តម្លៃចាប់ពី",
+          "currency": "រូបិយប័ណ្ណ",
+          "latitude": "រយៈទទឹង",
+          "longitude": "រយៈបណ្ដោយ"
         }
       }
     },
@@ -640,7 +676,41 @@
       "confirmedRevenue": "ចំណូលបានបញ្ចប់",
       "pendingRevenue": "ចំណូលកំពុងរង់ចាំ",
       "searchPlaceholder": "ស្វែងរកតាមកញ្ចប់ អ្នកដំណើរ ឬភ្នាក់ងារ…",
-      "cancel": "បោះបង់ការកក់"
+      "cancel": "បោះបង់ការកក់",
+      "overview": {
+        "viewAll": "មើលទាំងអស់",
+        "stats": {
+          "total": {
+            "title": "ការកក់សរុប",
+            "desc": "សំណើកក់ទាំងអស់នៅលើវេទិកា។"
+          },
+          "completed": {
+            "title": "បានបញ្ចប់",
+            "desc": "ដំណើរដែលបានបញ្ចប់ និងទូទាត់រួច។"
+          },
+          "revenue": {
+            "title": "ចំណូល",
+            "desc": "តម្លៃសរុបនៃការកក់ទាំងអស់។"
+          }
+        },
+        "recent": "ការកក់ថ្មីៗ",
+        "cols": {
+          "booking": "ការកក់",
+          "amount": "ចំនួនទឹកប្រាក់",
+          "agency": "ភ្នាក់ងារ",
+          "status": "ស្ថានភាព"
+        },
+        "trend": {
+          "title": "ទិដ្ឋភាពការកក់",
+          "week": "សប្តាហ៍",
+          "month": "ខែ",
+          "year": "ឆ្នាំ"
+        },
+        "revenue": {
+          "title": "ទិដ្ឋភាពចំណូល",
+          "total": "សរុប"
+        }
+      }
     },
     "settings": {
       "title": "ការកំណត់ប្រព័ន្ធ",
@@ -710,6 +780,91 @@
           "title": "ចំណាំ",
           "desc": "ការបង្ហោះ និងសកម្មភាពដែលអ្នកបានរក្សាទុក។"
         }
+      }
+    }
+  },
+  "tours": {
+    "nav": {
+      "tours": "ដំណើរកម្សាន្ត",
+      "destinations": "គោលដៅ",
+      "approvals": "ការអនុម័តកញ្ចប់"
+    },
+    "agency": {
+      "title": "អ្នកបង្កើតដំណើរកម្សាន្ត",
+      "subtitle": "បង្កើតគោលដៅ បង្កើតកញ្ចប់ និងស្នើសុំការអនុម័ត។"
+    },
+    "flow": {
+      "title": "របៀបដំណើរការ",
+      "adminTitle": "គោលដៅរបស់អ្នកគ្រប់គ្រង",
+      "agencyTitle": "គោលដៅរបស់អ្នក",
+      "steps": {
+        "adminCreates": "អ្នកគ្រប់គ្រងបង្កើតគោលដៅ",
+        "agencySelects": "ជ្រើសរើសគោលដៅ",
+        "agencyCreatesOwn": "បង្កើតគោលដៅរបស់អ្នក",
+        "buildPackage": "បង្កើតកញ្ចប់ដំណើរ",
+        "requestApproval": "ស្នើសុំការអនុម័ត"
+      }
+    },
+    "tabs": {
+      "destinations": "គោលដៅ",
+      "packages": "កញ្ចប់"
+    },
+    "destinations": {
+      "title": "គោលដៅដែលមាន",
+      "new": "គោលដៅថ្មី",
+      "empty": "មិនទាន់មានគោលដៅទេ។ បង្កើតគោលដៅដំបូង។",
+      "buildPackage": "បង្កើតកញ្ចប់",
+      "from": "ចាប់ពី",
+      "origin": {
+        "admin": "អ្នកគ្រប់គ្រង",
+        "agency": "ភ្នាក់ងារ"
+      },
+      "form": {
+        "name": "ឈ្មោះ",
+        "namePlaceholder": "ឧ. អង្គរវត្ត",
+        "province": "ខេត្ត",
+        "travelType": "ប្រភេទដំណើរ",
+        "summary": "ការពិពណ៌នា",
+        "summaryPlaceholder": "ការពិពណ៌នាខ្លីៗអំពីទីកន្លែង",
+        "price": "តម្លៃចាប់ពី (USD)",
+        "submit": "បង្កើតគោលដៅ"
+      }
+    },
+    "packages": {
+      "title": "កញ្ចប់ដំណើររបស់អ្នក",
+      "new": "កញ្ចប់ថ្មី",
+      "empty": "មិនទាន់មានកញ្ចប់ទេ។ បង្កើតពីគោលដៅមួយ។",
+      "requestApproval": "ស្នើសុំការអនុម័ត",
+      "approvalSent": "បានស្នើសុំការអនុម័ត",
+      "justNow": "ឥឡូវនេះ",
+      "byAgency": "ដោយ {{name}}",
+      "days_one": "{{count}} ថ្ងៃ",
+      "days_other": "{{count}} ថ្ងៃ",
+      "form": {
+        "name": "ចំណងជើងកញ្ចប់",
+        "namePlaceholder": "ឧ. ដំណើរអង្គរ ៣ ថ្ងៃ",
+        "destination": "គោលដៅ",
+        "selectDestination": "ជ្រើសរើសគោលដៅ",
+        "days": "ថ្ងៃ",
+        "price": "តម្លៃចាប់ពី (USD)",
+        "submit": "បង្កើតកញ្ចប់"
+      }
+    },
+    "admin": {
+      "destinations": {
+        "title": "គោលដៅ",
+        "subtitle": "បង្កើតគោលដៅដែលភ្នាក់ងារអាចបង្កើតកញ្ចប់ដំណើរ។",
+        "new": "គោលដៅថ្មី",
+        "empty": "មិនទាន់មានគោលដៅទេ។"
+      },
+      "approvals": {
+        "title": "ការអនុម័តកញ្ចប់",
+        "subtitle": "ពិនិត្យកញ្ចប់ដំណើរដែលភ្នាក់ងារបានស្នើសុំការអនុម័ត។",
+        "empty": "មិនមានសំណើអនុម័តកញ្ចប់ទេ។",
+        "pendingCount": "{{count}} កំពុងរង់ចាំការអនុម័ត",
+        "approve": "អនុម័ត",
+        "reject": "បដិសេធ",
+        "search": "ស្វែងរកកញ្ចប់…"
       }
     }
   }

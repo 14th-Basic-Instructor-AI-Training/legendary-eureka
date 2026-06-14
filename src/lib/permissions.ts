@@ -56,6 +56,9 @@ export type Action =
   | "requestActivityEdit"
   | "managePackages"
   | "approveBookings"
+  | "submitPackageApproval"
+  // agency + admin (tours)
+  | "createDestination"
   // admin
   | "moderate"
   | "manageAgencyRequests"
@@ -64,6 +67,7 @@ export type Action =
   | "editAnyActivity"
   | "viewAnalytics"
   | "manageEditRequests"
+  | "reviewPackageApproval"
   | "configureSystem";
 
 const MATRIX: Record<Actor, Action[]> = {
@@ -84,6 +88,8 @@ const MATRIX: Record<Actor, Action[]> = {
     "requestActivityEdit",
     "managePackages",
     "approveBookings",
+    "submitPackageApproval",
+    "createDestination",
   ],
   admin: [
     "browse",
@@ -95,6 +101,8 @@ const MATRIX: Record<Actor, Action[]> = {
     "viewAnalytics",
     "manageEditRequests",
     "managePackages",
+    "createDestination",
+    "reviewPackageApproval",
     "configureSystem",
   ],
 };

@@ -14,6 +14,7 @@ export { Chip } from "./Chip";
 export { StatusChip } from "./StatusChip";
 export { Reveal } from "./Reveal";
 export { TextArea, type UITextAreaProps } from "./TextArea";
+export { Pagination, type UIPaginationProps } from "./Pagination";
 export {
   ConfirmDialog,
   type ConfirmDialogProps,
@@ -38,4 +39,10 @@ export {
   Checkbox,
   RadioGroup,
   Radio,
+  // Autocomplete = a Select with type-to-filter. Compose with SearchField +
+  // ListBox inside `Autocomplete.Filter`, and `useFilter` for the match fn.
+  Autocomplete,
+  SearchField,
+  EmptyState,
+  useFilter,
 } from "@heroui/react";
