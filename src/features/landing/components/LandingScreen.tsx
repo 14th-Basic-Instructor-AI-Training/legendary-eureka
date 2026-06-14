@@ -2,6 +2,7 @@
 
 import { useTranslation } from "react-i18next";
 import { getFeaturedDestinations } from "@/features/destinations/data";
+import { useExploreStore } from "@/features/explore/store";
 import { MarketingHeader } from "./MarketingHeader";
 import { Hero } from "./Hero";
 import { DestinationSection } from "./DestinationSection";
@@ -37,12 +38,17 @@ export function LandingScreen() {
           title={t("landing.popular.title")}
           subtitle={t("landing.popular.subtitle")}
           fetcher={getFeaturedDestinations}
+          actionLabel={t("common.viewAll")}
+          actionHref="/explore"
         />
 
         {/* Trending tours */}
         <FeaturedTours
           title={t("landing.trendingTours.title")}
           subtitle={t("landing.trendingTours.subtitle")}
+          actionLabel={t("common.viewAll")}
+          actionHref="/explore"
+          onAction={() => useExploreStore.getState().setTab("tours")}
         />
 
         {/* Recommended for you — signed-in travelers only (self-gated) */}

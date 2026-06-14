@@ -75,6 +75,15 @@ export function MarketingHeader() {
             </span>
           </LocaleLink>
           <nav className="hidden items-center gap-1 lg:flex">
+            <LocaleLink
+              href="/explore"
+              className="group text-muted hover:text-foreground relative rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200"
+            >
+              <span className="transition-transform duration-200 group-hover:-translate-y-px inline-block">
+                {t("explore.navLabel")}
+              </span>
+              <span className="bg-primary pointer-events-none absolute inset-x-3 bottom-1 h-0.5 origin-left scale-x-0 rounded-full transition-transform duration-300 ease-out group-hover:scale-x-100" />
+            </LocaleLink>
             {NAV_ITEMS.map(({ key, hash }) => (
               <LocaleLink
                 key={key}

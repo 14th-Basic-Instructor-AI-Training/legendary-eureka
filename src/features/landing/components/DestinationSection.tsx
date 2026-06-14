@@ -32,12 +32,18 @@ export function DestinationSection({
   title,
   subtitle,
   fetcher,
+  actionLabel,
+  actionHref,
+  onAction,
   renderCard = (destination) => <PopularDestinationCard destination={destination} />,
 }: {
   id: string;
   title: string;
   subtitle?: string;
   fetcher: () => Promise<Result<Destination[]>>;
+  actionLabel?: string;
+  actionHref?: string;
+  onAction?: () => void;
   renderCard?: (destination: Destination) => ReactNode;
 }) {
   const { t } = useTranslation();
@@ -45,7 +51,13 @@ export function DestinationSection({
 
   return (
     <section id={id} className="mx-auto max-w-7xl px-4 py-12 md:px-8 md:py-16">
-      <SectionHeading title={title} subtitle={subtitle} />
+      <SectionHeading
+        title={title}
+        subtitle={subtitle}
+        actionLabel={actionLabel}
+        actionHref={actionHref}
+        onAction={onAction}
+      />
 
       {status === "loading" ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

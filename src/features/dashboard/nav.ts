@@ -10,6 +10,7 @@ import {
   Chart2,
   Receipt21,
   Setting2,
+  Notification,
 } from "iconsax-reactjs";
 import type { Role } from "@/features/auth/schema";
 import type { IconType } from "./config";
@@ -32,11 +33,19 @@ export interface NavItem {
 export const SIDEBAR_NAV: Record<Role, NavItem[]> = {
   admin: [
     { labelKey: "admin.nav.overview", Icon: Chart2, href: "/admin" },
-    { labelKey: "admin.nav.requests", Icon: Buildings, href: "/admin/requests" },
+    {
+      labelKey: "admin.nav.requests",
+      Icon: Buildings,
+      href: "/admin/requests",
+    },
     { labelKey: "admin.tabs.reports", Icon: Flag, href: "/admin/reports" },
     { labelKey: "admin.nav.content", Icon: Category, href: "/admin/content" },
     { labelKey: "admin.tabs.users", Icon: Profile2User, href: "/admin/users" },
-    { labelKey: "admin.nav.bookings", Icon: Receipt21, href: "/admin/bookings" },
+    {
+      labelKey: "admin.nav.bookings",
+      Icon: Receipt21,
+      href: "/admin/bookings",
+    },
     { labelKey: "admin.nav.settings", Icon: Setting2, href: "/admin/settings" },
   ],
   agency: [
@@ -47,6 +56,15 @@ export const SIDEBAR_NAV: Record<Role, NavItem[]> = {
   ],
   traveler: [
     { labelKey: "nav.dashboard", Icon: Star1, href: "/traveler" },
-    { labelKey: "profile.nav.profile", Icon: Profile2User, href: "/traveler/profile" },
+    {
+      labelKey: "profile.nav.profile",
+      Icon: Profile2User,
+      href: "/traveler/profile",
+    },
+    {
+      labelKey: "notifications.nav.title",
+      Icon: Notification,
+      href: "/traveler/notifications",
+    },
   ],
 };

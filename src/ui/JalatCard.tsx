@@ -4,6 +4,7 @@ import { Card } from "./Card";
 import { cn } from "@/lib/utils";
 import { LocaleLink } from "@/components/LocaleLink";
 import { concaveMaskStyle } from "./concaveCorners";
+import { jalatCardClipStyle, jalatCardClipShadowStyle } from "./jalatCardClip";
 
 /**
  * JalatCard — the shared "Ice Matcha" card primitive used across Popular
@@ -28,6 +29,13 @@ export type JalatCardProps = {
   badge?: ReactNode;
   /** Optional secondary line under the title (location, agency, dates…). */
   meta?: ReactNode;
+  /**
+   * Corner geometry. `"concave"` (default) is the "Ice Matcha" look: rounded top,
+   * inward-curving bottom corners. `"topRight"` applies the notched silhouette
+   * (all corners rounded + a tab notch stepped into the top edge that cradles the
+   * floating badge) — used by the rating-led landing cards.
+   */
+  shape?: "concave" | "topRight";
   /** When set, the whole card is a locale-aware link to this path. */
   href?: string;
   /** Image aspect ratio utility (default `aspect-[4/3]`). */
@@ -47,24 +55,36 @@ export function JalatCard({
   action,
   badge,
   meta,
+  shape = "concave",
   href,
   imageAspect = "aspect-[4/3]",
   cornerRadius,
   imageSizes = DEFAULT_SIZES,
   className,
 }: JalatCardProps) {
+  const isTopRight = shape === "topRight";
+
   const card = (
     <Card
       className={cn(
-        "group bg-background flex h-full flex-col gap-0 overflow-hidden rounded-2xl border-0 p-0 shadow-primary transition-shadow hover:shadow-md",
+        "group bg-background flex h-full flex-col gap-0 overflow-hidden border-0 p-0 transition-shadow",
+        // The notched shape is drawn with `clip-path`, which also clips box-shadow —
+        // its shadow lives on the wrapper below. The concave shape stays shadow-only.
+        isTopRight ? "rounded-none" : "rounded-2xl shadow-primary hover:shadow-md",
         className,
       )}
+      style={isTopRight ? jalatCardClipStyle : undefined}
     >
-      {/* Media region — the masked image and the (un-masked) floating badge are siblings. */}
+      {/* Media region — the image and the (un-masked) floating badge are siblings. */}
       <div className="relative">
         <div
-          className={cn("relative w-full overflow-hidden rounded-t-2xl", imageAspect)}
-          style={concaveMaskStyle(cornerRadius)}
+          className={cn(
+            "relative w-full overflow-hidden",
+            // topRight's corners come from the card-level clip-path, so the image is square.
+            isTopRight ? "rounded-none" : "rounded-t-2xl",
+            imageAspect,
+          )}
+          style={isTopRight ? undefined : concaveMaskStyle(cornerRadius)}
         >
           <Image
             src={image.src}
@@ -94,15 +114,28 @@ export function JalatCard({
     </Card>
   );
 
-  if (!href) return card;
+  // The notched card is clipped, so its shadow rides on a wrapper (drop-shadow
+  // follows the clipped contour where box-shadow can't).
+  const framedCard = isTopRight ? (
+    <div className="h-full" style={jalatCardClipShadowStyle}>
+      {card}
+    </div>
+  ) : (
+    card
+  );
+
+  if (!href) return framedCard;
 
   return (
     <LocaleLink
       href={href}
       aria-label={typeof title === "string" ? title : undefined}
-      className="focus-visible:ring-primary block rounded-2xl focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+      className={cn(
+        "focus-visible:ring-primary block h-full focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
+        isTopRight ? "rounded-xl" : "rounded-2xl",
+      )}
     >
-      {card}
+      {framedCard}
     </LocaleLink>
   );
 }

@@ -14,7 +14,11 @@ export function intlLocale(lng: string): string {
   return INTL_LOCALE[lng] ?? "en-US";
 }
 
-export function formatPrice(amount: number, currency: string, lng: string): string {
+export function formatPrice(
+  amount: number,
+  currency: string,
+  lng: string,
+): string {
   return new Intl.NumberFormat(intlLocale(lng), {
     style: "currency",
     currency,
@@ -34,7 +38,35 @@ export function formatRating(value: number, lng: string): string {
 }
 
 export function formatDate(value: string | number | Date, lng: string): string {
-  return new Intl.DateTimeFormat(intlLocale(lng), { dateStyle: "medium" }).format(
-    new Date(value),
-  );
+  return new Intl.DateTimeFormat(intlLocale(lng), {
+    dateStyle: "medium",
+  }).format(new Date(value));
+}
+
+/**
+ * Locale-aware relative time ("2 hours ago", "il y a 3 jours"). Picks the
+ * largest sensible unit. Used by feeds/notifications where an absolute date is
+ * less useful than recency.
+ */
+export function formatRelativeTime(
+  value: string | number | Date,
+  lng: string,
+): string {
+  const then = new Date(value).getTime();
+  const diffSec = Math.round((then - Date.now()) / 1000);
+  const abs = Math.abs(diffSec);
+  const rtf = new Intl.RelativeTimeFormat(intlLocale(lng), { numeric: "auto" });
+
+  const units: [Intl.RelativeTimeFormatUnit, number][] = [
+    ["year", 31536000],
+    ["month", 2592000],
+    ["week", 604800],
+    ["day", 86400],
+    ["hour", 3600],
+    ["minute", 60],
+  ];
+  for (const [unit, secs] of units) {
+    if (abs >= secs) return rtf.format(Math.round(diffSec / secs), unit);
+  }
+  return rtf.format(diffSec, "second");
 }

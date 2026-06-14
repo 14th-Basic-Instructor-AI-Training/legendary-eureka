@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
+import { JalatCardClipDefs } from "@/ui";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,6 +33,7 @@ export default function RootLayout({
     >
       <body className="bg-background text-foreground flex min-h-full flex-col font-sans">
         <NextTopLoader color="#2563eb" height={3} showSpinner={false} />
+        <JalatCardClipDefs />
         {children}
       </body>
     </html>

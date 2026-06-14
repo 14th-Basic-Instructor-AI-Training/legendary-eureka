@@ -8,7 +8,7 @@ const DEFAULT_LOCALE = "en";
  * locale prefix are redirected to one — preferring the visitor's saved
  * `NEXT_LOCALE` cookie, otherwise the default (en).
  */
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const hasLocale = LOCALES.some(

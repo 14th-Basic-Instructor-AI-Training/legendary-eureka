@@ -27,9 +27,15 @@ function TourSkeleton() {
 export function FeaturedTours({
   title,
   subtitle,
+  actionLabel,
+  actionHref,
+  onAction,
 }: {
   title?: string;
   subtitle?: string;
+  actionLabel?: string;
+  actionHref?: string;
+  onAction?: () => void;
 } = {}) {
   const { t } = useTranslation();
   const { status, data, reload } = useResource(getFeaturedTours);
@@ -40,6 +46,9 @@ export function FeaturedTours({
         <SectionHeading
           title={title ?? t("landing.tours.title")}
           subtitle={subtitle ?? t("landing.tours.subtitle")}
+          actionLabel={actionLabel}
+          actionHref={actionHref}
+          onAction={onAction}
         />
 
         {status === "loading" ? (

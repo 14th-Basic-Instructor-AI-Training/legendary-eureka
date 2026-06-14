@@ -1,9 +1,9 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { Star1, Location } from "iconsax-reactjs";
-import { JalatCard } from "@/ui";
-import { formatPrice, formatRating } from "@/lib/format";
+import { Location } from "iconsax-reactjs";
+import { JalatCard, RatingBadge } from "@/ui";
+import { formatPrice } from "@/lib/format";
 import type { Destination } from "../schema";
 
 /**
@@ -18,22 +18,24 @@ export function PopularDestinationCard({ destination }: { destination: Destinati
   return (
     <JalatCard
       href={`/destinations/${destination.slug}`}
+      shape="topRight"
       image={{ src: destination.heroImage, alt: destination.name }}
       badge={
-        <span className="bg-primary inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold text-white shadow-sm">
-          {destination.priceFrom === 0
-            ? t("common.free")
-            : formatPrice(destination.priceFrom, destination.currency, lng)}
-        </span>
+        <RatingBadge
+          rating={destination.rating}
+          reviewCount={destination.reviewCount}
+          lng={lng}
+        />
       }
       title={destination.name}
       meta={
         <span className="flex items-center gap-1">
           <Location size={15} color="currentColor" variant="Bold" className="text-primary" />
           {destination.city}, {destination.country}
-          <span className="text-warning ml-2 inline-flex items-center gap-0.5">
-            <Star1 size={13} color="currentColor" variant="Bold" />
-            {formatRating(destination.rating, lng)}
+          <span className="text-foreground ml-2 font-medium">
+            {destination.priceFrom === 0
+              ? t("common.free")
+              : formatPrice(destination.priceFrom, destination.currency, lng)}
           </span>
         </span>
       }

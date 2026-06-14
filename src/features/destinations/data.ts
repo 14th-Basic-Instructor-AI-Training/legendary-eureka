@@ -102,6 +102,15 @@ export async function searchDestinations(
   return { ok: true, data: DESTINATIONS.filter((d) => matchesFilter(d, filter)) };
 }
 
+/** One agency by slug — powers the `/agencies/[slug]` profile page. */
+export async function getAgencyBySlug(
+  slug: string,
+): Promise<Result<AgencyProfile>> {
+  await delay();
+  const match = AGENCIES.find((a) => a.slug === slug);
+  return match ? { ok: true, data: match } : { ok: false, error: "not_found" };
+}
+
 /** Top tour agencies for the Discover "Top agencies" strip (approved, best rated first). */
 export async function getTopAgencies(): Promise<Result<AgencyProfile[]>> {
   await delay();

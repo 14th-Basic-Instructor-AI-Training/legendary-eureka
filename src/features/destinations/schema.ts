@@ -113,12 +113,32 @@ export const AgencyProfileSchema = z.object({
   id: z.string(),
   slug: z.string(),
   name: z.string(),
+  /** Display name of the person who owns / runs the agency. */
+  owner: z.string(),
   logo: z.string().url(),
   province: ProvinceSchema,
   status: AgencyStatusSchema.default("APPROVED"),
   rating: z.number().min(0).max(5),
   reviewCount: z.number().int().nonnegative(),
   tourCount: z.number().int().nonnegative(),
+  /** "Tour about" themes shown as tags on the agency card. */
+  tags: z.array(z.string()).default([]),
+  // ── Profile-page fields (optional so the teaser card/fixtures stay valid) ──
+  /** "About this agency" blurb shown on the detail page. */
+  about: z.string().optional(),
+  /** Years the agency has operated — the "Years Active" stat. */
+  yearsActive: z.number().int().nonnegative().optional(),
+  /** Completed bookings — the "Bookings Completed" stat. */
+  bookingsCompleted: z.number().int().nonnegative().optional(),
+  /** Languages the agency guides in — shown in the sidebar. */
+  languages: z.array(z.string()).default([]),
+  /** Typical response time in hours — sidebar contact fact. */
+  responseTimeHours: z.number().int().positive().optional(),
+  /** Year the agency joined the platform — sidebar "Member since". */
+  memberSince: z.number().int().optional(),
+  /** Map coordinates for the sidebar LocationMap (province centroid). */
+  lat: z.number().optional(),
+  lng: z.number().optional(),
 });
 export type AgencyProfile = z.infer<typeof AgencyProfileSchema>;
 

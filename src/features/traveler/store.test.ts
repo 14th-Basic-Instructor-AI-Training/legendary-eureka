@@ -35,7 +35,52 @@ describe("traveler store — cancel booking", () => {
     for (const actor of NON_TRAVELERS) {
       expect(get().cancelBooking(actor, upcomingId)).toBe(false);
     }
-    expect(get().bookings.find((b) => b.id === upcomingId)?.status).toBe("approved");
+    expect(get().bookings.find((b) => b.id === upcomingId)?.status).toBe(
+      "approved",
+    );
+  });
+});
+
+describe("traveler store — add booking (checkout flow)", () => {
+  beforeEach(reset);
+
+  const draft = {
+    id: "JLT-4999",
+    tour: {
+      slug: "angkor-sunrise-3d",
+      name: "Angkor Sunrise: 3-Day Explorer",
+      thumbnail: "https://picsum.photos/seed/x/480/360",
+    },
+    agencyName: "Angkor Trails",
+    startDate: "2026-09-01",
+    travelers: 2,
+    total: 560,
+    currency: "USD",
+    status: "pending" as const,
+    hasReview: false,
+  };
+
+  it("a traveler can append a new pending booking to history", () => {
+    const before = get().bookings.length;
+    expect(get().addBooking("traveler", draft)).toBe(true);
+    expect(get().bookings.length).toBe(before + 1);
+    expect(get().bookings[0]).toMatchObject({
+      id: "JLT-4999",
+      status: "pending",
+    });
+  });
+
+  it("adding the same booking id twice is idempotent", () => {
+    get().addBooking("traveler", draft);
+    const count = get().bookings.length;
+    expect(get().addBooking("traveler", draft)).toBe(true);
+    expect(get().bookings.length).toBe(count);
+  });
+
+  it("non-travelers cannot add bookings", () => {
+    for (const actor of NON_TRAVELERS) {
+      expect(get().addBooking(actor, draft)).toBe(false);
+    }
   });
 });
 
@@ -44,8 +89,12 @@ describe("traveler store — reviews", () => {
   const reviewId = "rv-1";
 
   it("a traveler can edit and delete their review", () => {
-    expect(get().editReview("traveler", reviewId, { rating: 3, comment: "updated" })).toBe(true);
-    expect(get().reviews.find((r) => r.id === reviewId)?.comment).toBe("updated");
+    expect(
+      get().editReview("traveler", reviewId, { rating: 3, comment: "updated" }),
+    ).toBe(true);
+    expect(get().reviews.find((r) => r.id === reviewId)?.comment).toBe(
+      "updated",
+    );
 
     const before = get().reviews.length;
     expect(get().deleteReview("traveler", reviewId)).toBe(true);

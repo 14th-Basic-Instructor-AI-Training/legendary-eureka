@@ -1,9 +1,9 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { Star1, Location } from "iconsax-reactjs";
-import { JalatCard } from "@/ui";
-import { formatPrice, formatRating } from "@/lib/format";
+import { Location } from "iconsax-reactjs";
+import { JalatCard, RatingBadge } from "@/ui";
+import { formatPrice } from "@/lib/format";
 import type { Destination } from "@/features/destinations/schema";
 
 /**
@@ -19,12 +19,14 @@ export function RecommendedCardJalat({ destination }: { destination: Destination
   return (
     <JalatCard
       href={`/destinations/${destination.slug}`}
+      shape="topRight"
       image={{ src: destination.heroImage, alt: destination.name }}
       badge={
-        <span className="bg-background/90 text-warning inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm backdrop-blur">
-          <Star1 size={13} color="currentColor" variant="Bold" />
-          {formatRating(destination.rating, lng)}
-        </span>
+        <RatingBadge
+          rating={destination.rating}
+          reviewCount={destination.reviewCount}
+          lng={lng}
+        />
       }
       title={destination.name}
       meta={

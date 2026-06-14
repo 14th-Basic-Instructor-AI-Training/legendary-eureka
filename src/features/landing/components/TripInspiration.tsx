@@ -5,16 +5,28 @@ import { useTranslation } from "react-i18next";
 import { ArrowRight } from "iconsax-reactjs";
 import { Reveal } from "@/ui";
 import { LocaleLink } from "@/components/LocaleLink";
+import { useExploreStore } from "@/features/explore/store";
+import { EMPTY_DESTINATION_FILTER, type ActivityFocus } from "@/features/explore/schema";
 import { LANDING_IMAGES } from "../images";
 import { SectionHeading } from "./SectionHeading";
 
-/** Theme-led inspiration tiles — each opens the browse page so a mood can become a trip. */
-const COLLECTIONS = [
-  { key: "adventure", image: LANDING_IMAGES.hero },
-  { key: "cultural", image: LANDING_IMAGES.journeyTicket },
-  { key: "food", image: LANDING_IMAGES.ctaBeach },
-  { key: "nature", image: LANDING_IMAGES.ctaIsland },
-] as const;
+/**
+ * Theme-led inspiration tiles — each opens the Explore page pre-filtered by the
+ * theme's Activity Focus, so a mood becomes a browse.
+ */
+const COLLECTIONS: ReadonlyArray<{ key: string; image: string; focus: ActivityFocus }> = [
+  { key: "adventure", image: LANDING_IMAGES.hero, focus: "Adventure" },
+  { key: "cultural", image: LANDING_IMAGES.journeyTicket, focus: "History" },
+  { key: "food", image: LANDING_IMAGES.ctaBeach, focus: "Food" },
+  { key: "nature", image: LANDING_IMAGES.ctaIsland, focus: "Nature" },
+];
+
+/** Seed the Explore store so the tile opens Explore filtered to the theme. */
+function openExploreWithFocus(focus: ActivityFocus) {
+  const { setTab, patchDestinationFilter } = useExploreStore.getState();
+  setTab("destinations");
+  patchDestinationFilter({ ...EMPTY_DESTINATION_FILTER, activityFocus: [focus] });
+}
 
 /**
  * "Trip inspiration" — an editorial band that pitches a few travel themes. Each
@@ -36,7 +48,8 @@ export function TripInspiration() {
           {COLLECTIONS.map((c, i) => (
             <Reveal key={c.key} delay={Math.min(i, 3) * 0.06}>
               <LocaleLink
-                href="/destinations"
+                href="/explore"
+                onClick={() => openExploreWithFocus(c.focus)}
                 className="group focus-visible:ring-primary block h-full rounded-3xl focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               >
                 <div className="relative aspect-[3/4] w-full overflow-hidden rounded-3xl">

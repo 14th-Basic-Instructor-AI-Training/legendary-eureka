@@ -1,4 +1,123 @@
 {
+  "explore": {
+    "navLabel": "Explore",
+    "title": "Explore destinations & tours",
+    "subtitle": "Find your next trip — browse places to go and tours to book across Cambodia.",
+    "tabs": {
+      "label": "Explore mode",
+      "destinations": "Destinations",
+      "tours": "Tours"
+    },
+    "toolbar": {
+      "filters": "Filters",
+      "searchPlaceholder": "Search destinations, tours, agencies…",
+      "searching": "Searching…",
+      "sortBy": "Sort by",
+      "count_one": "{{count, number}} result",
+      "count_other": "{{count, number}} results",
+      "view": {
+        "grid": "Grid view",
+        "list": "List view"
+      }
+    },
+    "sort": {
+      "recommended": "Recommended",
+      "priceAsc": "Price: Low–High",
+      "ratingDesc": "Highest Rated",
+      "newest": "Newest"
+    },
+    "filters": {
+      "title": "Filters",
+      "clearAll": "Clear all filters",
+      "clearOne": "Clear",
+      "noMatches": "No matches",
+      "close": "Close filters",
+      "showResults": "Show results",
+      "region": "Region / Continent",
+      "province": "Country or Province",
+      "anyProvince": "Any province",
+      "season": "Best Season",
+      "regionType": "Region Type",
+      "activityFocus": "Activity Focus",
+      "familyFriendly": "Family Friendly",
+      "familyFriendlyLabel": "Family-friendly only",
+      "destination": "Province / Destination",
+      "anyDestination": "Any destination",
+      "activityType": "Activity Type",
+      "dateRange": "Date Range",
+      "dateFrom": "From",
+      "dateTo": "To",
+      "price": "Price Range",
+      "duration": "Tour Duration",
+      "rating": "Star Rating",
+      "language": "Language",
+      "ratingStars": "{{stars}} stars and up",
+      "ratingAny": "Any rating",
+      "ratingAndUp": "{{rating}} stars & up"
+    },
+    "regions": {
+      "Southeast Asia": "Southeast Asia",
+      "East Asia": "East Asia",
+      "South Asia": "South Asia",
+      "Europe": "Europe",
+      "North America": "North America",
+      "South America": "South America",
+      "Africa": "Africa",
+      "Oceania": "Oceania"
+    },
+    "seasons": {
+      "Dry Season": "Dry Season",
+      "Wet Season": "Wet Season",
+      "Summer": "Summer",
+      "Winter": "Winter",
+      "Year-round": "Year-round"
+    },
+    "regionTypes": {
+      "Beach": "Beach",
+      "Mountain": "Mountain",
+      "City": "City",
+      "Jungle": "Jungle",
+      "Cultural": "Cultural",
+      "Island": "Island"
+    },
+    "activityFocus": {
+      "Adventure": "Adventure",
+      "Wellness": "Wellness",
+      "Food": "Food",
+      "History": "History",
+      "Nature": "Nature"
+    },
+    "tourActivities": {
+      "Adventure": "Adventure",
+      "Cultural": "Cultural",
+      "Food & Drink": "Food & Drink",
+      "Nature": "Nature",
+      "Wellness": "Wellness",
+      "Family": "Family",
+      "Water Sports": "Water Sports"
+    },
+    "durations": {
+      "half-day": "Half-day",
+      "full-day": "Full-day",
+      "2-3 days": "2–3 days",
+      "4-7 days": "4–7 days",
+      "7+ days": "7+ days"
+    },
+    "card": {
+      "explore": "Explore",
+      "perPerson": "/ person",
+      "bookmark": "Save",
+      "bookmarked": "Saved",
+      "toursAvailable_one": "{{count, number}} tour",
+      "toursAvailable_other": "{{count, number}} tours"
+    },
+    "states": {
+      "error": "We couldn't load results.",
+      "emptyTitle": "No results found",
+      "emptyHint": "Try adjusting your filters."
+    },
+    "loadMore": "Load more"
+  },
   "discover": {
     "title": "Discover Cambodia & beyond",
     "subtitle": "Search destinations, things to do, food, and stays — then book a tour from a trusted local agency.",
@@ -41,7 +160,12 @@
       "tours_other": "{{count, number}} tours",
       "verified": "Verified",
       "reviews_one": "{{count, number}} review",
-      "reviews_other": "{{count, number}} reviews"
+      "reviews_other": "{{count, number}} reviews",
+      "ownedBy": "by {{owner}}",
+      "statRating": "Rating",
+      "statTours": "Tours",
+      "statReviews": "Reviews",
+      "viewAgency": "View agency"
     },
     "review": {
       "for": "on {{place}}"
@@ -50,6 +174,34 @@
       "planTrip": "Plan a trip",
       "loginToPlan": "Log in to plan a trip"
     }
+  },
+  "agencyDetail": {
+    "back": "Back to agencies",
+    "notFound": "We couldn't find that agency.",
+    "verified": "Verified Agency",
+    "share": "Share",
+    "contact": "Contact Agency",
+    "statTours": "Total Tours",
+    "statRating": "Avg Rating",
+    "statYears": "Years Active",
+    "statYearsValue": "{{n}} yrs",
+    "statBookings": "Bookings Completed",
+    "about": "About {{name}}",
+    "toursOffered": "Tours Offered ({{n}})",
+    "filterAll": "All",
+    "noTours": "This agency hasn't published any tours yet.",
+    "reviews": "Reviews",
+    "recentReviews": "Recent traveler reviews",
+    "writeReview": "Write a Review",
+    "verifiedReviews": "{{n}} verified reviews",
+    "noReviews": "No reviews yet.",
+    "contactLocation": "Contact & Location",
+    "location": "Location",
+    "languages": "Languages",
+    "responseTimeLabel": "Response time",
+    "responseTime": "Within {{hours}} hours",
+    "memberSince": "Member since",
+    "report": "Report this agency"
   },
   "common": {
     "appName": "Jalat",
@@ -347,7 +499,16 @@
     },
     "testimonials": {
       "title": "Loved by thousand travelers",
+      "subtitle": "Real stories from travelers who explored with us.",
       "role": "Verified traveler",
+      "stats": {
+        "rating": "4.9",
+        "ratingLabel": "average rating",
+        "reviews": "12k+",
+        "reviewsLabel": "verified reviews",
+        "rebook": "98%",
+        "rebookLabel": "would book again"
+      },
       "items": {
         "one": "I just returned from the most amazing trip. From the first message the team was incredibly helpful and made sure the itinerary suited my interests and budget.",
         "two": "Booking was effortless and every detail was taken care of. I can't wait to plan my next adventure with Jalat.",
@@ -369,15 +530,42 @@
         "destinations": "Destinations",
         "activities": "Activities"
       },
-      "placeholder": {
-        "tours": "Search tours & packages",
-        "destinations": "Where do you want to go?",
-        "activities": "Search things to do"
+      "search": "Search",
+      "fields": {
+        "tours": {
+          "keyword": "Search",
+          "province": "Province",
+          "when": "When",
+          "travelers": "Travelers"
+        },
+        "destinations": {
+          "keyword": "Destination",
+          "region": "Region",
+          "interest": "Interest"
+        },
+        "activities": {
+          "keyword": "Activity",
+          "province": "Province",
+          "when": "When"
+        }
       },
-      "keyword": "Keyword",
-      "location": "Location",
-      "date": "Date",
-      "travelers": "Travelers",
+      "placeholder": {
+        "tours": {
+          "keyword": "Temples, islands, food…",
+          "province": "Anywhere in Cambodia",
+          "when": "Add dates"
+        },
+        "destinations": {
+          "keyword": "Siem Reap, Kampot…",
+          "region": "All regions",
+          "interest": "Any interest"
+        },
+        "activities": {
+          "keyword": "Snorkel, trek, cycle…",
+          "province": "Anywhere",
+          "when": "Add dates"
+        }
+      },
       "travelersValue_one": "{{count}} traveler",
       "travelersValue_other": "{{count}} travelers",
       "exploreNow": "Explore now",
@@ -496,7 +684,8 @@
         "otherTours": "Other tours by this agency",
         "contact": "Contact",
         "tours_one": "{{count}} tour",
-        "tours_other": "{{count}} tours"
+        "tours_other": "{{count}} tours",
+        "report": "Report this agency"
       },
       "reviews": {
         "title": "Traveler reviews",
@@ -1100,6 +1289,189 @@
         "description": "This permanently deletes your profile, bookings, trip plans, and reviews. This can’t be undone.",
         "confirm": "Delete account"
       }
+    }
+  },
+  "booking": {
+    "notFound": "We couldn't find that tour.",
+    "steps": {
+      "review": "Review",
+      "payment": "Payment",
+      "confirmation": "Confirmation"
+    },
+    "review": {
+      "title": "Review Your Booking",
+      "subtitle": "Check the details below before you continue to payment.",
+      "verified": "Verified",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "date": "Date",
+      "dateFlexible": "Flexible",
+      "meetingPoint": "Meeting point",
+      "meetingPointValue": "{{province}} · hotel pickup",
+      "travelers": "Travelers",
+      "adults": "Adults",
+      "adultsHint": "Aged 12 and over",
+      "adultsCount_one": "{{count}} adult",
+      "adultsCount_other": "{{count}} adults",
+      "freeCancellation": "Free cancellation up to 48 hours before",
+      "freeCancellationHint": "Cancel up to two days before departure for a full refund. After that, the booking is non-refundable.",
+      "continue": "Continue to Payment"
+    },
+    "summary": {
+      "title": "Price Details",
+      "unitPrice": "{{price}} × {{count}} travelers",
+      "platformFee": "Platform fee",
+      "total": "Total",
+      "secure": "Secure booking · free cancellation"
+    },
+    "payment": {
+      "title": "Payment",
+      "demoNotice": "This is a demo — no real payment is processed.",
+      "methodTitle": "Payment Method",
+      "methods": {
+        "card": {
+          "label": "Credit / Debit Card",
+          "desc": "Visa, Mastercard, UnionPay"
+        },
+        "mobile": {
+          "label": "Mobile Banking",
+          "desc": "ABA Pay · Wing · ACLEDA"
+        },
+        "cash": {
+          "label": "Cash on Arrival",
+          "desc": "Pay the agency in person at pickup"
+        }
+      },
+      "card": {
+        "number": "Card number",
+        "name": "Cardholder name",
+        "expiry": "Expiry",
+        "cvc": "CVC"
+      },
+      "mobile": {
+        "hint": "Scan the QR with your banking app to complete payment."
+      },
+      "cash": {
+        "hint": "Pay {{agency}} directly in cash (USD) at the meeting point. Your booking is confirmed once the agency approves the request."
+      },
+      "back": "Back",
+      "submit": "Submit Booking Request"
+    },
+    "confirmation": {
+      "title": "Booking Request Sent!",
+      "subtitle": "Your request is with {{agency}}. You'll get a notification the moment they confirm — usually within a few hours.",
+      "reference": "Booking reference",
+      "tour": "Tour",
+      "agencyContact": "Agency contact",
+      "viewStatus": "View Booking Status",
+      "exploreMore": "Explore More Tours"
+    },
+    "status": {
+      "title": "Booking {{ref}}",
+      "bookedFor": "Booked for {{date}}",
+      "statusHeading": "Status",
+      "agencyContact": "Agency Contact",
+      "verifiedAgency": "Verified Agency",
+      "notFound": "We couldn't find that booking.",
+      "backToHistory": "Back to Booking History",
+      "timeline": {
+        "requested": {
+          "title": "Requested",
+          "desc": "You sent the booking request."
+        },
+        "pendingReview": {
+          "title": "Pending review",
+          "desc": "The agency is reviewing your request."
+        },
+        "approved": {
+          "title": "Approved",
+          "desc": "The agency confirmed your booking."
+        },
+        "rejected": {
+          "title": "Not confirmed",
+          "desc": "The agency couldn't confirm this booking."
+        },
+        "completed": {
+          "title": "Completed",
+          "desc": "Enjoy your tour!"
+        }
+      }
+    }
+  },
+  "notifications": {
+    "nav": {
+      "title": "Notifications"
+    },
+    "title": "Notifications",
+    "unread_one": "You have {{count}} unread notification.",
+    "unread_other": "You have {{count}} unread notifications.",
+    "allCaughtUp": "You're all caught up.",
+    "markAllRead": "Mark all read",
+    "open": "Open notification",
+    "filters": {
+      "all": "All",
+      "bookings": "Bookings",
+      "tripPlans": "Trip Plans",
+      "comments": "Comments",
+      "reports": "Reports",
+      "system": "System"
+    },
+    "empty": {
+      "title": "You're all caught up",
+      "hint": "We'll let you know when something happens with your bookings and trips."
+    }
+  },
+  "report": {
+    "title": "Report an Agency",
+    "subtitle": "Reports are confidential. We review every submission carefully, and the agency is never told who reported them.",
+    "reportingThis": "You're reporting",
+    "notFound": "We couldn't find that agency.",
+    "reasonLegend": "What's the reason for your report?",
+    "reasons": {
+      "fraud": {
+        "label": "Fraudulent behavior",
+        "desc": "Fake listings, payment scams, or bait-and-switch pricing."
+      },
+      "misleading": {
+        "label": "Misleading information",
+        "desc": "The tour was significantly different from what was advertised."
+      },
+      "safety": {
+        "label": "Safety concern",
+        "desc": "Unsafe conditions, equipment, or conduct during the tour."
+      },
+      "conduct": {
+        "label": "Inappropriate conduct",
+        "desc": "Harassment, discrimination, or unprofessional behavior."
+      },
+      "other": {
+        "label": "Other",
+        "desc": "Something else we should know about."
+      }
+    },
+    "errors": {
+      "reason": "Please choose a reason.",
+      "description": "Please describe what happened."
+    },
+    "description": {
+      "label": "Tell us what happened",
+      "placeholder": "Describe the issue with as much detail as you can — dates, booking references, and what went wrong all help our review."
+    },
+    "evidence": {
+      "label": "Add evidence",
+      "optional": "optional",
+      "hint": "Screenshots, receipts or photos. Up to 3 files.",
+      "remove": "Remove file"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "submit": "Submit Report"
+    },
+    "success": {
+      "title": "Report Submitted",
+      "body": "Thank you for helping keep Jalat safe. Our trust & safety team will review your report within 3–5 business days and follow up if we need more details.",
+      "explore": "Explore Tours",
+      "home": "Go Home"
     }
   }
 }

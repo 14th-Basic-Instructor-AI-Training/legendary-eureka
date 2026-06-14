@@ -34,8 +34,13 @@ interface TravelerState {
   updateProfile: (actor: Actor | null, input: PersonalInfoInput) => boolean;
   /** Mock password change — guarded, no persisted state in the static phase. */
   changePassword: (actor: Actor | null) => boolean;
-  setNotificationPrefs: (actor: Actor | null, prefs: NotificationPrefs) => boolean;
+  setNotificationPrefs: (
+    actor: Actor | null,
+    prefs: NotificationPrefs,
+  ) => boolean;
   setPrivacy: (actor: Actor | null, visibility: Visibility) => boolean;
+  /** Append a newly-requested booking (from the checkout flow) → pending. */
+  addBooking: (actor: Actor | null, booking: BookingHistory) => boolean;
   /** Cancel an upcoming booking → cancelled, refund pending. */
   cancelBooking: (actor: Actor | null, id: string) => boolean;
   editReview: (actor: Actor | null, id: string, input: ReviewEdit) => boolean;
@@ -78,11 +83,23 @@ export const useTravelerStore = create<TravelerState>((set) => ({
     return true;
   },
 
+  addBooking: (actor, booking) => {
+    if (!can(actor, "bookTour")) return false;
+    set((s) => ({
+      bookings: s.bookings.some((b) => b.id === booking.id)
+        ? s.bookings
+        : [booking, ...s.bookings],
+    }));
+    return true;
+  },
+
   cancelBooking: (actor, id) => {
     if (!can(actor, "bookTour")) return false;
     set((s) => ({
       bookings: s.bookings.map((b) =>
-        b.id === id ? { ...b, status: "cancelled", refundStatus: "pending" } : b,
+        b.id === id
+          ? { ...b, status: "cancelled", refundStatus: "pending" }
+          : b,
       ),
     }));
     return true;
@@ -92,7 +109,9 @@ export const useTravelerStore = create<TravelerState>((set) => ({
     if (!can(actor, "writeReview")) return false;
     set((s) => ({
       reviews: s.reviews.map((r) =>
-        r.id === id ? { ...r, rating: input.rating, comment: input.comment } : r,
+        r.id === id
+          ? { ...r, rating: input.rating, comment: input.comment }
+          : r,
       ),
     }));
     return true;

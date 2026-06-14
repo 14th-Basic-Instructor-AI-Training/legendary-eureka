@@ -1,6 +1,11 @@
 import { TOURS } from "./fixtures";
 import type { FeaturedTour } from "@/features/destinations/schema";
-import type { TourDetail, TourReview, RatingBreakdown } from "./schema";
+import type {
+  TourDetail,
+  TourReview,
+  RatingBreakdown,
+  TourAgency,
+} from "./schema";
 
 /**
  * The ONE data seam for tours. Components import from here, never fixtures —
@@ -39,11 +44,26 @@ export async function getTourById(id: string): Promise<Result<TourDetail>> {
   return match ? { ok: true, data: match } : { ok: false, error: "not_found" };
 }
 
+/** Load one agency by id (resolved from the tours it runs). */
+export async function getAgencyById(
+  agencyId: string,
+): Promise<Result<TourAgency>> {
+  await delay();
+  const tour = TOURS.find((t) => t.agency.id === agencyId);
+  return tour
+    ? { ok: true, data: tour.agency }
+    : { ok: false, error: "not_found" };
+}
+
 /** Tours similar to this one — same province OR travel type, excluding itself. */
-export async function getSimilarTours(tour: TourDetail): Promise<Result<FeaturedTour[]>> {
+export async function getSimilarTours(
+  tour: TourDetail,
+): Promise<Result<FeaturedTour[]>> {
   await delay();
   const data = TOURS.filter(
-    (t) => t.id !== tour.id && (t.province === tour.province || t.travelType === tour.travelType),
+    (t) =>
+      t.id !== tour.id &&
+      (t.province === tour.province || t.travelType === tour.travelType),
   ).map(toTeaser);
   return { ok: true, data };
 }
@@ -54,7 +74,9 @@ export async function getAgencyTours(
   excludeId: string,
 ): Promise<Result<FeaturedTour[]>> {
   await delay();
-  const data = TOURS.filter((t) => t.agency.id === agencyId && t.id !== excludeId).map(toTeaser);
+  const data = TOURS.filter(
+    (t) => t.agency.id === agencyId && t.id !== excludeId,
+  ).map(toTeaser);
   return { ok: true, data };
 }
 
