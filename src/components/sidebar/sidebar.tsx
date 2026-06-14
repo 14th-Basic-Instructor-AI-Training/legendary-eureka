@@ -12,7 +12,7 @@ import {
 } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { useTranslation } from "react-i18next";
-import { HamburgerMenu } from "iconsax-reactjs";
+import { SidebarLeft } from "iconsax-reactjs";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "./use-mobile";
 import { Sheet, SheetContent } from "./sheet";
@@ -104,7 +104,7 @@ export function SidebarProvider({
 
   return (
     <SidebarContext.Provider value={value}>
-      <div className={cn("flex min-h-dvh w-full", className)}>{children}</div>
+      <div className={cn("flex h-dvh w-full overflow-hidden", className)}>{children}</div>
     </SidebarContext.Provider>
   );
 }
@@ -127,7 +127,7 @@ export function Sidebar({ children, className }: { children: ReactNode; classNam
     <aside
       data-state={state}
       className={cn(
-        "group bg-surface border-border hidden shrink-0 flex-col border-r transition-[width] duration-200 ease-in-out md:flex",
+        "group hidden h-dvh shrink-0 flex-col bg-[var(--bg-dashboard)] p-2 transition-[width] duration-200 ease-in-out md:flex",
         state === "expanded" ? "w-64" : "w-[3.75rem]",
         className,
       )}
@@ -150,7 +150,7 @@ export function SidebarTrigger({ className }: { className?: string }) {
         className,
       )}
     >
-      <HamburgerMenu size={20} color="currentColor" />
+      <SidebarLeft size={20} color="currentColor" />
     </button>
   );
 }

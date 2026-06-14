@@ -43,6 +43,14 @@ describe("permissions.can", () => {
     expect(can("agency", "manageAgencyRequests")).toBe(false);
     expect(can("traveler", "manageReports")).toBe(false);
   });
+
+  it("restricts analytics to admins", () => {
+    expect(can("admin", "viewAnalytics")).toBe(true);
+    expect(can("agency", "viewAnalytics")).toBe(false);
+    expect(can("traveler", "viewAnalytics")).toBe(false);
+    expect(can("guest", "viewAnalytics")).toBe(false);
+    expect(can(null, "viewAnalytics")).toBe(false);
+  });
 });
 
 describe("permissions.assertCan", () => {

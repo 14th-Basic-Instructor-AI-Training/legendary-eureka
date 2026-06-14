@@ -1,10 +1,17 @@
 import {
   ADMIN_ACTIVITIES,
   ADMIN_AGENCY_REQUESTS,
+  ADMIN_DASHBOARD,
   ADMIN_REPORTS,
   ADMIN_USERS,
 } from "./fixtures";
-import type { AgencyRequest, PlatformActivity, Report, UserSummary } from "./schema";
+import type {
+  AdminDashboard,
+  AgencyRequest,
+  PlatformActivity,
+  Report,
+  UserSummary,
+} from "./schema";
 
 /**
  * Read seam for the admin control panel. Activities + users are read-only here;
@@ -23,6 +30,12 @@ export async function getPlatformActivities(): Promise<Result<PlatformActivity[]
 export async function getUsers(): Promise<Result<UserSummary[]>> {
   await delay();
   return { ok: true, data: ADMIN_USERS };
+}
+
+/** Read-only analytics for the admin overview dashboard (mock metrics today). */
+export async function getAdminDashboard(): Promise<Result<AdminDashboard>> {
+  await delay();
+  return { ok: true, data: ADMIN_DASHBOARD };
 }
 
 /** Initial queues used to seed the store. */

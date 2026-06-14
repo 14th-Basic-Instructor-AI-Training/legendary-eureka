@@ -57,26 +57,28 @@ export function AppShell({ role, children }: { role: Role; children: React.React
       <SidebarProvider>
         <DashboardSidebar role={role} />
 
-        <SidebarInset>
-          <header className="border-border bg-surface/80 sticky top-0 z-10 flex h-16 items-center gap-3 border-b px-4 backdrop-blur md:px-8">
-            <SidebarTrigger />
-            <div className="flex flex-1 items-center justify-end gap-3">
-              <LanguageSwitcher />
-              <div className="hidden text-right sm:block">
-                <p className="text-sm leading-tight font-medium">{user.name}</p>
-                <p className="text-muted text-xs leading-tight">{t(`roles.${role}`)}</p>
+        <SidebarInset className="min-h-0 bg-[var(--bg-dashboard)] p-3">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl bg-white">
+            <header className="border-border flex h-16 shrink-0 items-center gap-3 rounded-t-xl border-b bg-white px-4 md:px-8">
+              <SidebarTrigger />
+              <div className="flex flex-1 items-center justify-end gap-3">
+                <LanguageSwitcher />
+                <div className="hidden text-right sm:block">
+                  <p className="text-sm leading-tight font-medium">{user.name}</p>
+                  <p className="text-muted text-xs leading-tight">{t(`roles.${role}`)}</p>
+                </div>
+                <Avatar size="sm">
+                  <Avatar.Fallback>{initialsOf(user.name)}</Avatar.Fallback>
+                </Avatar>
+                <Button variant="secondary" size="sm" onPress={handleLogout}>
+                  <LogoutCurve size={16} color="currentColor" />
+                  {t("common.logout")}
+                </Button>
               </div>
-              <Avatar size="sm">
-                <Avatar.Fallback>{initialsOf(user.name)}</Avatar.Fallback>
-              </Avatar>
-              <Button variant="secondary" size="sm" onPress={handleLogout}>
-                <LogoutCurve size={16} color="currentColor" />
-                {t("common.logout")}
-              </Button>
-            </div>
-          </header>
+            </header>
 
-          <main className="flex-1 p-4 md:p-8">{children}</main>
+            <main className="min-h-0 flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </Suspense>
