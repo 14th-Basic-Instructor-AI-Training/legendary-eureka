@@ -36,15 +36,30 @@ export const ReportSchema = z.object({
 export type Report = z.infer<typeof ReportSchema>;
 
 /** A platform activity as the admin sees it (across all agencies). */
+export const ActivityStatusSchema = z.enum(["draft", "published"]);
+export type ActivityStatus = z.infer<typeof ActivityStatusSchema>;
+
 export const PlatformActivitySchema = z.object({
   id: z.string(),
   title: z.string(),
   agencyName: z.string(),
   category: DestinationCategorySchema,
-  status: z.enum(["draft", "published"]),
+  status: ActivityStatusSchema,
   rating: z.number().min(0).max(5),
 });
 export type PlatformActivity = z.infer<typeof PlatformActivitySchema>;
+
+/** The fields an admin may edit on any activity (content-moderation form). */
+export const ActivityEditSchema = PlatformActivitySchema.pick({
+  title: true,
+  category: true,
+  status: true,
+});
+export type ActivityEdit = z.infer<typeof ActivityEditSchema>;
+
+/** Moderation state of a user account. */
+export const UserStatusSchema = z.enum(["active", "suspended", "banned"]);
+export type UserStatus = z.infer<typeof UserStatusSchema>;
 
 /** A user summary row for the users panel. */
 export const UserSummarySchema = z.object({
@@ -52,6 +67,7 @@ export const UserSummarySchema = z.object({
   name: z.string(),
   email: z.string().email(),
   role: RoleSchema,
+  status: UserStatusSchema,
   joinedAtLabel: z.string(),
 });
 export type UserSummary = z.infer<typeof UserSummarySchema>;

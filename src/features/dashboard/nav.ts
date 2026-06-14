@@ -7,6 +7,7 @@ import {
   Element3,
   Profile2User,
   Star1,
+  Chart2,
 } from "iconsax-reactjs";
 import type { Role } from "@/features/auth/schema";
 import type { IconType } from "./config";
@@ -28,10 +29,11 @@ export interface NavItem {
 
 export const SIDEBAR_NAV: Record<Role, NavItem[]> = {
   admin: [
-    { labelKey: "admin.tabs.requests", Icon: Buildings, tab: "requests" },
-    { labelKey: "admin.tabs.reports", Icon: Flag, tab: "reports" },
-    { labelKey: "admin.tabs.activities", Icon: Category, tab: "activities" },
-    { labelKey: "admin.tabs.users", Icon: Profile2User, tab: "users" },
+    { labelKey: "admin.nav.overview", Icon: Chart2, href: "/admin" },
+    { labelKey: "admin.tabs.requests", Icon: Buildings, href: "/admin/agencies" },
+    { labelKey: "admin.tabs.reports", Icon: Flag, href: "/admin/reports" },
+    { labelKey: "admin.tabs.activities", Icon: Category, href: "/admin/activities" },
+    { labelKey: "admin.tabs.users", Icon: Profile2User, href: "/admin/users" },
   ],
   agency: [
     { labelKey: "nav.dashboard", Icon: Element3, href: "/agency/dashboard" },

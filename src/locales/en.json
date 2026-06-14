@@ -23,7 +23,10 @@
     "completed": "Completed",
     "open": "Open",
     "resolved": "Resolved",
-    "dismissed": "Dismissed"
+    "dismissed": "Dismissed",
+    "active": "Active",
+    "suspended": "Suspended",
+    "banned": "Banned"
   },
   "roles": {
     "admin": "Admin",
@@ -408,12 +411,33 @@
     "activities": {
       "title": "All platform activities",
       "empty": "No activities on the platform yet.",
-      "by": "by {{agency}}"
+      "by": "by {{agency}}",
+      "deleteConfirm": "Delete this activity?",
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete",
+        "confirmDelete": "Yes, delete"
+      },
+      "editModal": {
+        "title": "Edit activity",
+        "save": "Save changes",
+        "cancel": "Cancel",
+        "fields": {
+          "title": "Title",
+          "category": "Category",
+          "status": "Status"
+        }
+      }
     },
     "users": {
       "title": "Users",
       "empty": "No users found.",
-      "joined": "Joined {{date}}"
+      "joined": "Joined {{date}}",
+      "actions": {
+        "suspend": "Suspend",
+        "ban": "Ban",
+        "reactivate": "Reactivate"
+      }
     },
     "dashboard": {
       "error": "Couldn't load the dashboard.",
@@ -478,6 +502,23 @@
           "activityEdited": "Edited activity “{{subject}}”",
           "userJoined": "{{subject}} joined Jalat"
         }
+      }
+    },
+    "nav": {
+      "overview": "Overview"
+    },
+    "pages": {
+      "agencies": {
+        "subtitle": "Review and confirm become-an-agency requests."
+      },
+      "reports": {
+        "subtitle": "Investigate and act on traveler reports."
+      },
+      "activities": {
+        "subtitle": "Edit or remove any activity on the platform."
+      },
+      "users": {
+        "subtitle": "Manage members — suspend, ban, or reactivate accounts."
       }
     }
   },

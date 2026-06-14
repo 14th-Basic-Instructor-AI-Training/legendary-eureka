@@ -16,6 +16,10 @@ const STATUS_COLOR: Record<string, ChipColor> = {
   completed: "accent",
   rejected: "danger",
   dismissed: "default",
+  // user moderation states
+  active: "success",
+  suspended: "warning",
+  banned: "danger",
 };
 
 /**

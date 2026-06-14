@@ -93,6 +93,7 @@ export const ADMIN_USERS: UserSummary[] = [
     name: "Admin User",
     email: "admin@jalat.test",
     role: "admin",
+    status: "active",
     joinedAtLabel: "Jan 2026",
   },
   {
@@ -100,6 +101,7 @@ export const ADMIN_USERS: UserSummary[] = [
     name: "Angkor Trails Agency",
     email: "agency@jalat.test",
     role: "agency",
+    status: "active",
     joinedAtLabel: "Feb 2026",
   },
   {
@@ -107,7 +109,16 @@ export const ADMIN_USERS: UserSummary[] = [
     name: "Dara Traveler",
     email: "traveler@jalat.test",
     role: "traveler",
+    status: "active",
     joinedAtLabel: "Mar 2026",
+  },
+  {
+    id: "u-traveler-2",
+    name: "Sokha Chan",
+    email: "sokha@jalat.test",
+    role: "traveler",
+    status: "suspended",
+    joinedAtLabel: "Apr 2026",
   },
 ].map((u) => UserSummarySchema.parse(u));
 
