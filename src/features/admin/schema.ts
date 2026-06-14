@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { RoleSchema } from "@/features/auth/schema";
-import { DestinationCategorySchema } from "@/features/destinations/schema";
+import {
+  DestinationCategorySchema,
+  ProvinceSchema,
+  TravelTypeSchema,
+} from "@/features/destinations/schema";
 
 /**
  * Admin control-panel data shapes. The two mutable queues — agency-onboarding
@@ -53,16 +57,58 @@ export const PlatformActivitySchema = z.object({
   category: DestinationCategorySchema,
   status: ActivityStatusSchema,
   rating: z.number().min(0).max(5),
+  // Destination detail fields (align with the API body). Optional so legacy
+  // fixtures created before these existed still parse.
+  description: z.string().optional(),
+  province: ProvinceSchema.optional(),
+  travelType: TravelTypeSchema.optional(),
+  coverImageUrl: z.string().url().optional(),
+  priceFrom: z.number().nonnegative().optional(),
+  currency: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });
 export type PlatformActivity = z.infer<typeof PlatformActivitySchema>;
 
-/** The fields an admin may edit on any activity (content-moderation form). */
-export const ActivityEditSchema = PlatformActivitySchema.pick({
-  title: true,
-  category: true,
-  status: true,
+/**
+ * The content-moderation form. Mirrors the API destination body (see
+ * `DestinationDraftSchema`) plus the two admin-list concerns (`category` and
+ * publish `status`). Used for both "Create destination" and editing an existing
+ * activity. Kept plain (no coercion/defaults) so the form's input and output
+ * types match — number fields are converted in the field's `onChange`.
+ */
+export const ActivityDraftSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().min(1),
+  province: ProvinceSchema,
+  travelType: TravelTypeSchema,
+  category: DestinationCategorySchema,
+  status: ActivityStatusSchema,
+  coverImageUrl: z.string().url(),
+  priceFrom: z.number().nonnegative(),
+  currency: z.string().min(1).max(8),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
 });
-export type ActivityEdit = z.infer<typeof ActivityEditSchema>;
+export type ActivityDraft = z.infer<typeof ActivityDraftSchema>;
+
+/** A partial set of editable activity fields the store can merge onto a record. */
+export const ActivityPatchSchema = PlatformActivitySchema.omit({
+  id: true,
+  agencyName: true,
+  rating: true,
+}).partial();
+export type ActivityPatch = z.infer<typeof ActivityPatchSchema>;
+
+/**
+ * Map a form draft onto stored activity fields — the API's `name` is the list's
+ * `title`; everything else passes through. Returns all fields defined (the draft
+ * is complete), so it doubles as the create payload.
+ */
+export function draftToActivityFields(draft: ActivityDraft) {
+  const { name, ...rest } = draft;
+  return { title: name, ...rest };
+}
 
 /** Moderation state of a user account. */
 export const UserStatusSchema = z.enum(["active", "suspended", "banned"]);

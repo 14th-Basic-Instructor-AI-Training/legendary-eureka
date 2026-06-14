@@ -11,6 +11,7 @@ import {
   Receipt21,
   Setting2,
   Notification,
+  Location,
 } from "iconsax-reactjs";
 import type { Role } from "@/features/auth/schema";
 import type { IconType } from "./config";
@@ -30,41 +31,67 @@ export interface NavItem {
   tab?: string;
 }
 
-export const SIDEBAR_NAV: Record<Role, NavItem[]> = {
+/**
+ * A sidebar section. `labelKey` renders a group heading above the items; omit
+ * it for an ungrouped run of items (no heading).
+ */
+export interface NavGroup {
+  labelKey?: string;
+  /** Draw a divider rule above this group (separates it from the group above). */
+  separated?: boolean;
+  items: NavItem[];
+}
+
+export const SIDEBAR_NAV: Record<Role, NavGroup[]> = {
   admin: [
-    { labelKey: "admin.nav.overview", Icon: Chart2, href: "/admin" },
+    { items: [{ labelKey: "admin.nav.overview", Icon: Chart2, href: "/admin" }] },
     {
-      labelKey: "admin.nav.requests",
-      Icon: Buildings,
-      href: "/admin/requests",
+      labelKey: "admin.nav.groups.operations",
+      items: [
+        { labelKey: "admin.nav.content", Icon: Category, href: "/admin/content" },
+        { labelKey: "admin.nav.bookings", Icon: Receipt21, href: "/admin/bookings" },
+      ],
     },
-    { labelKey: "admin.tabs.reports", Icon: Flag, href: "/admin/reports" },
-    { labelKey: "admin.nav.content", Icon: Category, href: "/admin/content" },
-    { labelKey: "admin.tabs.users", Icon: Profile2User, href: "/admin/users" },
     {
-      labelKey: "admin.nav.bookings",
-      Icon: Receipt21,
-      href: "/admin/bookings",
+      labelKey: "admin.nav.groups.moderation",
+      items: [
+        { labelKey: "admin.nav.requests", Icon: Buildings, href: "/admin/requests" },
+        { labelKey: "admin.tabs.reports", Icon: Flag, href: "/admin/reports" },
+      ],
     },
-    { labelKey: "admin.nav.settings", Icon: Setting2, href: "/admin/settings" },
+    {
+      items: [
+        { labelKey: "admin.tabs.users", Icon: Profile2User, href: "/admin/users" },
+        { labelKey: "admin.nav.settings", Icon: Setting2, href: "/admin/settings" },
+      ],
+    },
   ],
   agency: [
-    { labelKey: "nav.dashboard", Icon: Element3, href: "/agency/dashboard" },
-    { labelKey: "agency.tabs.bookings", Icon: ClipboardText, tab: "bookings" },
-    { labelKey: "agency.tabs.activities", Icon: Category, tab: "activities" },
-    { labelKey: "agency.tabs.packages", Icon: Calendar, tab: "packages" },
+    {
+      items: [
+        { labelKey: "nav.dashboard", Icon: Element3, href: "/agency/dashboard" },
+        { labelKey: "tours.nav.tours", Icon: Location, href: "/agency/tours" },
+        { labelKey: "agency.tabs.bookings", Icon: ClipboardText, href: "/agency/bookings" },
+        { labelKey: "agency.tabs.activities", Icon: Category, href: "/agency/activities" },
+        { labelKey: "agency.tabs.packages", Icon: Calendar, href: "/agency/packages" },
+      ],
+    },
   ],
   traveler: [
-    { labelKey: "nav.dashboard", Icon: Star1, href: "/traveler" },
     {
-      labelKey: "profile.nav.profile",
-      Icon: Profile2User,
-      href: "/traveler/profile",
-    },
-    {
-      labelKey: "notifications.nav.title",
-      Icon: Notification,
-      href: "/traveler/notifications",
+      items: [
+        { labelKey: "nav.dashboard", Icon: Star1, href: "/traveler" },
+        {
+          labelKey: "profile.nav.profile",
+          Icon: Profile2User,
+          href: "/traveler/profile",
+        },
+        {
+          labelKey: "notifications.nav.title",
+          Icon: Notification,
+          href: "/traveler/notifications",
+        },
+      ],
     },
   ],
 };

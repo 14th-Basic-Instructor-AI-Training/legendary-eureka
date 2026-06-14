@@ -12,7 +12,6 @@ import {
 } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { useTranslation } from "react-i18next";
-import { SidebarLeft } from "iconsax-reactjs";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "./use-mobile";
 import { Sheet, SheetContent } from "./sheet";
@@ -128,7 +127,7 @@ export function Sidebar({ children, className }: { children: ReactNode; classNam
       data-state={state}
       className={cn(
         "group hidden h-dvh shrink-0 flex-col bg-[var(--bg-dashboard)] p-2 transition-[width] duration-200 ease-in-out md:flex",
-        state === "expanded" ? "w-64" : "w-[3.75rem]",
+        state === "expanded" ? "w-64" : "w-[4.5rem]",
         className,
       )}
     >
@@ -138,7 +137,7 @@ export function Sidebar({ children, className }: { children: ReactNode; classNam
 }
 
 export function SidebarTrigger({ className }: { className?: string }) {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, state } = useSidebar();
   const { t } = useTranslation();
   return (
     <button
@@ -150,7 +149,46 @@ export function SidebarTrigger({ className }: { className?: string }) {
         className,
       )}
     >
-      <SidebarLeft size={20} color="currentColor" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+      >
+        <g clipPath="url(#sidebar-toggle-clip)">
+          <path
+            d="M21.97 15V9C21.97 4 19.97 2 14.97 2H8.96997C3.96997 2 1.96997 4 1.96997 9V15C1.96997 20 3.96997 22 8.96997 22H14.97C19.97 22 21.97 20 21.97 15Z"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M7.96997 2V22"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M14.97 9.43945L12.41 11.9995L14.97 14.5595"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={cn(
+              "origin-center [transform-box:fill-box] transition-transform duration-200 ease-in-out",
+              state === "collapsed" && "rotate-180",
+            )}
+          />
+        </g>
+        <defs>
+          <clipPath id="sidebar-toggle-clip">
+            <rect width="24" height="24" fill="white" />
+          </clipPath>
+        </defs>
+      </svg>
     </button>
   );
 }
@@ -200,7 +238,7 @@ export function SidebarMenuButton({
       data-active={active ? "true" : undefined}
       className={cn(
         "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium outline-none transition-colors",
-        "group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:px-0",
+        "group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:px-2.5",
         active
           ? "bg-primary/10 text-primary"
           : "text-muted hover:bg-muted/10 hover:text-foreground",

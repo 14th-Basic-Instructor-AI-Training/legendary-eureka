@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Reveal, Skeleton } from "@/ui";
 import { cn } from "@/lib/utils";
@@ -62,9 +62,14 @@ export function ExploreResults({
   const { t } = useTranslation();
   const [visible, setVisible] = useState(PAGE_SIZE);
 
-  useEffect(() => {
+  // Reset the Load-More window whenever the query/filters/tab change. Adjusting
+  // state during render (with a previous-value guard) is React's recommended
+  // alternative to a setState-in-effect for "reset state when a prop changes".
+  const [prevResetKey, setPrevResetKey] = useState(resetKey);
+  if (resetKey !== prevResetKey) {
+    setPrevResetKey(resetKey);
     setVisible(PAGE_SIZE);
-  }, [resetKey]);
+  }
 
   const gridClass =
     view === "grid"

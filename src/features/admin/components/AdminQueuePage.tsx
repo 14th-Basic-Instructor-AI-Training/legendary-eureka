@@ -19,7 +19,7 @@ export function AdminQueuePage({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6">
+    <div className="mx-auto flex h-full max-w-full flex-col gap-6">
       <header>
         <h1 className="text-primary text-2xl font-bold tracking-tight">{t(titleKey)}</h1>
         <p className="text-muted mt-1">{t(subtitleKey)}</p>

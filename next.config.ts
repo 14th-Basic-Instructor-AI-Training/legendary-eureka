@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  reactCompiler: true,
   images: {
     // Placeholder photo hosts used by the mock destinations fixtures.
     // Swap/extend when real image storage lands.

@@ -2,19 +2,36 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Trash, CloseCircle, Box1, SearchNormal1 } from "iconsax-reactjs";
-import { Button, Chip, StatusChip } from "@/ui";
+import { Trash, CloseCircle, Box1, SearchNormal1, Filter } from "iconsax-reactjs";
+import { Button, Chip, ListBox, Select, StatusChip, Tabs } from "@/ui";
 import { formatPrice } from "@/lib/format";
 import { useSession } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 import { useAdminStore } from "../store";
+import { TourApprovalsQueue } from "@/features/tours/components/TourApprovalsQueue";
+import { useToursStore } from "@/features/tours/store";
 import type { AdminPackageStatus } from "../schema";
+import type { PackageApprovalStatus } from "@/features/tours/schema";
 
-const STATUS_FILTERS: Array<{ value: "all" | AdminPackageStatus; labelKey: string }> = [
+/** Catalog status filters plus the package-approval queue ("approvals"). */
+type PackageFilter = "all" | AdminPackageStatus | "approvals";
+
+const STATUS_FILTERS: Array<{ value: PackageFilter; labelKey: string }> = [
   { value: "all", labelKey: "common.all" },
   { value: "published", labelKey: "status.published" },
   { value: "draft", labelKey: "status.draft" },
   { value: "archived", labelKey: "status.archived" },
+  { value: "approvals", labelKey: "tours.nav.approvals" },
+];
+
+/** Status filter for the approval queue, shown as a dropdown when approvals is active. */
+type ApprovalFilter = "all" | PackageApprovalStatus;
+
+const APPROVAL_STATUS_FILTERS: Array<{ value: ApprovalFilter; labelKey: string }> = [
+  { value: "all", labelKey: "common.all" },
+  { value: "pending", labelKey: "status.pending" },
+  { value: "approved", labelKey: "status.approved" },
+  { value: "rejected", labelKey: "status.rejected" },
 ];
 
 export function PackagesAdmin() {
@@ -27,7 +44,12 @@ export function PackagesAdmin() {
 
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | AdminPackageStatus>("all");
+  const [statusFilter, setStatusFilter] = useState<PackageFilter>("all");
+  const [approvalStatus, setApprovalStatus] = useState<ApprovalFilter>("all");
+
+  const showApprovals = statusFilter === "approvals";
+  const approvalStatusLabel =
+    APPROVAL_STATUS_FILTERS.find((f) => f.value === approvalStatus)?.labelKey ?? "common.all";
 
   const filtered = packages.filter((p) => {
     const matchesStatus = statusFilter === "all" || p.status === statusFilter;
@@ -39,6 +61,11 @@ export function PackagesAdmin() {
 
   const publishedCount = packages.filter((p) => p.status === "published").length;
   const totalBookings = packages.reduce((sum, p) => sum + p.bookingsCount, 0);
+
+  // Pending package-approval requests come from the tours store (Flow 2).
+  const pendingApprovals = useToursStore(
+    (s) => s.packages.filter((p) => p.status === "pending").length,
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -52,45 +79,82 @@ export function PackagesAdmin() {
           <span className="text-foreground text-lg font-bold">{totalBookings}</span>
           <span className="text-muted text-sm">{t("admin.packages.totalBookings")}</span>
         </div>
+        {showApprovals ? (
+          <div className="bg-surface border-border flex items-center gap-2 rounded-xl border px-4 py-2">
+            <span className="text-warning text-lg font-bold">{pendingApprovals}</span>
+            <span className="text-muted text-sm">{t("tours.admin.approvals.awaiting")}</span>
+          </div>
+        ) : null}
       </div>
 
       {/* Search + filter */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-48 flex-1">
+      <div className="flex items-center gap-3">
+        <div className="relative min-w-40 flex-1">
           <SearchNormal1
             size={16}
             color="currentColor"
             className="text-muted pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
           />
           <input
-            aria-label={t("admin.packages.searchPlaceholder")}
-            placeholder={t("admin.packages.searchPlaceholder")}
+            aria-label={t(
+              showApprovals ? "tours.admin.approvals.search" : "admin.packages.searchPlaceholder",
+            )}
+            placeholder={t(
+              showApprovals ? "tours.admin.approvals.search" : "admin.packages.searchPlaceholder",
+            )}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="border-border bg-surface text-foreground placeholder:text-muted w-full rounded-xl border px-3 py-2 pl-9 text-sm outline-none focus:ring-1 focus:ring-[var(--primary)]"
           />
         </div>
-        <div className="flex gap-1.5">
-          {STATUS_FILTERS.map((f) => (
-            <button
-              key={f.value}
-              type="button"
-              onClick={() => setStatusFilter(f.value)}
-              className={[
-                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                statusFilter === f.value
-                  ? "bg-primary text-white"
-                  : "bg-muted/10 text-muted hover:bg-muted/20",
-              ].join(" ")}
+        <Tabs
+          selectedKey={statusFilter}
+          onSelectionChange={(key) => setStatusFilter(key as PackageFilter)}
+        >
+          <Tabs.ListContainer>
+            <Tabs.List
+              aria-label={t("admin.content.tabs.packages")}
+              className="bg-primary/15!"
             >
-              {t(f.labelKey)}
-            </button>
-          ))}
-        </div>
+              {STATUS_FILTERS.map((f) => (
+                <Tabs.Tab key={f.value} id={f.value}>
+                  <span className="whitespace-nowrap">{t(f.labelKey)}</span>
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              ))}
+            </Tabs.List>
+          </Tabs.ListContainer>
+        </Tabs>
+
+        {showApprovals ? (
+          <Select
+            aria-label={t("tours.admin.approvals.statusFilter")}
+            selectedKey={approvalStatus}
+            onSelectionChange={(key) => key !== null && setApprovalStatus(key as ApprovalFilter)}
+            className="ml-auto min-w-44 shrink-0"
+          >
+            <Select.Trigger>
+              <Filter size={16} color="currentColor" className="text-muted" />
+              <Select.Value>{() => t(approvalStatusLabel)}</Select.Value>
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                {APPROVAL_STATUS_FILTERS.map((f) => (
+                  <ListBox.Item key={f.value} id={f.value} textValue={t(f.labelKey)}>
+                    {t(f.labelKey)}
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
+          </Select>
+        ) : null}
       </div>
 
-      {/* List */}
-      {filtered.length === 0 ? (
+      {/* Package-approval requests live under the "Request approval" filter */}
+      {showApprovals ? (
+        <TourApprovalsQueue hidePendingBanner statusFilter={approvalStatus} search={search} />
+      ) : filtered.length === 0 ? (
         <p className="text-muted py-8 text-center text-sm">{t("admin.packages.empty")}</p>
       ) : (
         <ul className="flex flex-col gap-2">

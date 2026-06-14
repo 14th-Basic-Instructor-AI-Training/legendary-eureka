@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft } from "iconsax-reactjs";
+import { LogoutCurve, UserSquare } from "iconsax-reactjs";
 import { LocaleLink } from "@/components/LocaleLink";
 import {
   Sidebar,
@@ -16,15 +16,39 @@ import {
 } from "@/components/sidebar/sidebar";
 import { SIDEBAR_NAV } from "@/features/dashboard/nav";
 import { dashboardPathFor } from "@/lib/permissions";
+import { useAuthStore } from "@/features/auth/store";
+import { useLocalizedRouter } from "@/lib/locale";
+import { useConfirm } from "@/ui";
+import { cn } from "@/lib/utils";
 import type { Role } from "@/features/auth/schema";
+
+/** Items that get a divider rule above them in the sidebar. */
+const DIVIDER_ABOVE = new Set(["admin.tabs.users", "nav.settings"]);
 
 /** Role-aware dashboard sidebar. Nav items deep-link into the page's tabs. */
 export function DashboardSidebar({ role }: { role: Role }) {
   const { t } = useTranslation();
   const params = useSearchParams();
   const pathname = usePathname() ?? "";
-  const items = SIDEBAR_NAV[role];
-  const defaultTab = items.find((item) => item.tab)?.tab;
+  const router = useLocalizedRouter();
+  const signOut = useAuthStore((s) => s.signOut);
+  const confirm = useConfirm();
+
+  const handleLogout = async () => {
+    const ok = await confirm({
+      intent: "danger",
+      icon: <LogoutCurve size={20} color="currentColor" />,
+      title: t("common.confirmDialog.logoutTitle"),
+      description: t("common.confirmDialog.logoutDescription"),
+      confirmLabel: t("common.logout"),
+    });
+    if (!ok) return;
+    signOut();
+    router.replace("/login");
+  };
+  const groups = SIDEBAR_NAV[role];
+  const allItems = groups.flatMap((g) => g.items);
+  const defaultTab = allItems.find((item) => item.tab)?.tab;
   const activeTab = params.get("tab") ?? defaultTab;
   const base = dashboardPathFor(role);
   const onBase = pathname.endsWith(base);
@@ -43,38 +67,73 @@ export function DashboardSidebar({ role }: { role: Role }) {
       </SidebarHeader>
 
       <SidebarContent>
+        {groups.map((group, gi) => (
+          <SidebarMenu
+            key={group.labelKey ?? `group-${gi}`}
+            className={cn(gi > 0 && "mt-3", group.separated && "border-border border-t pt-2")}
+          >
+            {group.labelKey ? (
+              <li className="text-muted px-3 pt-3 pb-1 text-[11px] font-semibold tracking-wider uppercase group-data-[state=collapsed]:hidden">
+                {t(group.labelKey)}
+              </li>
+            ) : null}
+            {group.items.map(({ labelKey, Icon, href: route, tab }) => {
+              const href = route ?? (tab ? `${base}?tab=${tab}` : base);
+              const active = route
+                ? pathname.endsWith(route)
+                : onBase && (tab ? activeTab === tab : true);
+              return (
+                <SidebarMenuItem
+                  key={labelKey}
+                  className={cn(
+                    DIVIDER_ABOVE.has(labelKey) && "border-border mt-2 border-t pt-2",
+                  )}
+                >
+                  <SidebarMenuButton asChild active={active}>
+                    <LocaleLink href={href} title={t(labelKey)}>
+                      <Icon
+                        size={20}
+                        color="currentColor"
+                        variant={active ? "Bold" : "Linear"}
+                      />
+                      <SidebarLabel>{t(labelKey)}</SidebarLabel>
+                    </LocaleLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        ))}
+      </SidebarContent>
+
+      <SidebarFooter className="pb-6">
         <SidebarMenu>
-          {items.map(({ labelKey, Icon, href: route, tab }) => {
-            const href = route ?? (tab ? `${base}?tab=${tab}` : base);
-            const active = route
-              ? pathname.endsWith(route)
-              : onBase && (tab ? activeTab === tab : true);
+          {role === "agency" && (() => {
+            const profileHref = "/agency/profile";
+            const profileActive = pathname.endsWith(profileHref);
             return (
-              <SidebarMenuItem key={labelKey}>
-                <SidebarMenuButton asChild active={active}>
-                  <LocaleLink href={href} title={t(labelKey)}>
-                    <Icon
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild active={profileActive}>
+                  <LocaleLink href={profileHref} title={t("agency.profile.title")}>
+                    <UserSquare
                       size={20}
                       color="currentColor"
-                      variant={active ? "Bold" : "Linear"}
+                      variant={profileActive ? "Bold" : "Linear"}
                     />
-                    <SidebarLabel>{t(labelKey)}</SidebarLabel>
+                    <SidebarLabel>{t("agency.profile.title")}</SidebarLabel>
                   </LocaleLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             );
-          })}
-        </SidebarMenu>
-      </SidebarContent>
-
-      <SidebarFooter>
-        <SidebarMenu>
+          })()}
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <LocaleLink href="/" title={t("nav.backToSite")}>
-                <ArrowLeft size={20} color="currentColor" />
-                <SidebarLabel>{t("nav.backToSite")}</SidebarLabel>
-              </LocaleLink>
+            <SidebarMenuButton
+              onClick={handleLogout}
+              title={t("common.logout")}
+              className="py-3 hover:bg-danger/10 hover:text-danger"
+            >
+              <LogoutCurve size={20} color="currentColor" />
+              <SidebarLabel>{t("common.logout")}</SidebarLabel>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

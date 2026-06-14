@@ -217,7 +217,16 @@
     "save": "Save",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
-    "all": "All"
+    "all": "All",
+    "noResults": "No results found",
+    "confirmDialog": {
+      "logoutTitle": "Log out?",
+      "logoutDescription": "You'll need to sign in again to access your account.",
+      "deleteTitle": "Delete this item?",
+      "deleteDescription": "This action can't be undone.",
+      "bookingTitle": "Confirm this booking?",
+      "bookingDescription": "The traveler will be notified once you confirm."
+    }
   },
   "status": {
     "draft": "Draft",
@@ -253,7 +262,176 @@
     "controlPanel": "Control panel",
     "menu": "Menu",
     "toggleSidebar": "Toggle sidebar",
-    "backToSite": "Back to Jalat"
+    "backToSite": "Back to Jalat",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "placeholder": "This section is coming soon.",
+    "nav": {
+      "account": "Account Information",
+      "payment": "Payment Information",
+      "notifications": "Notifications",
+      "approval": "Approval Status",
+      "support": "Support Center",
+      "becomeHost": "Become a Host",
+      "terms": "Terms of Services"
+    },
+    "account": {
+      "title": "Account information",
+      "subtitle": "Update your photo and personal details here.",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "photoLabel": "Your photo",
+      "photoHint": "This will be displayed on your profile.",
+      "uploadCta": "Click to upload",
+      "uploadRest": "or drag and drop",
+      "uploadFormats": "SVG, PNG, JPG or GIF (max. 800×400px)",
+      "name": "Name",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email address",
+      "emailUnverified": "Your email address is not verified yet.",
+      "verifyNow": "Verify Now",
+      "phone": "Phone Number",
+      "country": "Country",
+      "countries": {
+        "us": "United States of America",
+        "kh": "Cambodia",
+        "kr": "South Korea",
+        "jp": "Japan",
+        "th": "Thailand",
+        "vn": "Vietnam"
+      }
+    },
+    "payment": {
+      "title": "Payment information",
+      "subtitle": "Update your cards and payment details here.",
+      "addNew": "Add new",
+      "savedCards": "Saved Cards",
+      "secured": "Your cards information will be safe and secured.",
+      "endingIn": "{{brand}} ending in {{last4}}",
+      "expiry": "Expiry {{date}}",
+      "default": "Default",
+      "edit": "Edit"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Get emails to find out what's going on when you're not online. You can turn them off anytime.",
+      "mobileTitle": "Mobile Notifications",
+      "mobileDesc": "Receive the latest news, updates and industry tutorials from us.",
+      "emailTitle": "Email Notifications",
+      "emailDesc": "These are notifications for comments on your posts and replies to your comments.",
+      "options": {
+        "text": {
+          "label": "Enable text notifications",
+          "desc": "News about product and feature updates."
+        },
+        "push": {
+          "label": "Push notifications",
+          "desc": "Tips on getting more out of Jalat."
+        },
+        "weekly": {
+          "label": "Weekly Notifications",
+          "desc": "Get involved in our beta testing program or participate in paid product user research."
+        },
+        "promo": {
+          "label": "Promotional & Announcement"
+        },
+        "offers": {
+          "label": "Latest offers & deals",
+          "desc": "Only notify me if I'm mentioned in a comment."
+        }
+      },
+      "description": "Choose what we email you about.",
+      "bookingUpdates": {
+        "label": "Booking updates",
+        "description": "Approvals, rejections, and reminders for your bookings."
+      },
+      "tripReminders": {
+        "label": "Trip reminders",
+        "description": "Heads-up before an upcoming trip starts."
+      },
+      "reviewReplies": {
+        "label": "Review replies",
+        "description": "When an agency responds to your review."
+      },
+      "promotions": {
+        "label": "Promotions",
+        "description": "Deals and seasonal offers from agencies."
+      },
+      "productNews": {
+        "label": "Product news",
+        "description": "New Jalat features and announcements."
+      }
+    },
+    "support": {
+      "title": "Support Center",
+      "subtitle": "Get help when you need it — reach our team, find safety resources, and learn how Jalat works.",
+      "searchPlaceholder": "Search here",
+      "cards": {
+        "safety": {
+          "title": "Safety Center",
+          "desc": "Get in touch in case of immediate danger.",
+          "link": "Call emergency services."
+        },
+        "ticket": {
+          "title": "Ticket Support",
+          "desc": "Reach out to our dedicated support team.",
+          "link": "Reply within 24hrs."
+        },
+        "dispute": {
+          "title": "Dispute and Insurance",
+          "desc": "Manage trip disputes and insurance claims."
+        },
+        "howItWorks": {
+          "title": "How Jalat Works",
+          "desc": "Book tours and plan trips with trusted local agencies."
+        },
+        "faq": {
+          "title": "Frequently Asked Questions",
+          "desc": "Search frequently asked questions about Jalat."
+        }
+      }
+    },
+    "saved": "Saved",
+    "personalInfo": {
+      "title": "Personal info",
+      "description": "Update how you appear across Jalat.",
+      "name": "Display name",
+      "email": "Email",
+      "phone": "Phone",
+      "phonePlaceholder": "+855 …",
+      "avatar": "Avatar URL",
+      "bio": "Bio",
+      "save": "Save changes"
+    },
+    "password": {
+      "title": "Password",
+      "description": "Choose a strong, unique password.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "save": "Update password",
+      "updated": "Password updated"
+    },
+    "privacy": {
+      "title": "Privacy",
+      "defaultVisibility": "Default trip plan visibility",
+      "description": "Applies to new trip plans you create.",
+      "publicHint": "Anyone with the link can view.",
+      "privateHint": "Only you can view."
+    },
+    "danger": {
+      "title": "Danger zone",
+      "description": "Permanently delete your account and all of your data.",
+      "deleteAccount": "Delete account",
+      "confirm": {
+        "title": "Delete your account?",
+        "description": "This permanently deletes your profile, bookings, trip plans, and reviews. This can’t be undone.",
+        "confirm": "Delete account"
+      }
+    }
   },
   "auth": {
     "title": "Welcome back",
@@ -618,6 +796,28 @@
       "food": "Food",
       "stay": "Stays"
     },
+    "provinces": {
+      "PHNOM_PENH": "Phnom Penh",
+      "SIEM_REAP": "Siem Reap",
+      "BATTAMBANG": "Battambang",
+      "PREAH_SIHANOUK": "Preah Sihanouk",
+      "KAMPOT": "Kampot",
+      "KEP": "Kep",
+      "KOH_KONG": "Koh Kong",
+      "MONDULKIRI": "Mondulkiri",
+      "RATANAKIRI": "Ratanakiri",
+      "KRATIE": "Kratie"
+    },
+    "travelTypes": {
+      "ADVENTURE": "Adventure",
+      "CULTURAL": "Cultural",
+      "NATURE": "Nature",
+      "FOOD": "Food",
+      "BEACH": "Beach",
+      "HISTORICAL": "Historical",
+      "RELAXATION": "Relaxation",
+      "WILDLIFE": "Wildlife"
+    },
     "states": {
       "empty": "No destinations to show yet.",
       "error": "We couldn't load destinations.",
@@ -742,9 +942,134 @@
     "similar": {
       "title": "Similar tours",
       "subtitle": "More trips you might like."
+    },
+    "nav": {
+      "tours": "Tours",
+      "destinations": "Destinations",
+      "approvals": "Package approvals"
+    },
+    "agency": {
+      "title": "Tour builder",
+      "subtitle": "Create destinations, build packages, and request approval."
+    },
+    "flow": {
+      "title": "How it works",
+      "adminTitle": "Admin destination",
+      "agencyTitle": "Your destination",
+      "steps": {
+        "adminCreates": "Admin creates destination",
+        "agencySelects": "Select a destination",
+        "agencyCreatesOwn": "Create your destination",
+        "buildPackage": "Build tour package",
+        "requestApproval": "Request approval"
+      }
+    },
+    "tabs": {
+      "destinations": "Destinations",
+      "packages": "Packages"
+    },
+    "destinations": {
+      "title": "Available destinations",
+      "new": "New destination",
+      "empty": "No destinations yet. Create the first one.",
+      "buildPackage": "Build package",
+      "from": "From",
+      "origin": {
+        "admin": "Admin",
+        "agency": "Agency"
+      },
+      "form": {
+        "title": "Create destination",
+        "name": "Name",
+        "namePlaceholder": "e.g. Angkor Wat",
+        "province": "Province",
+        "travelType": "Travel type",
+        "description": "Description",
+        "descriptionPlaceholder": "Short description of the place",
+        "coverImageUrl": "Cover image URL",
+        "coverImageUrlPlaceholder": "https://…",
+        "price": "Price from (USD)",
+        "currency": "Currency",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "submit": "Create destination",
+        "searchProvince": "Search province…",
+        "noProvince": "No province found"
+      }
+    },
+    "packages": {
+      "title": "Your tour packages",
+      "new": "New package",
+      "empty": "No packages yet. Build one from a destination.",
+      "requestApproval": "Request approval",
+      "approvalSent": "Approval requested",
+      "justNow": "Just now",
+      "byAgency": "by {{name}}",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "form": {
+        "name": "Package title",
+        "namePlaceholder": "e.g. 3-day Angkor explorer",
+        "destination": "Destination",
+        "selectDestination": "Select a destination",
+        "days": "Days",
+        "price": "Price from (USD)",
+        "submit": "Create package"
+      }
+    },
+    "admin": {
+      "destinations": {
+        "title": "Destinations",
+        "subtitle": "Create destinations agencies can build tour packages on.",
+        "new": "New destination",
+        "empty": "No destinations yet.",
+        "requestsEmpty": "No destination requests yet.",
+        "tabs": {
+          "all": "All destinations",
+          "requests": "Create requests"
+        }
+      },
+      "approvals": {
+        "title": "Package approvals",
+        "subtitle": "Review tour packages agencies submitted for approval.",
+        "empty": "No package approval requests.",
+        "pendingCount": "{{count}} awaiting approval",
+        "awaiting": "awaiting approval",
+        "statusFilter": "Filter by status",
+        "approve": "Approve",
+        "reject": "Reject",
+        "search": "Search packages…"
+      }
     }
   },
   "agency": {
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Manage your tour packages, activities, and bookings",
+      "welcome": "Welcome back, {{name}}",
+      "bookingsTrend": "Bookings Over Time",
+      "bookingStatus": "Booking Overview",
+      "totalPackages": "Total Tour Packages",
+      "activePackages": "{{count}} currently active",
+      "pendingBookings": "Pending Booking Requests",
+      "pendingBookingsSub": "{{count}} awaiting review",
+      "totalActivities": "Total Activities",
+      "totalActivitiesSub": "Across {{count}} categories",
+      "avgRating": "Average Rating",
+      "avgRatingSub": "Based on {{count}} reviews",
+      "recentBookings": "Recent Bookings",
+      "viewAll": "View all",
+      "recentReviews": "Recent Reviews",
+      "reviewsEmpty": "No reviews yet.",
+      "quickActions": "Quick Actions",
+      "quickActionsSub": "Create and publish content to attract more travelers to your packages.",
+      "createActivity": "Create Activity",
+      "createPackage": "Create Package",
+      "colTraveler": "Traveler",
+      "colPackage": "Package",
+      "colDate": "Date",
+      "colStatus": "Status"
+    },
     "title": "Agency Workspace",
     "subtitle": "Manage your activities, build tour packages, and confirm bookings.",
     "tabs": {
@@ -787,7 +1112,59 @@
       "bookingsCount_one": "{{count}} booking",
       "bookingsCount_other": "{{count}} bookings",
       "days_one": "{{count}} day",
-      "days_other": "{{count}} days"
+      "days_other": "{{count}} days",
+      "pageTitle": "Tour Packages",
+      "pageSubtitle": "Manage your published and draft tour packages",
+      "tabAll": "All",
+      "tabPublished": "Published",
+      "tabDraft": "Draft",
+      "tabArchived": "Archived",
+      "search": "Search packages...",
+      "createNew": "Create New Package",
+      "createFirst": "Create First Package",
+      "emptyTitle": "No packages yet",
+      "emptyDesc": "Build your first tour package to start attracting travelers.",
+      "edit": "Edit",
+      "delete": "Delete",
+      "publish": "Publish",
+      "archive": "Archive",
+      "cancel": "Cancel",
+      "back": "Back",
+      "saveDraft": "Save Draft",
+      "nextStep": "Next Step",
+      "modalCreateTitle": "Create New Package",
+      "modalEditTitle": "Edit Package",
+      "step1": "Basic Info",
+      "step2": "Itinerary",
+      "step3": "Review & Publish",
+      "fieldName": "Package Name",
+      "fieldNamePlaceholder": "e.g. Angkor Discovery — Temples & Sunrise",
+      "fieldDescription": "Description",
+      "fieldDescriptionPlaceholder": "Describe what travelers will experience...",
+      "fieldCover": "Cover Image",
+      "dropCover": "Drop image here or",
+      "browse": "browse",
+      "coverHint": "JPG, PNG, WEBP — up to 5 MB",
+      "fieldProvince": "Province",
+      "provincePlaceholder": "Select province",
+      "fieldPrice": "Price From (USD)",
+      "fieldGroupSize": "Max Group Size",
+      "fieldDays": "Duration (days)",
+      "day": "Day {{n}}",
+      "dayNotes": "Day Notes",
+      "dayNotesPlaceholder": "Brief summary of this day's plan...",
+      "addActivity": "Add Activity",
+      "cancelAdd": "Cancel",
+      "searchActivities": "Search activities...",
+      "noActivitiesDay": "No activities added for this day yet.",
+      "noMatchingActivities": "No activities match your search.",
+      "itineraryHint": "Build the day-by-day agenda for your {{count}}-day package.",
+      "itinerary": "Itinerary",
+      "reviewBasicInfo": "Package Summary",
+      "reviewItinerary": "Itinerary Preview",
+      "maxGroupSize": "Max {{n}} guests",
+      "deleteTitle": "Delete Package",
+      "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
     },
     "bookings": {
       "title": "Booking requests",
@@ -799,7 +1176,178 @@
       "approveTitle": "Approve booking?",
       "approveBody": "Confirm {{traveler}}'s booking for \"{{package}}\".",
       "rejectTitle": "Reject booking?",
-      "rejectBody": "Decline {{traveler}}'s booking for \"{{package}}\". This can't be undone."
+      "rejectBody": "Decline {{traveler}}'s booking for \"{{package}}\". This can't be undone.",
+      "pageTitle": "Booking Requests",
+      "pageSubtitle": "Review and respond to incoming booking requests",
+      "tabAll": "All",
+      "tabPending": "Pending",
+      "tabApproved": "Approved",
+      "tabRejected": "Rejected",
+      "tabCancelled": "Cancelled",
+      "search": "Search bookings...",
+      "colTraveler": "Traveler",
+      "colPackage": "Tour Package",
+      "colDate": "Travel Date",
+      "colGuests": "Guests",
+      "colPrice": "Total Price",
+      "colStatus": "Status",
+      "view": "View",
+      "emptyFiltered": "No bookings found",
+      "emptyFilteredSub": "Try a different filter or search term.",
+      "detailTitle": "Booking Details",
+      "detailId": "ID: {{id}}",
+      "sectionTraveler": "Traveler",
+      "sectionTravel": "Travel Details",
+      "sectionPayment": "Payment Status",
+      "sectionTimeline": "Booking Timeline",
+      "sectionPrice": "Price Breakdown",
+      "email": "Email",
+      "phone": "Phone",
+      "guestsCount_one": "{{count}} traveler",
+      "guestsCount_other": "{{count}} travellers",
+      "specialRequests": "Special Requests",
+      "packageDuration": "5 days / 4 nights",
+      "includedActivities": "Included Activities",
+      "activityTemple": "Temple tour & guided hike",
+      "activityBoat": "Sunset boat cruise",
+      "activityCooking": "Cultural cooking class",
+      "activityMarket": "Local market visit",
+      "timelineCreated": "Booking Created",
+      "timelineReview": "Admin Review Pending",
+      "timelineNow": "Now",
+      "timelineApproved": "Approved",
+      "timelineRejected": "Rejected",
+      "timelineCancelled": "Cancelled",
+      "timelineCompleted": "Completed",
+      "basePrice_one": "Base price × {{count}} traveler",
+      "basePrice_other": "Base price × {{count}} travellers",
+      "total": "Total",
+      "cancelBooking": "Cancel Booking",
+      "close": "Close",
+      "statTotal": "Total Bookings",
+      "statTotalSub_one": "{{count}} approved",
+      "statTotalSub_other": "{{count}} approved",
+      "statPending": "Pending",
+      "statPendingSub_one": "{{count}} awaiting review",
+      "statPendingSub_other": "{{count}} awaiting review",
+      "statApproved": "Approved",
+      "statApprovedSub_one": "{{count}} confirmed",
+      "statApprovedSub_other": "{{count}} confirmed",
+      "statRejected": "Rejected",
+      "statRejectedSub_one": "{{count}} declined",
+      "statRejectedSub_other": "{{count}} declined"
+    },
+    "activitiesPage": {
+      "pageTitle": "Activities",
+      "subtitle": "Manage your destinations, experiences, restaurants, and accommodations",
+      "all": "All",
+      "destinations": "Destinations",
+      "thingsToDo": "Things To Do",
+      "restaurants": "Restaurants",
+      "accommodations": "Accommodations",
+      "destination": "Destination",
+      "thingToDo": "Things To Do",
+      "food": "Restaurant",
+      "stay": "Accommodation",
+      "search": "Search activities...",
+      "create": "Create Activity",
+      "edit": "Edit",
+      "delete": "Delete",
+      "adminLocked": "Admin Locked",
+      "requestEdit": "Request Edit",
+      "lockedMsg": "Locked by admin — request a change",
+      "perPerson": "/ person",
+      "emptyTitle": "No activities found",
+      "emptyDesc": "Try a different filter or create your first activity.",
+      "createTitle": "Create New Activity",
+      "editTitle": "Edit Activity",
+      "deleteTitle": "Delete Activity",
+      "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+      "requestEditTitle": "Request Admin Edit",
+      "requestEditInfo": "This activity is locked by an admin. Describe what changes you need and we'll review your request.",
+      "activityType": "Activity Type",
+      "name": "Activity Name",
+      "namePlaceholder": "e.g., Angkor Wat Sunrise Tour",
+      "province": "Province / Location",
+      "price": "Price (USD)",
+      "cancel": "Cancel",
+      "save": "Save Activity",
+      "saveChanges": "Save Changes",
+      "submit": "Submit Request",
+      "whatNeedsChange": "What needs to change?",
+      "priority": "Priority",
+      "normal": "Normal",
+      "urgent": "Urgent",
+      "prevPage": "Previous",
+      "nextPage": "Next",
+      "totalCount": "{{count}} total activities in your catalog",
+      "createNewActivity": "Create New Activity",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe this activity for travelers...",
+      "coverImages": "Cover Images",
+      "coverImagesHint": "JPG, PNG, WEBP — up to 5 MB each",
+      "dropImages": "Drop images here or",
+      "browseFiles": "browse files",
+      "categoryType": "Category",
+      "categoryTypePlaceholder": "Select category",
+      "highlights": "Highlights",
+      "highlightsPlaceholder": "Describe the key highlights of this destination...",
+      "duration": "Duration",
+      "durationPlaceholder": "e.g. 3 hours, Full day, Half day",
+      "difficulty": "Difficulty Level",
+      "difficultyEasy": "Easy",
+      "difficultyMedium": "Medium",
+      "difficultyHard": "Hard",
+      "cuisine": "Cuisine Type",
+      "cuisinePlaceholder": "e.g. Khmer, Asian Fusion, Mediterranean",
+      "openingHours": "Opening Hours",
+      "openingHoursPlaceholder": "e.g. Mon–Sun: 10:00 AM – 10:00 PM",
+      "roomTypes": "Room Types",
+      "roomTypesPlaceholder": "e.g. Deluxe Room, Suite, Family Villa",
+      "amenities": "Amenities",
+      "emptyNoActivities": "No activities yet",
+      "emptyCreateFirst": "Create your first activity to start attracting travelers to your catalog.",
+      "provincePlaceholder": "Select province"
+    },
+    "profile": {
+      "title": "Agency Profile",
+      "saveChanges": "Save Changes",
+      "uploadCover": "Change cover",
+      "uploadAvatar": "Change photo",
+      "verified": "Verified agency",
+      "publicPreview": "Public Preview",
+      "error": "Couldn't load your profile.",
+      "tabs": {
+        "info": "Profile Info",
+        "location": "Location",
+        "reviews": "Ratings & Reviews"
+      },
+      "info": {
+        "agencyName": "Agency Name",
+        "tagline": "Tagline",
+        "description": "About",
+        "descriptionPlaceholder": "Tell travelers what makes your agency unique…",
+        "email": "Email",
+        "phone": "Phone Number",
+        "website": "Website",
+        "province": "Province"
+      },
+      "location": {
+        "mapPlaceholder": "Interactive 3D map coming soon",
+        "currentAddress": "Current Address",
+        "noAddress": "No address set yet",
+        "editLocation": "Edit Location",
+        "streetAddress": "Street Address",
+        "city": "City",
+        "province": "Province",
+        "dropPin": "Drop Pin on Map",
+        "saveLocation": "Save Location"
+      },
+      "reviews": {
+        "totalReviews_one": "{{count}} review",
+        "totalReviews_other": "{{count}} reviews",
+        "empty": "No reviews yet. Reviews appear here once travelers complete their trips."
+      }
     }
   },
   "admin": {
@@ -825,6 +1373,18 @@
       "pendingCount": "{{count}} pending",
       "searchPlaceholder": "Search by agency, applicant, or country…",
       "applicationNote": "Application note",
+      "viewCard": "Card",
+      "viewTable": "Table",
+      "cardType": "Agency Request",
+      "applicant": "Applicant",
+      "agencyLabel": "Agency",
+      "submitted": "Submitted",
+      "flow": {
+        "agencyTitle": "Agency Onboarding Flow",
+        "agencySub": "Applicant → agency request",
+        "editTitle": "Edit Request Flow",
+        "editSub": "Agency → activity edit request"
+      },
       "tabs": {
         "agencies": "Agency onboarding",
         "editRequests": "Edit requests"
@@ -841,7 +1401,9 @@
       "pendingCount": "{{count}} pending",
       "searchPlaceholder": "Search by activity or agency…",
       "current": "Current",
-      "proposed": "Proposed"
+      "proposed": "Proposed",
+      "cardType": "Edit Request",
+      "activityLabel": "Activity"
     },
     "reports": {
       "title": "Traveler reports",
@@ -855,6 +1417,13 @@
       "addNote": "Add an admin note (optional)",
       "adminNote": "Admin note",
       "agencyCount": "{{count}} reports against this agency",
+      "cardType": "Traveler report",
+      "reason": "Reason",
+      "summary": {
+        "open": "Open",
+        "highSeverity": "High severity",
+        "resolved": "Resolved"
+      },
       "severity": {
         "low": "Low",
         "medium": "Medium",
@@ -869,6 +1438,7 @@
       "publishedCount": "published",
       "totalCount": "total",
       "searchPlaceholder": "Search by title or agency…",
+      "create": "Create destination",
       "actions": {
         "edit": "Edit",
         "delete": "Delete",
@@ -876,12 +1446,25 @@
       },
       "editModal": {
         "title": "Edit activity",
+        "createTitle": "Create destination",
         "save": "Save changes",
+        "create": "Create",
         "cancel": "Cancel",
+        "searchProvince": "Search provinces…",
         "fields": {
           "title": "Title",
+          "name": "Name",
+          "namePlaceholder": "e.g. Angkor Wat Sunrise Tour",
+          "description": "Description",
+          "province": "Province",
+          "travelType": "Travel type",
           "category": "Category",
-          "status": "Status"
+          "status": "Status",
+          "coverImageUrl": "Cover image URL",
+          "priceFrom": "Price from",
+          "currency": "Currency",
+          "latitude": "Latitude",
+          "longitude": "Longitude"
         }
       }
     },
@@ -994,7 +1577,11 @@
       "requests": "Requests",
       "content": "Content",
       "bookings": "Bookings",
-      "settings": "Settings"
+      "settings": "Settings",
+      "groups": {
+        "operations": "Operations",
+        "moderation": "Moderation"
+      }
     },
     "content": {
       "tabs": {
@@ -1016,7 +1603,41 @@
       "confirmedRevenue": "Completed revenue",
       "pendingRevenue": "Pending revenue",
       "searchPlaceholder": "Search by package, traveler, or agency…",
-      "cancel": "Cancel booking"
+      "cancel": "Cancel booking",
+      "overview": {
+        "viewAll": "View all",
+        "stats": {
+          "total": {
+            "title": "Total Bookings",
+            "desc": "All booking requests across the platform."
+          },
+          "completed": {
+            "title": "Completed",
+            "desc": "Trips finished and settled."
+          },
+          "revenue": {
+            "title": "Revenue",
+            "desc": "Total value of all bookings."
+          }
+        },
+        "recent": "Recent Bookings",
+        "cols": {
+          "booking": "Booking",
+          "amount": "Amount",
+          "agency": "Agency",
+          "status": "Status"
+        },
+        "trend": {
+          "title": "Bookings Overview",
+          "week": "Week",
+          "month": "Month",
+          "year": "Year"
+        },
+        "revenue": {
+          "title": "Revenue Overview",
+          "total": "Total"
+        }
+      }
     },
     "settings": {
       "title": "System settings",
@@ -1225,70 +1846,6 @@
       "title": "Delete this review?",
       "description": "Your review will be permanently removed. This can’t be undone.",
       "confirm": "Delete review"
-    }
-  },
-  "settings": {
-    "saved": "Saved",
-    "personalInfo": {
-      "title": "Personal info",
-      "description": "Update how you appear across Jalat.",
-      "name": "Display name",
-      "email": "Email",
-      "phone": "Phone",
-      "phonePlaceholder": "+855 …",
-      "avatar": "Avatar URL",
-      "bio": "Bio",
-      "save": "Save changes"
-    },
-    "password": {
-      "title": "Password",
-      "description": "Choose a strong, unique password.",
-      "current": "Current password",
-      "new": "New password",
-      "confirm": "Confirm new password",
-      "save": "Update password",
-      "updated": "Password updated"
-    },
-    "notifications": {
-      "title": "Notifications",
-      "description": "Choose what we email you about.",
-      "bookingUpdates": {
-        "label": "Booking updates",
-        "description": "Approvals, rejections, and reminders for your bookings."
-      },
-      "tripReminders": {
-        "label": "Trip reminders",
-        "description": "Heads-up before an upcoming trip starts."
-      },
-      "reviewReplies": {
-        "label": "Review replies",
-        "description": "When an agency responds to your review."
-      },
-      "promotions": {
-        "label": "Promotions",
-        "description": "Deals and seasonal offers from agencies."
-      },
-      "productNews": {
-        "label": "Product news",
-        "description": "New Jalat features and announcements."
-      }
-    },
-    "privacy": {
-      "title": "Privacy",
-      "defaultVisibility": "Default trip plan visibility",
-      "description": "Applies to new trip plans you create.",
-      "publicHint": "Anyone with the link can view.",
-      "privateHint": "Only you can view."
-    },
-    "danger": {
-      "title": "Danger zone",
-      "description": "Permanently delete your account and all of your data.",
-      "deleteAccount": "Delete account",
-      "confirm": {
-        "title": "Delete your account?",
-        "description": "This permanently deletes your profile, bookings, trip plans, and reviews. This can’t be undone.",
-        "confirm": "Delete account"
-      }
     }
   },
   "booking": {

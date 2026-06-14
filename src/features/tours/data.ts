@@ -1,23 +1,40 @@
-import { TOURS } from "./fixtures";
+import {
+  TOURS,
+  DEMO_AGENCY_NAME,
+  TOUR_DESTINATIONS,
+  TOUR_PACKAGES,
+} from "./fixtures";
 import type { FeaturedTour } from "@/features/destinations/schema";
 import type {
   TourDetail,
   TourReview,
   RatingBreakdown,
   TourAgency,
+  TourDestination,
+  TourPackage,
 } from "./schema";
 
 /**
  * The ONE data seam for tours. Components import from here, never fixtures —
  * swapping for route handlers / server actions later is a one-file change.
- * Returns typed results (never throws). Similar/other-tour rows return the
- * destinations `FeaturedTour` teaser shape so the existing TourCard is reused.
+ *
+ * It backs both surfaces of the feature:
+ *  - the public tour detail / booking page (read-only getters returning typed
+ *    `Result`s; similar/other-tour rows return the destinations `FeaturedTour`
+ *    teaser shape so the existing TourCard is reused), and
+ *  - the agency destination → package → approval flow, whose mutable store seeds
+ *    from the `initialX()` helpers below (never from `fixtures.ts` directly).
  */
 export type Result<T> =
   | { ok: true; data: T }
   | { ok: false; error: "not_found" | "load_failed" };
 
 const delay = (ms = 350) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** The agency name used for the demo session's own content. */
+export { DEMO_AGENCY_NAME };
+
+// ── Public tour detail / booking ─────────────────────────────────────────────
 
 /** Project a full tour into the teaser shape the TourCard renders. */
 function toTeaser(tour: TourDetail): FeaturedTour {
@@ -112,4 +129,14 @@ export function getRatingBreakdown(tour: TourDetail): RatingBreakdown {
 /** Seed reviews for the store from a loaded tour (never read fixtures in components). */
 export function initialReviews(tour: TourDetail): TourReview[] {
   return tour.reviews;
+}
+
+// ── Agency destination → package → approval flow ─────────────────────────────
+
+export function initialDestinations(): TourDestination[] {
+  return TOUR_DESTINATIONS;
+}
+
+export function initialPackages(): TourPackage[] {
+  return TOUR_PACKAGES;
 }

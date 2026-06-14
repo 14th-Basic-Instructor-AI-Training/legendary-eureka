@@ -24,7 +24,7 @@ export function StatCard({ metric }: { metric: KpiMetric }) {
   const deltaColorVar = metric.deltaGood ? "--green" : "--red";
 
   return (
-    <div className="bg-surface border-border flex flex-col gap-3 rounded-2xl border p-5">
+    <div className="bg-surface shadow-primary flex flex-col gap-3 rounded-2xl p-5">
       <div className="flex items-center justify-between">
         <p className="text-muted text-sm">{t(`admin.dashboard.kpi.${metric.key}`)}</p>
         <span

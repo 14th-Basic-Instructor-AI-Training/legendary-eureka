@@ -17,7 +17,7 @@ export type DestinationCategory = z.infer<typeof DestinationCategorySchema>;
 /**
  * Travel type — the backend `TravelType` enum (uppercase wire values). Drives the
  * Discover page's travel-type filter (mirrors backend `/search`). Keep in sync
- * with `@/types/enums` `TravelType`.
+ * with `@/types/enums` `TravelType` and the backend `TravelType.java` enum.
  */
 export const TravelTypeSchema = z.enum([
   "ADVENTURE",
@@ -25,13 +25,16 @@ export const TravelTypeSchema = z.enum([
   "RELAXATION",
   "FOOD",
   "NATURE",
+  "HISTORICAL",
+  "BEACH",
 ]);
 export type TravelType = z.infer<typeof TravelTypeSchema>;
 
 /**
  * Province — the searchable region a destination sits in. Kept a free string
- * (the catalog spans Cambodia + neighbours), with filter options derived from the
- * data. `CAMBODIA_PROVINCES` is the canonical "Discover Cambodia" reference list.
+ * (the catalog spans Cambodia + neighbours, e.g. Jeju/Seoul/Kyoto/Bali), with
+ * filter options derived from the data. `CAMBODIA_PROVINCES` is the canonical
+ * "Discover Cambodia" reference list used by the create/edit destination forms.
  */
 export const ProvinceSchema = z.string().min(1);
 export type Province = z.infer<typeof ProvinceSchema>;
@@ -49,9 +52,47 @@ export const CAMBODIA_PROVINCES = [
   "Kandal",
 ] as const;
 
+/**
+ * UPPER_SNAKE province codes for the create/edit destination forms — these match
+ * the backend enum and the `destinations.provinces.*` i18n keys, so the forms can
+ * localize each option. `ProvinceSchema` itself stays a free string (the catalog
+ * also holds international destinations), so this is just the Cambodia pick-list.
+ */
+export const CAMBODIA_PROVINCE_CODES = [
+  "PHNOM_PENH",
+  "SIEM_REAP",
+  "BATTAMBANG",
+  "PREAH_SIHANOUK",
+  "KAMPOT",
+  "KEP",
+  "KOH_KONG",
+  "MONDULKIRI",
+  "RATANAKIRI",
+  "KRATIE",
+] as const;
+
 /** Agency approval status — the backend `AgencyStatus` enum. */
 export const AgencyStatusSchema = z.enum(["PENDING", "APPROVED", "REJECTED"]);
 export type AgencyStatus = z.infer<typeof AgencyStatusSchema>;
+
+/**
+ * The create/edit payload for a destination — mirrors the backend POST body
+ * 1:1 so this same schema validates the form today and the request later
+ * (Zod is the single source of truth). Number fields coerce so they bind to
+ * native `<input type="number">` string values.
+ */
+export const DestinationDraftSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().min(1),
+  province: ProvinceSchema,
+  travelType: TravelTypeSchema,
+  coverImageUrl: z.string().url(),
+  priceFrom: z.coerce.number().nonnegative(),
+  currency: z.string().min(1).max(8).default("USD"),
+  latitude: z.coerce.number().min(-90).max(90),
+  longitude: z.coerce.number().min(-180).max(180),
+});
+export type DestinationDraft = z.infer<typeof DestinationDraftSchema>;
 
 export const DestinationSchema = z.object({
   id: z.string(),

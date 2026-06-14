@@ -19,7 +19,9 @@ export type TravelType =
   | "CULTURAL"
   | "RELAXATION"
   | "FOOD"
-  | "NATURE";
+  | "NATURE"
+  | "HISTORICAL"
+  | "BEACH";
 
 export type Visibility = "PUBLIC" | "PRIVATE";
 

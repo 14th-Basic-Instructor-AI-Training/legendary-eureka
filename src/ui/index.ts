@@ -20,6 +20,8 @@ export {
   jalatCardClipShadowStyle,
 } from "./jalatCardClip";
 export { Select, ListBox } from "./Select";
+export { Autocomplete } from "./Autocomplete";
+export { SearchField } from "./SearchField";
 export { Skeleton, type UISkeletonProps } from "./Skeleton";
 export { Chip } from "./Chip";
 export { StatusChip } from "./StatusChip";
@@ -29,6 +31,13 @@ export { DatePicker, type UIDatePickerProps } from "./DatePicker";
 export { NumberStepper, type UINumberStepperProps } from "./NumberStepper";
 export { Switch, type UISwitchProps } from "./Switch";
 export { RangeSlider, type UIRangeSliderProps } from "./RangeSlider";
+export { Pagination, type UIPaginationProps } from "./Pagination";
+export {
+  ConfirmDialog,
+  type ConfirmDialogProps,
+  type ConfirmIntent,
+} from "./ConfirmDialog";
+export { useConfirm, ConfirmRoot, type ConfirmOptions } from "./useConfirm";
 
 // Pass-through HeroUI v3 primitives (re-exported through the wrapper layer).
 // Compound components (Tabs/Modal/AlertDialog) keep their sub-component API.
@@ -41,9 +50,12 @@ export {
   Link,
   Dropdown,
   Tabs,
+  Table,
   Modal,
   AlertDialog,
   Checkbox,
   RadioGroup,
   Radio,
+  EmptyState,
+  useFilter,
 } from "@heroui/react";
