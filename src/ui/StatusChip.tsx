@@ -20,6 +20,10 @@ const STATUS_COLOR: Record<string, ChipColor> = {
   active: "success",
   suspended: "warning",
   banned: "danger",
+  // package / booking states
+  archived: "default",
+  confirmed: "success",
+  cancelled: "danger",
 };
 
 /**

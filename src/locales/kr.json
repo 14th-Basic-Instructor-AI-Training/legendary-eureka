@@ -12,11 +12,13 @@
     "confirm": "확인",
     "save": "저장",
     "showPassword": "비밀번호 표시",
-    "hidePassword": "비밀번호 숨기기"
+    "hidePassword": "비밀번호 숨기기",
+    "all": "전체"
   },
   "status": {
     "draft": "초안",
     "published": "게시됨",
+    "archived": "보관됨",
     "pending": "대기 중",
     "approved": "승인됨",
     "rejected": "거절됨",
@@ -308,7 +310,9 @@
       "overview": "개요",
       "highlights": "하이라이트",
       "location": "위치",
-      "mapSoon": "인터랙티브 3D 지도가 곧 제공됩니다.",
+      "mapLabel": "{{name}}의 3D 지도",
+      "mapLoading": "3D 지도를 불러오는 중…",
+      "mapError": "지도를 불러오지 못했습니다.",
       "reviews": "여행자 후기",
       "reviewsSoon": "여행자가 여행을 마치면 후기가 여기에 표시됩니다.",
       "facts": "참고 사항",
@@ -398,7 +402,27 @@
       "empty": "현재 여행사 요청이 없습니다.",
       "by": "{{name}} 신청",
       "approve": "승인",
-      "reject": "거절"
+      "reject": "거절",
+      "pendingCount": "{{count}}건 대기 중",
+      "searchPlaceholder": "여행사, 신청자 또는 국가로 검색…",
+      "applicationNote": "신청 메모",
+      "tabs": {
+        "agencies": "여행사 온보딩",
+        "editRequests": "편집 요청"
+      }
+    },
+    "editRequests": {
+      "title": "여행사 편집 요청",
+      "empty": "현재 편집 요청이 없습니다.",
+      "for": "\"{{title}}\" 편집 요청",
+      "by": "{{agency}} 요청",
+      "changes": "요청된 변경 사항",
+      "approve": "승인",
+      "reject": "거절",
+      "pendingCount": "{{count}}건 대기 중",
+      "searchPlaceholder": "활동 또는 여행사로 검색…",
+      "current": "현재",
+      "proposed": "제안"
     },
     "reports": {
       "title": "여행자 신고",
@@ -406,13 +430,26 @@
       "against": "{{agency}} 대상",
       "by": "{{name}} 신고",
       "resolve": "해결",
-      "dismiss": "기각"
+      "dismiss": "기각",
+      "openCount": "{{count}}건의 미처리 신고가 있습니다",
+      "searchPlaceholder": "여행사 또는 신고자로 검색…",
+      "addNote": "관리자 메모 추가 (선택사항)",
+      "adminNote": "관리자 메모",
+      "agencyCount": "이 여행사에 대한 신고 {{count}}건",
+      "severity": {
+        "low": "낮음",
+        "medium": "보통",
+        "high": "높음"
+      }
     },
     "activities": {
       "title": "전체 플랫폼 활동",
       "empty": "아직 플랫폼에 활동이 없습니다.",
       "by": "{{agency}} 제공",
       "deleteConfirm": "이 활동을 삭제하시겠습니까?",
+      "publishedCount": "게시됨",
+      "totalCount": "전체",
+      "searchPlaceholder": "제목 또는 여행사로 검색…",
       "actions": {
         "edit": "편집",
         "delete": "삭제",
@@ -429,10 +466,39 @@
         }
       }
     },
+    "packages": {
+      "title": "전체 투어 패키지",
+      "empty": "아직 플랫폼에 패키지가 없습니다.",
+      "by": "{{agency}} 제공",
+      "days_one": "{{count}}일",
+      "days_other": "{{count}}일",
+      "activities_one": "{{count}}개 활동",
+      "activities_other": "{{count}}개 활동",
+      "bookings_one": "{{count}}건 예약",
+      "bookings_other": "{{count}}건 예약",
+      "publishedCount": "게시됨",
+      "totalBookings": "전체 예약",
+      "searchPlaceholder": "제목 또는 여행사로 검색…",
+      "deleteConfirm": "이 패키지를 삭제하시겠습니까?",
+      "actions": {
+        "publish": "게시",
+        "archive": "보관",
+        "delete": "삭제",
+        "confirmDelete": "예, 삭제"
+      }
+    },
     "users": {
       "title": "사용자",
       "empty": "사용자를 찾을 수 없습니다.",
       "joined": "{{date}} 가입",
+      "totalCount": "전체 사용자",
+      "suspendedCount": "정지됨",
+      "bannedCount": "차단됨",
+      "searchPlaceholder": "이름 또는 이메일로 검색…",
+      "filterRole": "역할",
+      "filterStatus": "상태",
+      "changeRole": "역할 변경",
+      "roleDowngrade": "여행자로 변경",
       "actions": {
         "suspend": "정지",
         "ban": "차단",
@@ -505,20 +571,77 @@
       }
     },
     "nav": {
-      "overview": "개요"
+      "overview": "개요",
+      "requests": "요청",
+      "content": "콘텐츠",
+      "bookings": "예약",
+      "settings": "설정"
     },
     "pages": {
-      "agencies": {
-        "subtitle": "여행사 전환 요청을 검토하고 승인합니다."
+      "requests": {
+        "subtitle": "여행사 온보딩 신청 및 활동 편집 요청을 검토합니다."
       },
       "reports": {
         "subtitle": "여행자 신고를 조사하고 조치합니다."
       },
-      "activities": {
-        "subtitle": "플랫폼의 모든 활동을 편집하거나 삭제합니다."
+      "content": {
+        "subtitle": "플랫폼의 모든 활동과 투어 패키지를 관리합니다."
       },
       "users": {
         "subtitle": "회원 관리 — 계정 정지, 차단 또는 재활성화."
+      },
+      "bookings": {
+        "subtitle": "모든 예약 및 플랫폼 수익을 모니터링합니다."
+      },
+      "settings": {
+        "subtitle": "플랫폼 전체 설정 및 수수료율을 구성합니다."
+      }
+    },
+    "bookings": {
+      "title": "예약 및 수익",
+      "empty": "아직 플랫폼에 예약이 없습니다.",
+      "revenue": "확정 수익",
+      "confirmedCount_one": "{{count}}건 확정",
+      "confirmedCount_other": "{{count}}건 확정",
+      "by": "여행사: {{agency}}",
+      "traveler": "여행자: {{name}}",
+      "guests_one": "{{count}}명",
+      "guests_other": "{{count}}명",
+      "totalRevenue": "전체 수익",
+      "confirmedRevenue": "완료 수익",
+      "pendingRevenue": "대기 중인 수익",
+      "searchPlaceholder": "패키지, 여행자 또는 여행사로 검색…",
+      "cancel": "예약 취소"
+    },
+    "settings": {
+      "title": "시스템 설정",
+      "saved": "설정이 저장되었습니다.",
+      "sections": {
+        "pricingFees": "가격 및 수수료",
+        "pricingFeesDesc": "플랫폼 수수료 및 최소 가격을 설정합니다.",
+        "contentPolicy": "콘텐츠 정책",
+        "contentPolicyDesc": "여행사가 생성하고 게시할 수 있는 항목에 대한 제한입니다.",
+        "platformFeatures": "플랫폼 기능",
+        "platformFeaturesDesc": "플랫폼 전체 기능을 켜거나 끕니다."
+      },
+      "fields": {
+        "commissionRate": "플랫폼 수수료율 (%)",
+        "maxPackageDays": "최대 투어 패키지 기간 (일)",
+        "minActivityPriceUsd": "최소 활동 가격 (USD)",
+        "registrationOpen": "회원가입 허용",
+        "registrationOpenDesc": "새 여행자와 여행사의 가입을 허용합니다.",
+        "bookingEnabled": "예약 허용",
+        "bookingEnabledDesc": "여행자가 투어를 요청하고 예약할 수 있도록 합니다.",
+        "maintenanceMode": "유지보수 모드",
+        "maintenanceModeDesc": "관리자가 아닌 모든 사용자에게 플랫폼을 오프라인으로 전환합니다."
+      },
+      "maintenanceWarning": "유지보수 모드를 활성화하면 모든 여행자와 여행사가 플랫폼에 접근할 수 없게 됩니다.",
+      "save": "설정 저장"
+    },
+    "content": {
+      "tabs": {
+        "activities": "활동",
+        "packages": "패키지"
       }
     }
   },

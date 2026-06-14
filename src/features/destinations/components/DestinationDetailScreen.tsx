@@ -12,6 +12,7 @@ import { formatPrice, formatRating } from "@/lib/format";
 import { getDestinationBySlug } from "../data";
 import { useResource } from "../hooks";
 import type { Destination } from "../schema";
+import { LocationMap } from "./LocationMap";
 import { MarketingHeader } from "@/features/landing/components/MarketingHeader";
 import { Footer } from "@/features/landing/components/Footer";
 
@@ -182,12 +183,11 @@ function DetailContent({ destination }: { destination: Destination }) {
             <h2 className="text-foreground text-xl font-bold tracking-tight">
               {t("destinations.detail.location")}
             </h2>
-            <div className="border-border bg-surface text-muted mt-4 flex h-56 items-center justify-center rounded-3xl border border-dashed text-sm">
-              <span className="flex items-center gap-2">
-                <Location size={18} color="currentColor" variant="Bold" className="text-primary" />
-                {t("destinations.detail.mapSoon")}
-              </span>
-            </div>
+            <p className="text-muted mt-2 flex items-center gap-1.5 text-sm">
+              <Location size={16} color="currentColor" variant="Bold" className="text-primary" />
+              {destination.city}, {destination.country}
+            </p>
+            <LocationMap lat={destination.lat} lng={destination.lng} label={destination.name} />
           </Reveal>
 
           <Reveal>

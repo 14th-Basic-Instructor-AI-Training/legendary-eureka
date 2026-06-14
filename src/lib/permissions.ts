@@ -62,7 +62,9 @@ export type Action =
   | "manageReports"
   | "manageUsers"
   | "editAnyActivity"
-  | "viewAnalytics";
+  | "viewAnalytics"
+  | "manageEditRequests"
+  | "configureSystem";
 
 const MATRIX: Record<Actor, Action[]> = {
   guest: ["browse"],
@@ -91,6 +93,9 @@ const MATRIX: Record<Actor, Action[]> = {
     "manageUsers",
     "editAnyActivity",
     "viewAnalytics",
+    "manageEditRequests",
+    "managePackages",
+    "configureSystem",
   ],
 };
 

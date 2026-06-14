@@ -51,6 +51,15 @@ describe("permissions.can", () => {
     expect(can("guest", "viewAnalytics")).toBe(false);
     expect(can(null, "viewAnalytics")).toBe(false);
   });
+
+  it("restricts edit-request approval and system config to admins", () => {
+    expect(can("admin", "manageEditRequests")).toBe(true);
+    expect(can("admin", "configureSystem")).toBe(true);
+    expect(can("admin", "managePackages")).toBe(true);
+    expect(can("agency", "manageEditRequests")).toBe(false);
+    expect(can("agency", "configureSystem")).toBe(false);
+    expect(can("traveler", "configureSystem")).toBe(false);
+  });
 });
 
 describe("permissions.assertCan", () => {
