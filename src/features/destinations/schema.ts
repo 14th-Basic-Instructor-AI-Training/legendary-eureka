@@ -94,6 +94,32 @@ export const DestinationDraftSchema = z.object({
 });
 export type DestinationDraft = z.infer<typeof DestinationDraftSchema>;
 
+/**
+ * A nearby point of interest shown in the destination detail page's
+ * Things-to-do / Where-to-eat / Where-to-stay grids (grouped by `category`).
+ */
+export const PointOfInterestSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  category: z.enum(["sight", "activity", "food", "stay"]),
+  /** Sub-label, e.g. "Angkor Park" or "Old Market". */
+  area: z.string(),
+  rating: z.number().min(0).max(5).optional(),
+  priceLevel: z.enum(["$", "$$", "$$$"]).optional(),
+  /** "2 hr", "Half day", "Stay"… */
+  durationLabel: z.string().optional(),
+  image: z.string().url(),
+});
+export type PointOfInterest = z.infer<typeof PointOfInterestSchema>;
+export type PoiCategory = PointOfInterest["category"];
+
+/** One bar of the TripAdvisor-style rating breakdown (5★…1★ with a fill %). */
+export const RatingBucketSchema = z.object({
+  stars: z.number().int().min(1).max(5),
+  pct: z.number().int().min(0).max(100),
+});
+export type RatingBucket = z.infer<typeof RatingBucketSchema>;
+
 export const DestinationSchema = z.object({
   id: z.string(),
   slug: z.string(),
@@ -116,6 +142,19 @@ export const DestinationSchema = z.object({
   /** Drives the MapLibre 3D map on the destination detail page. */
   lat: z.number(),
   lng: z.number(),
+  // ── Detail-page fields (optional so the teaser cards/fixtures stay valid) ──
+  /** Long "About this destination" copy (falls back to `shortDescription`). */
+  about: z.string().optional(),
+  /** Gallery photos for the About collage (falls back to `[heroImage]`). */
+  gallery: z.array(z.string().url()).default([]),
+  /** "Best time to visit", e.g. "Nov – Feb". */
+  bestTime: z.string().optional(),
+  /** Primary local language, e.g. "Khmer". */
+  language: z.string().optional(),
+  /** Nearby points of interest, grouped by category in the UI. */
+  pois: z.array(PointOfInterestSchema).default([]),
+  /** Pre-computed star distribution for the reviews summary. */
+  ratingBreakdown: z.array(RatingBucketSchema).optional(),
 });
 export type Destination = z.infer<typeof DestinationSchema>;
 
@@ -195,5 +234,9 @@ export const ReviewSchema = z.object({
   travelType: TravelTypeSchema.optional(),
   /** ISO-8601 date string. */
   createdAt: z.string(),
+  /** Reviewer's home country — the TripAdvisor-style "country · date" row. */
+  country: z.string().optional(),
+  /** Number of photos attached to the review (rendered as thumbnails). */
+  photoCount: z.number().int().nonnegative().default(0),
 });
 export type Review = z.infer<typeof ReviewSchema>;

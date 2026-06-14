@@ -840,7 +840,47 @@
       "priceFrom": "최저 가격",
       "perPerson": "1인당",
       "book": "이 체험 예약하기",
-      "loginToBook": "로그인하여 예약"
+      "loginToBook": "로그인하여 예약",
+      "aboutTitle": "{{name}} 소개",
+      "exploreMap": "지도 살펴보기",
+      "thingsToDo": "즐길 거리",
+      "whereToEat": "맛집",
+      "whereToStay": "숙소",
+      "poiCategory": {
+        "sight": "명소",
+        "activity": "액티비티",
+        "food": "음식",
+        "stay": "숙박"
+      },
+      "toursIn": "{{name}} 투어",
+      "toursAvailable_one": "투어 {{count, number}}개 이용 가능",
+      "toursAvailable_other": "투어 {{count, number}}개 이용 가능",
+      "reviewsTitle": "여행자 후기",
+      "verifiedReviews_one": "인증 후기 {{count, number}}개",
+      "verifiedReviews_other": "인증 후기 {{count, number}}개",
+      "sortBy": "정렬",
+      "sort": {
+        "recent": "최신순",
+        "highest": "평점 높은순",
+        "helpful": "도움순"
+      },
+      "writeReview": "후기 작성",
+      "showAllReviews_one": "후기 {{count, number}}개 중 최신순 표시",
+      "showAllReviews_other": "후기 {{count, number}}개 중 주요 후기 표시",
+      "quickFacts": "한눈에 보기",
+      "bestTime": "방문하기 좋은 시기",
+      "language": "언어",
+      "currency": "통화",
+      "provinceLabel": "주",
+      "priceFromLabel": "최저 가격",
+      "planCardTitle": "나만의 여행 만들기",
+      "planCardBody": "장소를 저장하고, 일정을 만들고, 투어를 예약하세요 — 하나의 계획으로.",
+      "planTripHere": "여기서 여행 계획하기",
+      "bookTourHere": "여기서 투어 예약하기",
+      "breadcrumb": {
+        "home": "홈",
+        "destinations": "여행지"
+      }
     }
   },
   "tours": {

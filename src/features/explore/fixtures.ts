@@ -312,8 +312,154 @@ const RAW_DESTINATIONS = [
   },
 ] satisfies Array<Record<string, unknown>>;
 
+/** Terse POI builder for the detail-page Things-to-do / Eat / Stay grids. */
+const poi = (
+  id: string,
+  name: string,
+  category: "sight" | "activity" | "food" | "stay",
+  area: string,
+  extra: { rating?: number; priceLevel?: "$" | "$$" | "$$$"; durationLabel?: string } = {},
+) => ({ id, name, category, area, image: img(`poi-${id}`), ...extra });
+
+const BREAKDOWN_HIGH = [
+  { stars: 5, pct: 82 },
+  { stars: 4, pct: 13 },
+  { stars: 3, pct: 3 },
+  { stars: 2, pct: 1 },
+  { stars: 1, pct: 1 },
+];
+const BREAKDOWN_MID = [
+  { stars: 5, pct: 68 },
+  { stars: 4, pct: 22 },
+  { stars: 3, pct: 6 },
+  { stars: 2, pct: 3 },
+  { stars: 1, pct: 1 },
+];
+
+/**
+ * Detail-page enrichment merged onto the teaser data by slug. Kept separate so
+ * the lean Explore-card RAW data stays readable; only the destinations the detail
+ * page showcases carry the heavier About / gallery / POIs / breakdown payload.
+ */
+const DETAIL_BY_SLUG: Record<string, Record<string, unknown>> = {
+  "siem-reap": {
+    about:
+      "Siem Reap is the gateway to Angkor — the largest religious monument on earth — but the town rewards slow travel too: night markets, Khmer cooking classes, floating villages on the Tonlé Sap, and a fast-rising café and circus scene. Most visitors come for the temples at sunrise and stay for everything around them.",
+    gallery: [img("siem-reap-2", 1200, 800), img("siem-reap-3", 1200, 800)],
+    bestTime: "Nov – Feb",
+    language: "Khmer",
+    ratingBreakdown: BREAKDOWN_HIGH,
+    pois: [
+      poi("angkor-wat", "Angkor Wat", "sight", "Angkor Park", { rating: 4.9, durationLabel: "3 hr" }),
+      poi("bayon", "Bayon Temple", "sight", "Angkor Thom", { rating: 4.8, durationLabel: "1.5 hr" }),
+      poi("ta-prohm", "Ta Prohm", "activity", "Angkor Park", { rating: 4.8, durationLabel: "1.5 hr" }),
+      poi("marum", "Marum Restaurant", "food", "Wat Bo", { rating: 4.7, priceLevel: "$$" }),
+      poi("pou", "Pou Kitchen", "food", "Old Market", { rating: 4.6, priceLevel: "$" }),
+      poi("wat-damnak", "Cuisine Wat Damnak", "food", "Wat Damnak", { rating: 4.9, priceLevel: "$$$" }),
+      poi("jaya-house", "Jaya House River Park", "stay", "River Road", { rating: 4.9, priceLevel: "$$$" }),
+      poi("treeline", "Treeline Urban Resort", "stay", "Riverside", { rating: 4.7, priceLevel: "$$" }),
+      poi("onederz-sr", "Onederz Hostel", "stay", "Old Market", { rating: 4.5, priceLevel: "$" }),
+    ],
+  },
+  "phnom-penh": {
+    about:
+      "Cambodia's riverside capital balances gilded temples and the Royal Palace against sobering memorials, French-colonial streets, and a confident new generation of restaurants and rooftop bars. It is a city best understood with a thoughtful guide who tells the full story.",
+    gallery: [img("phnom-penh-2", 1200, 800), img("phnom-penh-3", 1200, 800)],
+    bestTime: "Nov – Feb",
+    language: "Khmer",
+    ratingBreakdown: BREAKDOWN_MID,
+    pois: [
+      poi("royal-palace", "Royal Palace & Silver Pagoda", "sight", "Riverside", { rating: 4.7, durationLabel: "2 hr" }),
+      poi("tuol-sleng", "Tuol Sleng Museum", "sight", "Boeung Keng Kang", { rating: 4.8, durationLabel: "2 hr" }),
+      poi("national-museum", "National Museum", "activity", "Daun Penh", { rating: 4.6, durationLabel: "1.5 hr" }),
+      poi("romdeng", "Romdeng", "food", "Daun Penh", { rating: 4.7, priceLevel: "$$" }),
+      poi("malis", "Malis", "food", "BKK1", { rating: 4.8, priceLevel: "$$$" }),
+      poi("night-market", "Riverside Night Market", "food", "Riverside", { rating: 4.4, priceLevel: "$" }),
+      poi("rosewood", "Rosewood Phnom Penh", "stay", "Vattanac", { rating: 4.9, priceLevel: "$$$" }),
+      poi("patio", "Patio Hotel", "stay", "BKK1", { rating: 4.6, priceLevel: "$$" }),
+      poi("mad-monkey-pp", "Mad Monkey", "stay", "Riverside", { rating: 4.4, priceLevel: "$" }),
+    ],
+  },
+  kampot: {
+    about:
+      "Kampot is sleepy pepper-farm country beneath Bokor Mountain — river sunsets, salt fields, faded shophouses, and the world-famous Kampot pepper. It is a place for slow afternoons, kayak trips, and misty national-park drives.",
+    gallery: [img("kampot-2", 1200, 800), img("kampot-3", 1200, 800)],
+    bestTime: "Nov – Mar",
+    language: "Khmer",
+    ratingBreakdown: BREAKDOWN_MID,
+    pois: [
+      poi("bokor", "Bokor National Park", "sight", "Bokor", { rating: 4.6, durationLabel: "Half day" }),
+      poi("pepper-farm", "La Plantation Pepper Farm", "activity", "Kampot", { rating: 4.7, durationLabel: "2 hr" }),
+      poi("river-cruise", "Sunset River Cruise", "activity", "Kampot River", { rating: 4.8, durationLabel: "2 hr" }),
+      poi("rikitikitavi", "Rikitikitavi", "food", "Riverside", { rating: 4.7, priceLevel: "$$" }),
+      poi("kampot-pie", "Kampot Pie & Ice Cream", "food", "Riverside", { rating: 4.6, priceLevel: "$" }),
+      poi("twenty-three", "Twenty Three Bistro", "food", "Old Town", { rating: 4.8, priceLevel: "$$$" }),
+      poi("samsara", "Samsara Villas", "stay", "Riverside", { rating: 4.8, priceLevel: "$$$" }),
+      poi("villa-vedici", "Villa Vedici", "stay", "Riverside", { rating: 4.6, priceLevel: "$$" }),
+      poi("arcadia", "Arcadia Backpackers", "stay", "Riverside", { rating: 4.3, priceLevel: "$" }),
+    ],
+  },
+  "koh-rong": {
+    about:
+      "Koh Rong and its sister islands are the gulf's powder-white escape — snorkelling and diving over warm reefs by day, bioluminescent plankton glowing in the surf by night, and barefoot beach bars in between. Ferries run from Sihanoukville in under an hour.",
+    gallery: [img("koh-rong-2", 1200, 800), img("koh-rong-3", 1200, 800)],
+    bestTime: "Dec – Apr",
+    language: "Khmer",
+    ratingBreakdown: BREAKDOWN_HIGH,
+    pois: [
+      poi("snorkel-trip", "Long Beach Snorkel Trip", "activity", "Long Beach", { rating: 4.8, durationLabel: "Half day" }),
+      poi("plankton", "Bioluminescent Plankton Tour", "activity", "Long Set Beach", { rating: 4.7, durationLabel: "2 hr" }),
+      poi("island-hop", "Island Hopping Sail", "activity", "Koh Touch", { rating: 4.6, durationLabel: "Full day" }),
+      poi("coco-beach", "Coco's Beach", "food", "Long Beach", { rating: 4.5, priceLevel: "$" }),
+      poi("sky-bar", "The Sky Bar", "food", "Koh Touch", { rating: 4.4, priceLevel: "$$" }),
+      poi("police-bbq", "Police Beach BBQ", "food", "Police Beach", { rating: 4.3, priceLevel: "$" }),
+      poi("song-saa", "Song Saa Private Island", "stay", "Koh Ouen", { rating: 4.9, priceLevel: "$$$" }),
+      poi("sok-san", "Sok San Beach Resort", "stay", "Sok San", { rating: 4.6, priceLevel: "$$" }),
+      poi("nest-beach", "Nest Beach Club", "stay", "Long Set", { rating: 4.4, priceLevel: "$" }),
+    ],
+  },
+  mondulkiri: {
+    about:
+      "Mondulkiri is Cambodia's cool green highland — rolling hills, thundering waterfalls, and ethical elephant sanctuaries where you walk a rescued herd through the forest instead of riding them. Nights are crisp and the Bunong culture runs deep.",
+    gallery: [img("mondulkiri-2", 1200, 800), img("mondulkiri-3", 1200, 800)],
+    bestTime: "Nov – Jan",
+    language: "Khmer · Bunong",
+    ratingBreakdown: BREAKDOWN_HIGH,
+    pois: [
+      poi("elephant-walk", "Elephant Sanctuary Walk", "activity", "Sen Monorom", { rating: 4.9, durationLabel: "Full day" }),
+      poi("bou-sra", "Bou Sra Waterfall", "sight", "Pechreada", { rating: 4.7, durationLabel: "2 hr" }),
+      poi("jungle-trek", "Jungle Trek & Homestay", "activity", "Dak Dam", { rating: 4.8, durationLabel: "2 days" }),
+      poi("hefalump", "Hefalump Café", "food", "Sen Monorom", { rating: 4.6, priceLevel: "$" }),
+      poi("mondul-pizza", "Mondulkiri Pizza", "food", "Sen Monorom", { rating: 4.4, priceLevel: "$$" }),
+      poi("khmer-kitchen", "Khmer Kitchen", "food", "Sen Monorom", { rating: 4.5, priceLevel: "$" }),
+      poi("mayura", "Mayura Hill Resort", "stay", "Sen Monorom", { rating: 4.8, priceLevel: "$$$" }),
+      poi("nature-lodge", "Nature Lodge", "stay", "Sen Monorom", { rating: 4.7, priceLevel: "$$" }),
+      poi("tree-lodge", "Tree Lodge", "stay", "Sen Monorom", { rating: 4.3, priceLevel: "$" }),
+    ],
+  },
+  battambang: {
+    about:
+      "Battambang is Cambodia's most charming colonial town — the bamboo train, hilltop temples, the dusk exodus of a million bats from Phnom Sampeau, and a thriving art and circus scene along a quiet riverfront.",
+    gallery: [img("battambang-2", 1200, 800), img("battambang-3", 1200, 800)],
+    bestTime: "Nov – Feb",
+    language: "Khmer",
+    ratingBreakdown: BREAKDOWN_MID,
+    pois: [
+      poi("bamboo-train", "Bamboo Train (Norry)", "activity", "O Dambong", { rating: 4.5, durationLabel: "1 hr" }),
+      poi("phnom-sampeau", "Phnom Sampeau Bat Caves", "sight", "Phnom Sampeau", { rating: 4.7, durationLabel: "2 hr" }),
+      poi("phare", "Phare Ponleu Selpak Circus", "activity", "Anh Chanh", { rating: 4.9, durationLabel: "1.5 hr" }),
+      poi("jaan-bai", "Jaan Bai", "food", "Old Town", { rating: 4.7, priceLevel: "$$" }),
+      poi("kinyei", "Kinyei Café", "food", "Old Town", { rating: 4.6, priceLevel: "$" }),
+      poi("lonely-tree", "Lonely Tree Café", "food", "Old Town", { rating: 4.5, priceLevel: "$" }),
+      poi("maison-polanka", "Maisons Polanka", "stay", "Slaket", { rating: 4.8, priceLevel: "$$$" }),
+      poi("bambu", "Bambu Hotel", "stay", "Riverside", { rating: 4.7, priceLevel: "$$" }),
+      poi("here-be-dragons", "Here Be Dragons", "stay", "Old Town", { rating: 4.3, priceLevel: "$" }),
+    ],
+  },
+};
+
 export const EXPLORE_DESTINATIONS: ExploreDestination[] = RAW_DESTINATIONS.map((d) =>
-  ExploreDestinationSchema.parse(d),
+  ExploreDestinationSchema.parse({ ...d, ...(DETAIL_BY_SLUG[d.slug as string] ?? {}) }),
 );
 
 const RAW_TOURS = [

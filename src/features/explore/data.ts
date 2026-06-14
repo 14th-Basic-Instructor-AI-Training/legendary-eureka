@@ -138,6 +138,23 @@ export async function getExploreTours(
 }
 
 /**
+ * Tours in a given province — powers the "Tours in {destination}" grid on the
+ * destination detail page. `ExploreTour` extends the `FeaturedTour` teaser shape,
+ * so the results render directly with the shared `TrendingTourCard`.
+ */
+export async function getToursByProvince(
+  province: string,
+  sort: ExploreSort = "recommended",
+): Promise<Result<ExploreTour[]>> {
+  await delay();
+  const data = sortTours(
+    EXPLORE_TOURS.filter((t) => t.province === province),
+    sort,
+  );
+  return { ok: true, data };
+}
+
+/**
  * Tours owned by one agency (by slug) — powers the "Tours Offered" grid on the
  * agency profile page. An empty array is a valid success (agency has no published
  * tours) so the screen renders its empty state rather than an error.

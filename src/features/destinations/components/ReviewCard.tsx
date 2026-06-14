@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
-import { Star1 } from "iconsax-reactjs";
+import { Star1, Camera } from "iconsax-reactjs";
 import { Card, Chip } from "@/ui";
 import { formatDate, formatRating } from "@/lib/format";
 import type { Review } from "../schema";
@@ -32,7 +32,10 @@ export function ReviewCard({
         </div>
         <div className="min-w-0">
           <p className="truncate font-semibold tracking-tight">{review.authorName}</p>
-          <p className="text-muted text-xs">{formatDate(review.createdAt, lng)}</p>
+          <p className="text-muted text-xs">
+            {review.country ? `${review.country} · ` : ""}
+            {formatDate(review.createdAt, lng)}
+          </p>
         </div>
         <span className="text-warning ml-auto flex items-center gap-1 text-sm font-medium">
           <Star1 size={14} color="currentColor" variant="Bold" />
@@ -41,6 +44,20 @@ export function ReviewCard({
       </div>
 
       <p className="text-foreground/90 text-sm leading-relaxed">“{review.comment}”</p>
+
+      {review.photoCount > 0 ? (
+        <div className="flex flex-wrap gap-2">
+          {Array.from({ length: Math.min(review.photoCount, 4) }).map((_, i) => (
+            <span
+              key={i}
+              className="bg-surface text-muted flex h-14 w-14 items-center justify-center rounded-lg"
+              aria-hidden="true"
+            >
+              <Camera size={18} color="currentColor" />
+            </span>
+          ))}
+        </div>
+      ) : null}
 
       <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
         {placeName ? (

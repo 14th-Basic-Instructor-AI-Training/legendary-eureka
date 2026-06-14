@@ -840,7 +840,47 @@
       "priceFrom": "Price from",
       "perPerson": "per person",
       "book": "Book this experience",
-      "loginToBook": "Log in to book"
+      "loginToBook": "Log in to book",
+      "aboutTitle": "About {{name}}",
+      "exploreMap": "Explore the map",
+      "thingsToDo": "Things to Do",
+      "whereToEat": "Where to Eat",
+      "whereToStay": "Where to Stay",
+      "poiCategory": {
+        "sight": "Sight",
+        "activity": "Activity",
+        "food": "Food",
+        "stay": "Stay"
+      },
+      "toursIn": "Tours in {{name}}",
+      "toursAvailable_one": "{{count, number}} tour available",
+      "toursAvailable_other": "{{count, number}} tours available",
+      "reviewsTitle": "Traveler Reviews",
+      "verifiedReviews_one": "{{count, number}} verified review",
+      "verifiedReviews_other": "{{count, number}} verified reviews",
+      "sortBy": "Sort by",
+      "sort": {
+        "recent": "Most recent",
+        "highest": "Highest rated",
+        "helpful": "Most helpful"
+      },
+      "writeReview": "Write a Review",
+      "showAllReviews_one": "Showing the most recent of {{count, number}} review",
+      "showAllReviews_other": "Showing recent highlights of {{count, number}} reviews",
+      "quickFacts": "Quick Facts",
+      "bestTime": "Best time to visit",
+      "language": "Language",
+      "currency": "Currency",
+      "provinceLabel": "Province",
+      "priceFromLabel": "Price from",
+      "planCardTitle": "Make it your trip",
+      "planCardBody": "Save places, build an itinerary, and book tours — all in one plan.",
+      "planTripHere": "Plan a Trip Here",
+      "bookTourHere": "Book a Tour Here",
+      "breadcrumb": {
+        "home": "Home",
+        "destinations": "Destinations"
+      }
     }
   },
   "tours": {

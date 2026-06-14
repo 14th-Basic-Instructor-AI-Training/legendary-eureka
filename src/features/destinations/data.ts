@@ -1,4 +1,5 @@
 import { DESTINATIONS, FEATURED_TOURS, AGENCIES, REVIEWS } from "./fixtures";
+import { EXPLORE_DESTINATIONS } from "@/features/explore/fixtures";
 import type {
   AgencyProfile,
   Destination,
@@ -49,12 +50,32 @@ export async function getThingsToDo(): Promise<Result<Destination[]>> {
   return { ok: true, data: DESTINATIONS.filter((d) => d.category === "thingToDo") };
 }
 
+/**
+ * One destination by slug for the detail page. Resolves from a UNIFIED pool —
+ * the landing "best places" catalog (`DESTINATIONS`) first, then the richer
+ * Cambodia Explore catalog (`EXPLORE_DESTINATIONS`, which extends `Destination`).
+ * This lets detail links from BOTH the landing cards (`angkor-wat`) and the
+ * Explore cards (`siem-reap`, `kampot`, …) resolve to the same screen.
+ */
 export async function getDestinationBySlug(
   slug: string,
 ): Promise<Result<Destination>> {
   await delay();
-  const match = DESTINATIONS.find((d) => d.slug === slug);
+  const match =
+    DESTINATIONS.find((d) => d.slug === slug) ??
+    EXPLORE_DESTINATIONS.find((d) => d.slug === slug);
   return match ? { ok: true, data: match } : { ok: false, error: "not_found" };
+}
+
+/** Traveler reviews targeting one destination/tour slug (newest first). */
+export async function getDestinationReviews(
+  slug: string,
+): Promise<Result<Review[]>> {
+  await delay();
+  const data = REVIEWS.filter((r) => r.targetSlug === slug).sort((a, b) =>
+    b.createdAt.localeCompare(a.createdAt),
+  );
+  return { ok: true, data };
 }
 
 export async function getFeaturedTours(): Promise<Result<FeaturedTour[]>> {

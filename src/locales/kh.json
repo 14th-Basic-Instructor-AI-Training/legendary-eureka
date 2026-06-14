@@ -840,7 +840,47 @@
       "priceFrom": "តម្លៃចាប់ពី",
       "perPerson": "ក្នុងម្នាក់",
       "book": "កក់បទពិសោធន៍នេះ",
-      "loginToBook": "ចូលដើម្បីកក់"
+      "loginToBook": "ចូលដើម្បីកក់",
+      "aboutTitle": "អំពី {{name}}",
+      "exploreMap": "រុករកផែនទី",
+      "thingsToDo": "សកម្មភាពគួរធ្វើ",
+      "whereToEat": "កន្លែងហូបអាហារ",
+      "whereToStay": "កន្លែងស្នាក់នៅ",
+      "poiCategory": {
+        "sight": "ទីកន្លែងទស្សនា",
+        "activity": "សកម្មភាព",
+        "food": "អាហារ",
+        "stay": "កន្លែងស្នាក់នៅ"
+      },
+      "toursIn": "ដំណើរកម្សាន្តនៅ {{name}}",
+      "toursAvailable_one": "{{count, number}} ដំណើរកម្សាន្ត",
+      "toursAvailable_other": "{{count, number}} ដំណើរកម្សាន្ត",
+      "reviewsTitle": "មតិអ្នកដំណើរ",
+      "verifiedReviews_one": "{{count, number}} មតិបានផ្ទៀងផ្ទាត់",
+      "verifiedReviews_other": "{{count, number}} មតិបានផ្ទៀងផ្ទាត់",
+      "sortBy": "តម្រៀបតាម",
+      "sort": {
+        "recent": "ថ្មីៗបំផុត",
+        "highest": "ការវាយតម្លៃខ្ពស់បំផុត",
+        "helpful": "មានប្រយោជន៍បំផុត"
+      },
+      "writeReview": "សរសេរមតិ",
+      "showAllReviews_one": "កំពុងបង្ហាញមតិថ្មីៗក្នុងចំណោម {{count, number}}",
+      "showAllReviews_other": "កំពុងបង្ហាញមតិលេចធ្លោក្នុងចំណោម {{count, number}}",
+      "quickFacts": "ព័ត៌មានសង្ខេប",
+      "bestTime": "ពេលវេលាល្អបំផុតដើម្បីទស្សនា",
+      "language": "ភាសា",
+      "currency": "រូបិយប័ណ្ណ",
+      "provinceLabel": "ខេត្ត",
+      "priceFromLabel": "តម្លៃចាប់ពី",
+      "planCardTitle": "បង្កើតដំណើររបស់អ្នក",
+      "planCardBody": "រក្សាទុកទីកន្លែង បង្កើតកម្មវិធីដំណើរ និងកក់ដំណើរកម្សាន្ត — ទាំងអស់ក្នុងផែនការតែមួយ។",
+      "planTripHere": "រៀបចំផែនការដំណើរនៅទីនេះ",
+      "bookTourHere": "កក់ដំណើរកម្សាន្តនៅទីនេះ",
+      "breadcrumb": {
+        "home": "ទំព័រដើម",
+        "destinations": "គោលដៅ"
+      }
     }
   },
   "tours": {
