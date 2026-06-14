@@ -13,16 +13,35 @@ export type TripStatus =
 
 export interface TripResponse {
   id: string;
+  // traveler identity (enriched by the backend — all fields available)
+  travelerId: string;
+  travelerName: string;
+  travelerDisplayName: string;
+  travelerInitials: string;
+  travelerEmail: string;
+  travelerPhone: string;
+  // package info
   tourPackageId: string;
   tourPackageTitle: string;
-  travelerId: string;
+  packageTitle: string;
+  // agency
   agencyId: string;
+  // booking details
   status: TripStatus;
   numberOfPeople: number;
+  guests: number;
   /** ISO date string (YYYY-MM-DD) */
   requestedDate: string;
+  datesLabel: string;
+  total: number;
+  currency: string;
+  paymentStatus: string;
+  // notes
   note: string;
+  specialRequests: string;
   agencyNote: string;
+  // meta
+  requestedAtLabel: string;
   createdAt: string;
   updatedAt: string;
 }

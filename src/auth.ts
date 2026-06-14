@@ -5,10 +5,15 @@ import type { Role } from "@/features/auth/schema";
 
 const API = process.env.NEXT_API_URL ?? "http://localhost:8080/api/v1";
 
+// Backend serializes Role enum as lowercase strings ("admin", "agency", "traveler").
+// Keep uppercase keys as a fallback in case any endpoint returns the enum name directly.
 const ROLE_MAP: Record<string, Role> = {
-  TRAVELER: "traveler",
-  TOUR_AGENCY: "agency",
+  admin: "admin",
+  agency: "agency",
+  traveler: "traveler",
   ADMIN: "admin",
+  TOUR_AGENCY: "agency",
+  TRAVELER: "traveler",
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth({

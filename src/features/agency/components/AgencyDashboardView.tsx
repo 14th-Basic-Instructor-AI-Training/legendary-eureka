@@ -31,38 +31,26 @@ import {
   gridProps,
   tooltipProps,
 } from "@/features/admin/components/dashboard/chartTheme";
-import type { AgencyStatsResponse, AgencyReviewResponse } from "@/lib/api/profile";
+import type {
+  AgencyStatsResponse,
+  AgencyReviewResponse,
+  MonthlyBookingResponse,
+  BookingStatusSummaryResponse,
+} from "@/lib/api/profile";
 import type { TripResponse } from "@/lib/api/bookings";
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 export interface AgencyDashboardViewProps {
   stats: AgencyStatsResponse;
+  monthlyBookings: MonthlyBookingResponse[];
+  bookingStatusSummary: BookingStatusSummaryResponse;
   reviews: AgencyReviewResponse[];
   trips: TripResponse[];
   agencyName: string;
 }
 
-// ── Mock chart data — no backend endpoints exist yet ──────────────────────────
-// TODO: monthly booking trend needs:  GET /api/v1/agencies/me/stats/monthly-bookings?months=6
-// TODO: booking status breakdown needs: GET /api/v1/agencies/me/stats/booking-status-summary
-
-const MONTHLY_BOOKINGS = [
-  { month: "Jan", bookings: 18 },
-  { month: "Feb", bookings: 26 },
-  { month: "Mar", bookings: 38 },
-  { month: "Apr", bookings: 31 },
-  { month: "May", bookings: 42 },
-  { month: "Jun", bookings: 34 },
-];
-
-const BOOKING_STATUS_DATA = [
-  { name: "Approved", value: 48 },
-  { name: "Pending", value: 12 },
-  { name: "Rejected", value: 5 },
-];
-
-const DONUT_COLORS = ["var(--primary-lightskyblue)", "var(--orange)", "var(--red)"];
+const DONUT_COLORS = ["var(--primary-lightskyblue)", "var(--orange)", "var(--red)", "var(--green)", "var(--text-secondary)"];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -193,12 +181,12 @@ function StatsGrid({ stats }: { stats: AgencyStatsResponse }) {
 
 // ── Charts — require "use client" (Recharts uses browser SVG / ResizeObserver) ─
 
-function BookingsTrendChart() {
+function BookingsTrendChart({ data }: { data: MonthlyBookingResponse[] }) {
   const { t } = useTranslation();
   return (
     <Panel title={t("agency.dashboard.bookingsTrend")}>
       <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={MONTHLY_BOOKINGS} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+        <BarChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
           <CartesianGrid {...gridProps} />
           <XAxis dataKey="month" {...axisProps} />
           <YAxis {...axisProps} />
@@ -210,14 +198,22 @@ function BookingsTrendChart() {
   );
 }
 
-function BookingStatusChart() {
+function BookingStatusChart({ summary }: { summary: BookingStatusSummaryResponse }) {
   const { t } = useTranslation();
+  const data = [
+    { name: "Approved", value: summary.approved },
+    { name: "Pending", value: summary.pending },
+    { name: "Rejected", value: summary.rejected },
+    { name: "Completed", value: summary.completed },
+    { name: "Cancelled", value: summary.cancelled },
+  ].filter((d) => d.value > 0);
+
   return (
     <Panel title={t("agency.dashboard.bookingStatus")}>
       <ResponsiveContainer width="100%" height={200}>
         <PieChart>
           <Pie
-            data={BOOKING_STATUS_DATA}
+            data={data}
             cx="50%"
             cy="50%"
             innerRadius={55}
@@ -225,8 +221,8 @@ function BookingStatusChart() {
             paddingAngle={2}
             dataKey="value"
           >
-            {BOOKING_STATUS_DATA.map((_, i) => (
-              <Cell key={i} fill={DONUT_COLORS[i]} />
+            {data.map((_, i) => (
+              <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
             ))}
           </Pie>
           <Legend
@@ -280,15 +276,12 @@ function RecentBookingsTable({ trips }: { trips: TripResponse[] }) {
             className="border-border/60 border-b last:border-0 hover:bg-bg-ghostwhite"
           >
             <td className="py-3 pr-4">
-              {/* TODO: traveler name unavailable — TripResponse only carries travelerId.
-                  Fetch GET /travelers/{travelerId} per row, or ask the backend to embed
-                  travelerDisplayName in TripResponse. */}
               <div className="flex items-center gap-2.5">
                 <Avatar size="sm">
-                  <Avatar.Fallback>—</Avatar.Fallback>
+                  <Avatar.Fallback>{trip.travelerInitials || initialsOf(trip.travelerDisplayName || trip.travelerName || "?")}</Avatar.Fallback>
                 </Avatar>
-                <span className="text-muted font-medium text-xs font-mono">
-                  {trip.travelerId.slice(0, 8)}…
+                <span className="font-medium text-sm">
+                  {trip.travelerDisplayName || trip.travelerName}
                 </span>
               </div>
             </td>
@@ -367,6 +360,8 @@ function QuickActions() {
 
 export default function AgencyDashboardView({
   stats,
+  monthlyBookings,
+  bookingStatusSummary,
   reviews,
   trips,
   agencyName,
@@ -393,8 +388,8 @@ export default function AgencyDashboardView({
 
       {/* Charts */}
       <div className="grid grid-cols-[3fr_2fr] gap-6">
-        <BookingsTrendChart />
-        <BookingStatusChart />
+        <BookingsTrendChart data={monthlyBookings} />
+        <BookingStatusChart summary={bookingStatusSummary} />
       </div>
 
       {/* Bookings table + reviews */}
