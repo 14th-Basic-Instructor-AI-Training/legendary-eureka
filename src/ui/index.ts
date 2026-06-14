@@ -9,6 +9,8 @@ export { Input, type UIInputProps } from "./Input";
 export { PasswordInput, type UIPasswordInputProps } from "./PasswordInput";
 export { Card } from "./Card";
 export { Select, ListBox } from "./Select";
+export { Autocomplete } from "./Autocomplete";
+export { SearchField } from "./SearchField";
 export { Skeleton, type UISkeletonProps } from "./Skeleton";
 export { Chip } from "./Chip";
 export { StatusChip } from "./StatusChip";
@@ -39,10 +41,6 @@ export {
   Checkbox,
   RadioGroup,
   Radio,
-  // Autocomplete = a Select with type-to-filter. Compose with SearchField +
-  // ListBox inside `Autocomplete.Filter`, and `useFilter` for the match fn.
-  Autocomplete,
-  SearchField,
   EmptyState,
   useFilter,
 } from "@heroui/react";

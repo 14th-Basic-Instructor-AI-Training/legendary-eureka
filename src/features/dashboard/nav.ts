@@ -70,18 +70,11 @@ export const SIDEBAR_NAV: Record<Role, NavGroup[]> = {
       items: [
         { labelKey: "nav.dashboard", Icon: Element3, href: "/agency/dashboard" },
         { labelKey: "tours.nav.tours", Icon: Location, href: "/agency/tours" },
-        { labelKey: "agency.tabs.bookings", Icon: ClipboardText, tab: "bookings" },
-        { labelKey: "agency.tabs.activities", Icon: Category, tab: "activities" },
-        { labelKey: "agency.tabs.packages", Icon: Calendar, tab: "packages" },
+        { labelKey: "agency.tabs.bookings", Icon: ClipboardText, href: "/agency/bookings" },
+        { labelKey: "agency.tabs.activities", Icon: Category, href: "/agency/activities" },
+        { labelKey: "agency.tabs.packages", Icon: Calendar, href: "/agency/packages" },
       ],
     },
   ],
-  traveler: [
-    {
-      items: [
-        { labelKey: "nav.dashboard", Icon: Star1 },
-        { labelKey: "nav.settings", Icon: Setting2, href: "/traveler/settings" },
-      ],
-    },
-  ],
+  traveler: [{ items: [{ labelKey: "nav.dashboard", Icon: Star1 }] }],
 };
