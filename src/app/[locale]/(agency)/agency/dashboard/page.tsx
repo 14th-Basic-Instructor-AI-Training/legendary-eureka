@@ -350,7 +350,7 @@ function QuickActions() {
       <p className="text-muted mb-5 text-sm">{t("agency.dashboard.quickActionsSub")}</p>
       <div className="grid grid-cols-2 gap-4">
         <button
-          onClick={() => router.push("/agency")}
+          onClick={() => router.push("/agency/activities")}
           className="flex flex-col items-center justify-center gap-3 rounded-2xl py-8 font-bold text-base text-white transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
           style={{ backgroundColor: "var(--primary-lightskyblue)" }}
         >
@@ -358,7 +358,7 @@ function QuickActions() {
           {t("agency.dashboard.createActivity")}
         </button>
         <button
-          onClick={() => router.push("/agency")}
+          onClick={() => router.push("/agency/packages")}
           className="flex flex-col items-center justify-center gap-3 rounded-2xl py-8 font-bold text-base text-white transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
           style={{ backgroundColor: "var(--primary-lightskyblue)" }}
         >
