@@ -57,7 +57,117 @@
     "controlPanel": "Control panel",
     "menu": "Menu",
     "toggleSidebar": "Toggle sidebar",
-    "backToSite": "Back to Jalat"
+    "backToSite": "Back to Jalat",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "placeholder": "This section is coming soon.",
+    "nav": {
+      "account": "Account Information",
+      "payment": "Payment Information",
+      "notifications": "Notifications",
+      "approval": "Approval Status",
+      "support": "Support Center",
+      "becomeHost": "Become a Host",
+      "terms": "Terms of Services"
+    },
+    "account": {
+      "title": "Account information",
+      "subtitle": "Update your photo and personal details here.",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "photoLabel": "Your photo",
+      "photoHint": "This will be displayed on your profile.",
+      "uploadCta": "Click to upload",
+      "uploadRest": "or drag and drop",
+      "uploadFormats": "SVG, PNG, JPG or GIF (max. 800×400px)",
+      "name": "Name",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email address",
+      "emailUnverified": "Your email address is not verified yet.",
+      "verifyNow": "Verify Now",
+      "phone": "Phone Number",
+      "country": "Country",
+      "countries": {
+        "us": "United States of America",
+        "kh": "Cambodia",
+        "kr": "South Korea",
+        "jp": "Japan",
+        "th": "Thailand",
+        "vn": "Vietnam"
+      }
+    },
+    "payment": {
+      "title": "Payment information",
+      "subtitle": "Update your cards and payment details here.",
+      "addNew": "Add new",
+      "savedCards": "Saved Cards",
+      "secured": "Your cards information will be safe and secured.",
+      "endingIn": "{{brand}} ending in {{last4}}",
+      "expiry": "Expiry {{date}}",
+      "default": "Default",
+      "edit": "Edit"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Get emails to find out what's going on when you're not online. You can turn them off anytime.",
+      "mobileTitle": "Mobile Notifications",
+      "mobileDesc": "Receive the latest news, updates and industry tutorials from us.",
+      "emailTitle": "Email Notifications",
+      "emailDesc": "These are notifications for comments on your posts and replies to your comments.",
+      "options": {
+        "text": {
+          "label": "Enable text notifications",
+          "desc": "News about product and feature updates."
+        },
+        "push": {
+          "label": "Push notifications",
+          "desc": "Tips on getting more out of Jalat."
+        },
+        "weekly": {
+          "label": "Weekly Notifications",
+          "desc": "Get involved in our beta testing program or participate in paid product user research."
+        },
+        "promo": {
+          "label": "Promotional & Announcement"
+        },
+        "offers": {
+          "label": "Latest offers & deals",
+          "desc": "Only notify me if I'm mentioned in a comment."
+        }
+      }
+    },
+    "support": {
+      "title": "Support Center",
+      "subtitle": "Get help when you need it — reach our team, find safety resources, and learn how Jalat works.",
+      "searchPlaceholder": "Search here",
+      "cards": {
+        "safety": {
+          "title": "Safety Center",
+          "desc": "Get in touch in case of immediate danger.",
+          "link": "Call emergency services."
+        },
+        "ticket": {
+          "title": "Ticket Support",
+          "desc": "Reach out to our dedicated support team.",
+          "link": "Reply within 24hrs."
+        },
+        "dispute": {
+          "title": "Dispute and Insurance",
+          "desc": "Manage trip disputes and insurance claims."
+        },
+        "howItWorks": {
+          "title": "How Jalat Works",
+          "desc": "Book tours and plan trips with trusted local agencies."
+        },
+        "faq": {
+          "title": "Frequently Asked Questions",
+          "desc": "Search frequently asked questions about Jalat."
+        }
+      }
+    }
   },
   "auth": {
     "title": "Welcome back",
@@ -890,7 +1000,11 @@
       "requests": "Requests",
       "content": "Content",
       "bookings": "Bookings",
-      "settings": "Settings"
+      "settings": "Settings",
+      "groups": {
+        "operations": "Operations",
+        "moderation": "Moderation"
+      }
     },
     "content": {
       "tabs": {
@@ -1070,14 +1184,22 @@
         "agency": "Agency"
       },
       "form": {
+        "title": "Create destination",
         "name": "Name",
         "namePlaceholder": "e.g. Angkor Wat",
         "province": "Province",
         "travelType": "Travel type",
-        "summary": "Description",
-        "summaryPlaceholder": "Short description of the place",
+        "description": "Description",
+        "descriptionPlaceholder": "Short description of the place",
+        "coverImageUrl": "Cover image URL",
+        "coverImageUrlPlaceholder": "https://…",
         "price": "Price from (USD)",
-        "submit": "Create destination"
+        "currency": "Currency",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "submit": "Create destination",
+        "searchProvince": "Search province…",
+        "noProvince": "No province found"
       }
     },
     "packages": {
@@ -1117,6 +1239,8 @@
         "subtitle": "Review tour packages agencies submitted for approval.",
         "empty": "No package approval requests.",
         "pendingCount": "{{count}} awaiting approval",
+        "awaiting": "awaiting approval",
+        "statusFilter": "Filter by status",
         "approve": "Approve",
         "reject": "Reject",
         "search": "Search packages…"

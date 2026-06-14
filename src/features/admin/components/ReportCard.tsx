@@ -38,7 +38,7 @@ function ResolvePanel({ report }: { report: Report }) {
   };
 
   return (
-    <div className="border-border bg-bg-ghostwhite -mx-4 -mb-4 mt-1 flex flex-col gap-2 border-t px-4 py-3">
+    <div className="border-border bg-bg-ghostwhite -mx-4 -mb-4 mt-auto flex flex-col gap-2 border-t px-4 py-3">
       {showNote ? (
         <textarea
           value={note}
@@ -81,7 +81,7 @@ export function ReportCard({ report: r, agencyReportCount }: Props) {
   const sev = SEVERITY[r.severity];
 
   return (
-    <div className="bg-surface border-border relative flex flex-col gap-3 overflow-hidden rounded-2xl border p-4 pl-5 shadow-primary">
+    <div className="bg-surface border-border relative flex h-full flex-col gap-3 overflow-hidden rounded-2xl border p-4 pl-5 shadow-primary">
       {/* severity accent rail */}
       <span className={cn("absolute inset-y-0 left-0 w-1", sev.rail)} aria-hidden />
 

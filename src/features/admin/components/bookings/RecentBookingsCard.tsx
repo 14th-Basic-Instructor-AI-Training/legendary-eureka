@@ -27,7 +27,7 @@ export function RecentBookingsCard({ bookings }: { bookings: AdminBooking[] }) {
   const rows = showAll ? bookings : bookings.slice(0, COLLAPSED);
 
   return (
-    <section className="bg-surface shadow-primary flex flex-col rounded-2xl p-5">
+    <section className="bg-surface shadow-primary flex min-h-0 flex-1 flex-col rounded-2xl p-5">
       <header className="mb-4 flex items-center justify-between gap-3">
         <h3 className="text-primary font-semibold tracking-tight">
           {t("admin.bookings.overview.recent")}
@@ -52,7 +52,7 @@ export function RecentBookingsCard({ bookings }: { bookings: AdminBooking[] }) {
         <span className="text-right">{t("admin.bookings.overview.cols.status")}</span>
       </div>
 
-      <ul className="flex flex-col">
+      <ul className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         {rows.map((b) => (
           <li
             key={b.id}

@@ -61,11 +61,14 @@ export const useToursStore = create<ToursState>((set, get) => ({
     const next: TourDestination = {
       id: `td-new-${get().destinations.length + 1}`,
       name: input.name,
+      description: input.description,
       province: input.province,
       travelType: input.travelType,
-      summary: input.summary,
+      coverImageUrl: input.coverImageUrl,
       priceFrom: input.priceFrom,
-      currency: "USD",
+      currency: input.currency,
+      latitude: input.latitude,
+      longitude: input.longitude,
       origin,
       ownerName,
     };

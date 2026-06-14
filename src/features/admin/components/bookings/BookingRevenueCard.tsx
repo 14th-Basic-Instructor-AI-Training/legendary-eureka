@@ -37,7 +37,7 @@ export function BookingRevenueCard({ bookings }: { bookings: AdminBooking[] }) {
       </h3>
 
       <div className="flex flex-wrap items-center gap-5">
-        <div className="relative h-40 w-40 shrink-0">
+        <div className="relative h-48 w-48 shrink-0 p-2">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -47,6 +47,7 @@ export function BookingRevenueCard({ bookings }: { bookings: AdminBooking[] }) {
                 innerRadius={54}
                 outerRadius={72}
                 paddingAngle={2}
+                cornerRadius={6}
                 stroke="none"
               >
                 {byStatus.map((s) => (

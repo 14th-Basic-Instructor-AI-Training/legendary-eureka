@@ -3,18 +3,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TickCircle, CloseCircle, Box1, SearchNormal1 } from "iconsax-reactjs";
-import { Button, Input, Pagination, StatusChip, Tabs, useConfirm } from "@/ui";
+import { Button, Input, Pagination, StatusChip, useConfirm } from "@/ui";
 import { formatPrice } from "@/lib/format";
 import { useSession } from "@/lib/auth";
 import { useToursStore } from "../store";
 import type { PackageApprovalStatus, TourPackage } from "../schema";
-
-const STATUS_FILTERS: Array<{ value: "all" | PackageApprovalStatus; labelKey: string }> = [
-  { value: "all", labelKey: "common.all" },
-  { value: "pending", labelKey: "status.pending" },
-  { value: "approved", labelKey: "status.approved" },
-  { value: "rejected", labelKey: "status.rejected" },
-];
 
 /** Cards per page. */
 const PAGE_SIZE = 9;
@@ -24,7 +17,20 @@ const PAGE_SIZE = 9;
  * Requests-queue look (search + status tabs + card grid + approve/reject).
  * Draft packages aren't shown — only those submitted for review.
  */
-export function TourApprovalsQueue() {
+type Props = {
+  /** Hide the "{n} awaiting approval" banner (e.g. when the host shows its own). */
+  hidePendingBanner?: boolean;
+  /** Status filter, owned by the host (a dropdown in the package-filter row). */
+  statusFilter?: "all" | PackageApprovalStatus;
+  /** When provided, the host owns the search box; the queue hides its own. */
+  search?: string;
+};
+
+export function TourApprovalsQueue({
+  hidePendingBanner = false,
+  statusFilter = "all",
+  search: searchProp,
+}: Props) {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
   const { role } = useSession();
@@ -33,8 +39,10 @@ export function TourApprovalsQueue() {
   const rejectPackage = useToursStore((s) => s.rejectPackage);
   const confirm = useConfirm();
 
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | PackageApprovalStatus>("all");
+  const [internalSearch, setInternalSearch] = useState("");
+  // When the host passes `search`, it owns the input and we hide our own.
+  const ownsSearch = searchProp === undefined;
+  const search = searchProp ?? internalSearch;
   const [page, setPage] = useState(1);
 
   const submitted = packages.filter((p) => p.status !== "draft");
@@ -76,7 +84,7 @@ export function TourApprovalsQueue() {
 
   return (
     <div className="flex flex-col gap-4">
-      {pendingCount > 0 ? (
+      {!hidePendingBanner && pendingCount > 0 ? (
         <div className="bg-warning/10 border-warning/30 flex w-fit items-center gap-2 rounded-xl border px-4 py-2.5">
           <span className="text-warning text-sm font-medium">
             {t("tours.admin.approvals.pendingCount", { count: pendingCount })}
@@ -84,44 +92,28 @@ export function TourApprovalsQueue() {
         </div>
       ) : null}
 
-      {/* search + status filter */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-48 flex-1">
-          <SearchNormal1
-            size={16}
-            color="currentColor"
-            className="text-muted pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
-          />
-          <Input
-            aria-label={t("tours.admin.approvals.search")}
-            placeholder={t("tours.admin.approvals.search")}
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="pl-9"
-          />
+      {/* search (status filter is the host's dropdown in the package row) */}
+      {ownsSearch ? (
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative min-w-48 flex-1">
+            <SearchNormal1
+              size={16}
+              color="currentColor"
+              className="text-muted pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
+            />
+            <Input
+              aria-label={t("tours.admin.approvals.search")}
+              placeholder={t("tours.admin.approvals.search")}
+              value={search}
+              onChange={(e) => {
+                setInternalSearch(e.target.value);
+                setPage(1);
+              }}
+              className="pl-9"
+            />
+          </div>
         </div>
-        <Tabs
-          selectedKey={statusFilter}
-          onSelectionChange={(key) => {
-            setStatusFilter(key as "all" | PackageApprovalStatus);
-            setPage(1);
-          }}
-        >
-          <Tabs.ListContainer>
-            <Tabs.List aria-label={t("tours.admin.approvals.title")} className="bg-primary/15!">
-              {STATUS_FILTERS.map((f) => (
-                <Tabs.Tab key={f.value} id={f.value}>
-                  {t(f.labelKey)}
-                  <Tabs.Indicator />
-                </Tabs.Tab>
-              ))}
-            </Tabs.List>
-          </Tabs.ListContainer>
-        </Tabs>
-      </div>
+      ) : null}
 
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-14 text-center">

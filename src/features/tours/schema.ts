@@ -19,24 +19,35 @@ export type DestinationOrigin = z.infer<typeof DestinationOriginSchema>;
 export const TourDestinationSchema = z.object({
   id: z.string(),
   name: z.string(),
+  description: z.string(),
   province: ProvinceSchema,
   travelType: TravelTypeSchema,
-  summary: z.string(),
+  coverImageUrl: z.string().url(),
   priceFrom: z.number().nonnegative(),
   currency: z.string().default("USD"),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
   /** Who created it — distinguishes Flow 1 (admin) from Flow 2 (agency). */
   origin: DestinationOriginSchema,
   ownerName: z.string(),
 });
 export type TourDestination = z.infer<typeof TourDestinationSchema>;
 
-/** Create-destination form shape. `priceFrom` coerces from the number input. */
+/**
+ * Create-destination form shape — mirrors the backend POST body 1:1 so the same
+ * schema validates the form today and the request later. Number fields coerce so
+ * they bind to native `<input type="number">` string values.
+ */
 export const NewDestinationSchema = z.object({
   name: z.string().min(1, "Name is required"),
+  description: z.string().min(1, "Description is required"),
   province: ProvinceSchema,
   travelType: TravelTypeSchema,
-  summary: z.string().min(1, "Description is required"),
+  coverImageUrl: z.string().url("Enter a valid image URL"),
   priceFrom: z.coerce.number().min(0, "Enter a price"),
+  currency: z.string().min(1, "Currency is required").max(8).default("USD"),
+  latitude: z.coerce.number().min(-90, "Invalid latitude").max(90, "Invalid latitude"),
+  longitude: z.coerce.number().min(-180, "Invalid longitude").max(180, "Invalid longitude"),
 });
 export type NewDestinationInput = z.output<typeof NewDestinationSchema>;
 export type NewDestinationFormValues = z.input<typeof NewDestinationSchema>;

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Add, CloseCircle, Location } from "iconsax-reactjs";
+import { Add, Location } from "iconsax-reactjs";
 import { Button, Chip } from "@/ui";
 import { formatPrice } from "@/lib/format";
 import { DestinationForm } from "./DestinationForm";
@@ -25,19 +25,18 @@ export function DestinationsPanel({ destinations, agencyName, onBuildPackage }: 
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold tracking-tight">{t("tours.destinations.title")}</h2>
-        <Button variant="primary" size="sm" onPress={() => setShowForm((v) => !v)}>
-          {showForm ? (
-            <CloseCircle size={16} color="currentColor" />
-          ) : (
-            <Add size={16} color="currentColor" />
-          )}
+        <Button variant="primary" size="sm" onPress={() => setShowForm(true)}>
+          <Add size={16} color="currentColor" />
           {t("tours.destinations.new")}
         </Button>
       </div>
 
-      {showForm ? (
-        <DestinationForm origin="agency" ownerName={agencyName} onDone={() => setShowForm(false)} />
-      ) : null}
+      <DestinationForm
+        isOpen={showForm}
+        origin="agency"
+        ownerName={agencyName}
+        onClose={() => setShowForm(false)}
+      />
 
       {destinations.length === 0 ? (
         <p className="text-muted py-8 text-center text-sm">{t("tours.destinations.empty")}</p>
@@ -62,7 +61,7 @@ export function DestinationsPanel({ destinations, agencyName, onBuildPackage }: 
                 </Chip>
               </div>
 
-              <p className="text-muted line-clamp-2 text-sm">{d.summary}</p>
+              <p className="text-muted line-clamp-2 text-sm">{d.description}</p>
 
               <div className="mt-auto flex items-center justify-between gap-3 pt-1">
                 <span className="text-sm font-semibold">

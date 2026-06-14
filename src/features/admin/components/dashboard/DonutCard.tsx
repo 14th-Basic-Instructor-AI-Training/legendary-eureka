@@ -34,6 +34,7 @@ export function DonutCard({ data }: { data: DistributionSlice[] }) {
               innerRadius={56}
               outerRadius={80}
               paddingAngle={2}
+              cornerRadius={6}
               stroke="none"
             >
               {chartData.map((s) => (

@@ -19,7 +19,11 @@ import { dashboardPathFor } from "@/lib/permissions";
 import { useAuthStore } from "@/features/auth/store";
 import { useLocalizedRouter } from "@/lib/locale";
 import { useConfirm } from "@/ui";
+import { cn } from "@/lib/utils";
 import type { Role } from "@/features/auth/schema";
+
+/** Items that get a divider rule above them in the sidebar. */
+const DIVIDER_ABOVE = new Set(["admin.tabs.users", "nav.settings"]);
 
 /** Role-aware dashboard sidebar. Nav items deep-link into the page's tabs. */
 export function DashboardSidebar({ role }: { role: Role }) {
@@ -42,8 +46,9 @@ export function DashboardSidebar({ role }: { role: Role }) {
     signOut();
     router.replace("/login");
   };
-  const items = SIDEBAR_NAV[role];
-  const defaultTab = items.find((item) => item.tab)?.tab;
+  const groups = SIDEBAR_NAV[role];
+  const allItems = groups.flatMap((g) => g.items);
+  const defaultTab = allItems.find((item) => item.tab)?.tab;
   const activeTab = params.get("tab") ?? defaultTab;
   const base = dashboardPathFor(role);
   const onBase = pathname.endsWith(base);
@@ -62,28 +67,43 @@ export function DashboardSidebar({ role }: { role: Role }) {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarMenu>
-          {items.map(({ labelKey, Icon, href: route, tab }) => {
-            const href = route ?? (tab ? `${base}?tab=${tab}` : base);
-            const active = route
-              ? pathname.endsWith(route)
-              : onBase && (tab ? activeTab === tab : true);
-            return (
-              <SidebarMenuItem key={labelKey}>
-                <SidebarMenuButton asChild active={active}>
-                  <LocaleLink href={href} title={t(labelKey)}>
-                    <Icon
-                      size={20}
-                      color="currentColor"
-                      variant={active ? "Bold" : "Linear"}
-                    />
-                    <SidebarLabel>{t(labelKey)}</SidebarLabel>
-                  </LocaleLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
-        </SidebarMenu>
+        {groups.map((group, gi) => (
+          <SidebarMenu
+            key={group.labelKey ?? `group-${gi}`}
+            className={cn(gi > 0 && "mt-3", group.separated && "border-border border-t pt-2")}
+          >
+            {group.labelKey ? (
+              <li className="text-muted px-3 pt-3 pb-1 text-[11px] font-semibold tracking-wider uppercase group-data-[state=collapsed]:hidden">
+                {t(group.labelKey)}
+              </li>
+            ) : null}
+            {group.items.map(({ labelKey, Icon, href: route, tab }) => {
+              const href = route ?? (tab ? `${base}?tab=${tab}` : base);
+              const active = route
+                ? pathname.endsWith(route)
+                : onBase && (tab ? activeTab === tab : true);
+              return (
+                <SidebarMenuItem
+                  key={labelKey}
+                  className={cn(
+                    DIVIDER_ABOVE.has(labelKey) && "border-border mt-2 border-t pt-2",
+                  )}
+                >
+                  <SidebarMenuButton asChild active={active}>
+                    <LocaleLink href={href} title={t(labelKey)}>
+                      <Icon
+                        size={20}
+                        color="currentColor"
+                        variant={active ? "Bold" : "Linear"}
+                      />
+                      <SidebarLabel>{t(labelKey)}</SidebarLabel>
+                    </LocaleLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="pb-6">

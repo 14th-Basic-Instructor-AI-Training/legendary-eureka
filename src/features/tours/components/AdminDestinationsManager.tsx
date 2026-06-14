@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Add, CloseCircle, Location } from "iconsax-reactjs";
+import { Add, Location } from "iconsax-reactjs";
 import { Button, Chip, Tabs } from "@/ui";
 import { formatPrice } from "@/lib/format";
 import { DestinationForm } from "./DestinationForm";
@@ -41,39 +41,38 @@ export function AdminDestinationsManager() {
               className="bg-primary/15!"
             >
               <Tabs.Tab id="all">
-                {t("tours.admin.destinations.tabs.all")}
+                <span className="whitespace-nowrap">
+                  {t("tours.admin.destinations.tabs.all")}
+                </span>
                 <Tabs.Indicator />
               </Tabs.Tab>
               <Tabs.Tab id="requests">
-                {t("tours.admin.destinations.tabs.requests")}
-                {requests.length > 0 ? (
-                  <Chip color="warning" variant="soft" size="sm" className="ml-1.5">
-                    {requests.length}
-                  </Chip>
-                ) : null}
+                <span className="flex items-center gap-1.5 whitespace-nowrap">
+                  {t("tours.admin.destinations.tabs.requests")}
+                  {requests.length > 0 ? (
+                    <Chip color="warning" variant="soft" size="sm">
+                      {requests.length}
+                    </Chip>
+                  ) : null}
+                </span>
                 <Tabs.Indicator />
               </Tabs.Tab>
             </Tabs.List>
           </Tabs.ListContainer>
 
-          <Button variant="primary" size="sm" onPress={() => setShowForm((v) => !v)}>
-            {showForm ? (
-              <CloseCircle size={16} color="currentColor" />
-            ) : (
-              <Add size={16} color="currentColor" />
-            )}
+          <Button variant="primary" size="sm" onPress={() => setShowForm(true)}>
+            <Add size={16} color="currentColor" />
             {t("tours.admin.destinations.new")}
           </Button>
         </div>
       </Tabs>
 
-      {showForm ? (
-        <DestinationForm
-          origin="admin"
-          ownerName={ADMIN_OWNER_NAME}
-          onDone={() => setShowForm(false)}
-        />
-      ) : null}
+      <DestinationForm
+        isOpen={showForm}
+        origin="admin"
+        ownerName={ADMIN_OWNER_NAME}
+        onClose={() => setShowForm(false)}
+      />
 
       {shown.length === 0 ? (
         <p className="text-muted py-8 text-center text-sm">
@@ -104,7 +103,7 @@ export function AdminDestinationsManager() {
                 </Chip>
               </div>
 
-              <p className="text-muted line-clamp-2 text-sm">{d.summary}</p>
+              <p className="text-muted line-clamp-2 text-sm">{d.description}</p>
 
               <div className="mt-auto flex items-center justify-between gap-3 pt-1">
                 <span className="text-sm font-semibold">

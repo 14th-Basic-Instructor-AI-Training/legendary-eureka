@@ -43,7 +43,7 @@ export function BookingsTrendCard() {
   const RANGES: Range[] = ["week", "month", "year"];
 
   return (
-    <section className="bg-surface shadow-primary flex flex-col gap-4 rounded-2xl p-5">
+    <section className="bg-surface shadow-primary flex min-h-0 flex-1 flex-col gap-4 rounded-2xl p-5">
       <header className="flex items-center justify-between gap-3">
         <h3 className="text-primary font-semibold tracking-tight">
           {t("admin.bookings.overview.trend.title")}
@@ -67,9 +67,9 @@ export function BookingsTrendCard() {
         </div>
       </header>
 
-      <div className="h-72 w-full">
+      <div className="min-h-[16rem] w-full flex-1 p-4">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }} barCategoryGap="28%">
+          <BarChart data={data} margin={{ top: 12, right: 12, left: -8, bottom: 8 }} barCategoryGap="28%">
             <defs>
               <linearGradient id="bookings-bar-peak" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="var(--primary)" />

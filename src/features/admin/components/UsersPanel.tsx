@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Slash, Forbidden2, Refresh, SearchNormal1, ArrowDown } from "iconsax-reactjs";
-import { Avatar, Button, Chip, StatusChip } from "@/ui";
+import { Avatar, Button, Chip, Pagination, StatusChip } from "@/ui";
 import { useSession } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 import { useAdminStore } from "../store";
@@ -27,6 +27,9 @@ const STATUS_FILTERS: Array<{ value: StatusFilter; labelKey: string }> = [
   { value: "banned", labelKey: "status.banned" },
 ];
 
+/** Users shown per page. */
+const PAGE_SIZE = 10;
+
 function initialsOf(name: string) {
   return name
     .split(" ")
@@ -49,6 +52,7 @@ export function UsersPanel() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [page, setPage] = useState(1);
 
   const filtered = users.filter((u) => {
     const matchesRole = roleFilter === "all" || u.role === roleFilter;
@@ -57,6 +61,12 @@ export function UsersPanel() {
     const matchesSearch = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
     return matchesRole && matchesStatus && matchesSearch;
   });
+
+  // Client-side pagination, 10 per page. `page` is clamped at render so it stays
+  // valid when filters shrink the list (no setState-in-effect needed).
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const suspendedCount = users.filter((u) => u.status === "suspended").length;
   const bannedCount = users.filter((u) => u.status === "banned").length;
@@ -95,13 +105,16 @@ export function UsersPanel() {
             aria-label={t("admin.users.searchPlaceholder")}
             placeholder={t("admin.users.searchPlaceholder")}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             className="border-border bg-surface text-foreground placeholder:text-muted w-full rounded-xl border px-3 py-2 pl-9 text-sm outline-none focus:ring-1 focus:ring-[var(--primary)]"
           />
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap justify-between gap-4">
         {/* Role filter */}
         <div className="flex flex-col gap-1">
           <span className="text-muted text-xs font-medium">{t("admin.users.filterRole")}</span>
@@ -110,7 +123,10 @@ export function UsersPanel() {
               <button
                 key={f.value}
                 type="button"
-                onClick={() => setRoleFilter(f.value)}
+                onClick={() => {
+                  setRoleFilter(f.value);
+                  setPage(1);
+                }}
                 className={[
                   "rounded-full px-3 py-1 text-xs font-medium transition-colors",
                   roleFilter === f.value
@@ -132,7 +148,10 @@ export function UsersPanel() {
               <button
                 key={f.value}
                 type="button"
-                onClick={() => setStatusFilter(f.value)}
+                onClick={() => {
+                  setStatusFilter(f.value);
+                  setPage(1);
+                }}
                 className={[
                   "rounded-full px-3 py-1 text-xs font-medium transition-colors",
                   statusFilter === f.value
@@ -151,8 +170,9 @@ export function UsersPanel() {
       {filtered.length === 0 ? (
         <p className="text-muted py-8 text-center text-sm">{t("admin.users.empty")}</p>
       ) : (
+        <>
         <ul className="flex flex-col gap-2">
-          {filtered.map((u) => (
+          {paged.map((u) => (
             <li
               key={u.id}
               className="bg-surface border-border flex flex-wrap items-center gap-3 rounded-xl border p-4"
@@ -222,6 +242,13 @@ export function UsersPanel() {
             </li>
           ))}
         </ul>
+        <Pagination
+          page={currentPage}
+          total={pageCount}
+          onChange={setPage}
+          className="mt-2"
+        />
+        </>
       )}
     </div>
   );

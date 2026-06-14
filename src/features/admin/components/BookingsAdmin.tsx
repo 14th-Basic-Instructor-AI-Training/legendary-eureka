@@ -31,9 +31,9 @@ export function BookingsAdmin() {
     .reduce((sum, b) => sum + b.total, 0);
 
   return (
-    <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+    <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-3 xl:grid-rows-1">
       {/* left column: KPIs + trend */}
-      <div className="flex flex-col gap-4 xl:col-span-2">
+      <div className="flex min-h-0 flex-col gap-4 xl:col-span-2">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <BookingStatCard
             Icon={Receipt21}
@@ -68,7 +68,7 @@ export function BookingsAdmin() {
       </div>
 
       {/* right column: recent bookings + revenue donut */}
-      <div className="flex flex-col gap-4">
+      <div className="flex min-h-0 flex-col gap-4">
         <RecentBookingsCard bookings={bookings} />
         <BookingRevenueCard bookings={bookings} />
       </div>
