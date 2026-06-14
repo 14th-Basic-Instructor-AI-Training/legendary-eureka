@@ -10,6 +10,8 @@ export { PasswordInput, type UIPasswordInputProps } from "./PasswordInput";
 export { Card } from "./Card";
 export { JalatCard, type JalatCardProps } from "./JalatCard";
 export { RatingBadge } from "./RatingBadge";
+export { RatingInline } from "./RatingInline";
+export { PriceTag } from "./PriceTag";
 export { concaveMaskStyle, CONCAVE_RADIUS } from "./concaveCorners";
 export {
   JalatCardClipDefs,

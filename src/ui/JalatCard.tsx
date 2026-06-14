@@ -25,10 +25,21 @@ export type JalatCardProps = {
   title: ReactNode;
   /** Underlined call-to-action (right of the footer), e.g. "Explore →". */
   action?: ReactNode;
-  /** Floats top-right over the image (price, privacy, rating…). Not masked. */
+  /**
+   * @deprecated Floats top-right over the image. For `topRight` it lands in the
+   * notch cut-out and gets clipped — use {@link priceTag} (rendered outside the
+   * clip) for content that should sit in the notch.
+   */
   badge?: ReactNode;
+  /**
+   * Floats in the top-right notch (rendered OUTSIDE the clip so it isn't cut).
+   * For `concave` it floats over the image's top-right. Typically a price pill.
+   */
+  priceTag?: ReactNode;
   /** Optional secondary line under the title (location, agency, dates…). */
   meta?: ReactNode;
+  /** Optional row under the meta in the footer — e.g. a rating + reviews line. */
+  footerRating?: ReactNode;
   /**
    * Corner geometry. `"concave"` (default) is the "Ice Matcha" look: rounded top,
    * inward-curving bottom corners. `"topRight"` applies the notched silhouette
@@ -54,7 +65,9 @@ export function JalatCard({
   title,
   action,
   badge,
+  priceTag,
   meta,
+  footerRating,
   shape = "concave",
   href,
   imageAspect = "aspect-[4/3]",
@@ -99,26 +112,50 @@ export function JalatCard({
         ) : null}
       </div>
 
-      {/* Footer — title left, underlined action right, optional meta under the title. */}
-      <div className="flex flex-1 items-start justify-between gap-3 px-4 py-3.5">
-        <div className="min-w-0">
-          <h3 className="text-foreground leading-tight font-medium tracking-tight">{title}</h3>
-          {meta ? <div className="text-muted mt-1 text-sm">{meta}</div> : null}
+      {/* Footer — title/action row, then optional meta + rating rows beneath. */}
+      <div className="flex flex-1 flex-col gap-1.5 px-4 py-3.5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="text-foreground leading-tight font-medium tracking-tight">{title}</h3>
+            {meta ? <div className="text-muted mt-1 text-sm">{meta}</div> : null}
+          </div>
+          {action ? (
+            <span className="text-primary shrink-0 text-sm font-medium underline decoration-1 underline-offset-4 group-hover:no-underline">
+              {action}
+            </span>
+          ) : null}
         </div>
-        {action ? (
-          <span className="text-primary shrink-0 text-sm font-medium underline decoration-1 underline-offset-4 group-hover:no-underline">
-            {action}
-          </span>
-        ) : null}
+        {footerRating ? <div>{footerRating}</div> : null}
       </div>
     </Card>
   );
 
+  // The price tag must sit OUTSIDE the clip (the notch is transparent), so it
+  // rides on the wrapper as a sibling of the clipped card. For topRight it lands
+  // in the notch (offsets track the proportional cut); for concave it floats over
+  // the image's top-right corner.
+  const priceOverlay = priceTag ? (
+    <div
+      className={cn(
+        "pointer-events-none absolute z-20",
+        isTopRight ? "right-[7%] top-[4%]" : "right-3 top-3",
+      )}
+    >
+      {priceTag}
+    </div>
+  ) : null;
+
   // The notched card is clipped, so its shadow rides on a wrapper (drop-shadow
   // follows the clipped contour where box-shadow can't).
   const framedCard = isTopRight ? (
-    <div className="h-full" style={jalatCardClipShadowStyle}>
+    <div className="relative h-full" style={jalatCardClipShadowStyle}>
       {card}
+      {priceOverlay}
+    </div>
+  ) : priceOverlay ? (
+    <div className="relative h-full">
+      {card}
+      {priceOverlay}
     </div>
   ) : (
     card

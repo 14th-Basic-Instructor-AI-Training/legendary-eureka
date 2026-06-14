@@ -2,7 +2,7 @@
 
 import { useTranslation } from "react-i18next";
 import { Calendar } from "iconsax-reactjs";
-import { JalatCard, RatingBadge } from "@/ui";
+import { JalatCard, PriceTag, RatingInline } from "@/ui";
 import { formatPrice } from "@/lib/format";
 import type { FeaturedTour } from "@/features/destinations/schema";
 
@@ -21,7 +21,12 @@ export function TrendingTourCard({ tour }: { tour: FeaturedTour }) {
       shape="topRight"
       imageAspect="aspect-[16/10]"
       image={{ src: tour.image, alt: tour.title }}
-      badge={<RatingBadge rating={tour.rating} reviewCount={tour.reviewCount} lng={lng} />}
+      priceTag={
+        <PriceTag
+          label={t("landing.tours.from")}
+          price={formatPrice(tour.priceFrom, tour.currency, lng)}
+        />
+      }
       title={tour.title}
       meta={
         <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
@@ -30,10 +35,10 @@ export function TrendingTourCard({ tour }: { tour: FeaturedTour }) {
             <Calendar size={13} color="currentColor" variant="Bold" />
             {t("landing.tours.days", { count: tour.days })}
           </span>
-          <span className="text-foreground font-medium">
-            {formatPrice(tour.priceFrom, tour.currency, lng)}
-          </span>
         </span>
+      }
+      footerRating={
+        <RatingInline rating={tour.rating} reviewCount={tour.reviewCount} lng={lng} />
       }
       action={`${t("landing.card.explore")} →`}
     />
