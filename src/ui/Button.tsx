@@ -18,6 +18,12 @@ const jalatButton = tv({
       class:
         "!bg-primary-lightskyblue !border-primary-lightskyblue !text-white hover:!bg-primary-lightskyblue/90 data-[hovered=true]:!bg-primary-lightskyblue/90 data-[pressed=true]:!bg-primary-lightskyblue/80",
     },
+    {
+      // Solid danger button for destructive confirm dialogs.
+      variant: "danger",
+      class:
+        "!bg-danger !border-danger !text-white hover:!bg-danger/90 data-[hovered=true]:!bg-danger/90 data-[pressed=true]:!bg-danger/80",
+    },
   ],
 });
 

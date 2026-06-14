@@ -13,7 +13,15 @@
     "save": "រក្សាទុក",
     "showPassword": "បង្ហាញពាក្យសម្ងាត់",
     "hidePassword": "លាក់ពាក្យសម្ងាត់",
-    "all": "ទាំងអស់"
+    "all": "ទាំងអស់",
+    "confirmDialog": {
+      "logoutTitle": "ចាកចេញ?",
+      "logoutDescription": "អ្នកនឹងត្រូវចូលម្ដងទៀត ដើម្បីចូលប្រើគណនីរបស់អ្នក។",
+      "deleteTitle": "លុបធាតុនេះ?",
+      "deleteDescription": "សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+      "bookingTitle": "បញ្ជាក់ការកក់នេះ?",
+      "bookingDescription": "អ្នកធ្វើដំណើរនឹងទទួលបានការជូនដំណឹង នៅពេលអ្នកបញ្ជាក់។"
+    }
   },
   "status": {
     "draft": "ព្រាង",
@@ -406,6 +414,18 @@
       "pendingCount": "{{count}} កំពុងរង់ចាំ",
       "searchPlaceholder": "ស្វែងរកតាមភ្នាក់ងារ អ្នកស្នើ ឬប្រទេស…",
       "applicationNote": "ចំណាំពីការស្នើសុំ",
+      "viewCard": "កាត",
+      "viewTable": "តារាង",
+      "cardType": "សំណើភ្នាក់ងារ",
+      "applicant": "អ្នកស្នើ",
+      "agencyLabel": "ភ្នាក់ងារ",
+      "submitted": "បានដាក់ស្នើ",
+      "flow": {
+        "agencyTitle": "លំហូរការចូលរួមជាភ្នាក់ងារ",
+        "agencySub": "អ្នកស្នើ → សំណើភ្នាក់ងារ",
+        "editTitle": "លំហូរសំណើរកែប្រែ",
+        "editSub": "ភ្នាក់ងារ → សំណើរកែប្រែសកម្មភាព"
+      },
       "tabs": {
         "agencies": "ការចូលរួមជាភ្នាក់ងារ",
         "editRequests": "សំណើរកែប្រែ"
@@ -422,7 +442,9 @@
       "pendingCount": "{{count}} កំពុងរង់ចាំ",
       "searchPlaceholder": "ស្វែងរកតាមសកម្មភាព ឬភ្នាក់ងារ…",
       "current": "បច្ចុប្បន្ន",
-      "proposed": "ការស្នើ"
+      "proposed": "ការស្នើ",
+      "cardType": "សំណើរកែប្រែ",
+      "activityLabel": "សកម្មភាព"
     },
     "reports": {
       "title": "របាយការណ៍អ្នកធ្វើដំណើរ",
@@ -436,6 +458,13 @@
       "addNote": "បន្ថែមចំណាំ (ជាជម្រើស)",
       "adminNote": "ចំណាំរបស់អ្នកគ្រប់គ្រង",
       "agencyCount": "{{count}} របាយការណ៍ប្រឆាំងភ្នាក់ងារនេះ",
+      "cardType": "របាយការណ៍អ្នកធ្វើដំណើរ",
+      "reason": "មូលហេតុ",
+      "summary": {
+        "open": "បើកចំហ",
+        "highSeverity": "កម្រិតធ្ងន់ធ្ងរ",
+        "resolved": "បានដោះស្រាយ"
+      },
       "severity": {
         "low": "ទាប",
         "medium": "មធ្យម",

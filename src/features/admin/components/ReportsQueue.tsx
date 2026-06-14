@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { TickCircle, CloseCircle, Flag, SearchNormal1 } from "iconsax-reactjs";
-import { Button, Chip, Input, StatusChip } from "@/ui";
-import { useSession } from "@/lib/auth";
+import { Flag, SearchNormal1 } from "iconsax-reactjs";
+import { Input, Tabs } from "@/ui";
+import { cn } from "@/lib/utils";
 import { useAdminStore } from "../store";
-import type { Report, ReportSeverity, ReportStatus } from "../schema";
+import { useReportRealtime } from "../hooks";
+import { ReportCard } from "./ReportCard";
+import type { Report, ReportStatus } from "../schema";
 
 const STATUS_FILTERS: Array<{ value: "all" | ReportStatus; labelKey: string }> = [
   { value: "all", labelKey: "common.all" },
@@ -15,65 +17,31 @@ const STATUS_FILTERS: Array<{ value: "all" | ReportStatus; labelKey: string }> =
   { value: "dismissed", labelKey: "status.dismissed" },
 ];
 
-const SEVERITY_COLOR: Record<ReportSeverity, string> = {
-  low: "text-muted bg-muted/10",
-  medium: "text-warning bg-warning/10",
-  high: "text-danger bg-danger/10",
-};
-
 function agencyReportCount(reports: Report[], agency: string) {
   return reports.filter((r) => r.targetAgency === agency).length;
 }
 
-function ResolvePanel({ report }: { report: Report }) {
-  const { t } = useTranslation();
-  const { role } = useSession();
-  const resolveReport = useAdminStore((s) => s.resolveReport);
-  const dismissReport = useAdminStore((s) => s.dismissReport);
-  const addReportNote = useAdminStore((s) => s.addReportNote);
-
-  const [note, setNote] = useState(report.adminNote ?? "");
-  const [showNote, setShowNote] = useState(false);
-
-  const handleResolve = () => {
-    if (note.trim()) addReportNote(role, report.id, note.trim());
-    resolveReport(role, report.id);
-  };
-
-  const handleDismiss = () => {
-    if (note.trim()) addReportNote(role, report.id, note.trim());
-    dismissReport(role, report.id);
-  };
-
+/** A single summary metric tile in the header strip. */
+function StatTile({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "danger" | "warning" | "muted";
+}) {
+  const toneText =
+    tone === "danger" ? "text-danger" : tone === "warning" ? "text-warning" : "text-muted";
+  const toneDot =
+    tone === "danger" ? "bg-danger" : tone === "warning" ? "bg-warning" : "bg-muted/50";
   return (
-    <div className="mt-3 flex flex-col gap-2">
-      {showNote ? (
-        <textarea
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder={t("admin.reports.addNote")}
-          rows={2}
-          className="border-border bg-surface text-foreground placeholder:text-muted w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--primary)]"
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => setShowNote(true)}
-          className="text-muted hover:text-foreground self-start text-xs underline underline-offset-2"
-        >
-          {t("admin.reports.addNote")}
-        </button>
-      )}
-      <div className="flex gap-2">
-        <Button variant="tertiary" size="sm" onPress={handleDismiss}>
-          <CloseCircle size={16} color="currentColor" />
-          {t("admin.reports.dismiss")}
-        </Button>
-        <Button variant="primary" size="sm" onPress={handleResolve}>
-          <TickCircle size={16} color="currentColor" />
-          {t("admin.reports.resolve")}
-        </Button>
-      </div>
+    <div className="bg-surface border-border flex flex-col gap-1 rounded-2xl border p-4 shadow-primary">
+      <span className="flex items-center gap-1.5">
+        <span className={cn("h-2 w-2 rounded-full", toneDot)} aria-hidden />
+        <span className="text-muted text-xs font-medium">{label}</span>
+      </span>
+      <span className={cn("text-2xl font-bold tabular-nums", toneText)}>{value}</span>
     </div>
   );
 }
@@ -81,6 +49,10 @@ function ResolvePanel({ report }: { report: Report }) {
 export function ReportsQueue() {
   const { t } = useTranslation();
   const reports = useAdminStore((s) => s.reports);
+
+  // Live ingest: new reports emitted by travelers/agencies (tag
+  // `agency-report-<uuid>`) stream into the queue without a refresh.
+  useReportRealtime();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | ReportStatus>("all");
@@ -96,17 +68,27 @@ export function ReportsQueue() {
   });
 
   const openCount = reports.filter((r) => r.status === "open").length;
+  const highCount = reports.filter((r) => r.status === "open" && r.severity === "high").length;
+  const resolvedCount = reports.filter((r) => r.status === "resolved").length;
 
   return (
-    <div className="flex flex-col gap-4">
-      {openCount > 0 ? (
-        <div className="bg-danger/8 border-danger/20 flex items-center gap-2 rounded-xl border px-4 py-2.5">
-          <span className="text-danger text-sm font-medium">
-            {t("admin.reports.openCount", { count: openCount })}
-          </span>
-        </div>
-      ) : null}
+    <div className="flex flex-col gap-5">
+      {/* summary strip */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <StatTile label={t("admin.reports.summary.open")} value={openCount} tone="danger" />
+        <StatTile
+          label={t("admin.reports.summary.highSeverity")}
+          value={highCount}
+          tone="warning"
+        />
+        <StatTile
+          label={t("admin.reports.summary.resolved")}
+          value={resolvedCount}
+          tone="muted"
+        />
+      </div>
 
+      {/* search + status filter */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-48 flex-1">
           <SearchNormal1
@@ -122,86 +104,41 @@ export function ReportsQueue() {
             className="pl-9"
           />
         </div>
-        <div className="flex gap-1.5">
-          {STATUS_FILTERS.map((f) => (
-            <button
-              key={f.value}
-              type="button"
-              onClick={() => setStatusFilter(f.value)}
-              className={[
-                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                statusFilter === f.value
-                  ? "bg-primary text-white"
-                  : "bg-muted/10 text-muted hover:bg-muted/20",
-              ].join(" ")}
-            >
-              {t(f.labelKey)}
-            </button>
-          ))}
-        </div>
+        <Tabs
+          selectedKey={statusFilter}
+          onSelectionChange={(key) => setStatusFilter(key as "all" | ReportStatus)}
+        >
+          <Tabs.ListContainer>
+            <Tabs.List aria-label={t("admin.reports.title")} className="bg-primary/15!">
+              {STATUS_FILTERS.map((f) => (
+                <Tabs.Tab key={f.value} id={f.value}>
+                  {t(f.labelKey)}
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              ))}
+            </Tabs.List>
+          </Tabs.ListContainer>
+        </Tabs>
       </div>
 
+      {/* list */}
       {filtered.length === 0 ? (
-        <p className="text-muted py-8 text-center text-sm">{t("admin.reports.empty")}</p>
+        <div className="flex flex-col items-center gap-3 py-14 text-center">
+          <span className="bg-muted/10 inline-flex h-12 w-12 items-center justify-center rounded-full">
+            <Flag size={22} color="currentColor" className="text-muted" />
+          </span>
+          <p className="text-muted text-sm">{t("admin.reports.empty")}</p>
+        </div>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {filtered.map((r) => {
-            const totalAgencyReports = agencyReportCount(reports, r.targetAgency);
-            return (
-              <li key={r.id} className="bg-surface border-border rounded-2xl border p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start gap-3">
-                      <span className="bg-danger/10 text-danger mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
-                        <Flag size={18} color="currentColor" variant="Bold" />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-semibold">
-                            {t("admin.reports.against", { agency: r.targetAgency })}
-                          </p>
-                          <StatusChip status={r.status} />
-                          {/* Severity badge */}
-                          <span
-                            className={[
-                              "rounded-full px-2 py-0.5 text-xs font-medium",
-                              SEVERITY_COLOR[r.severity],
-                            ].join(" ")}
-                          >
-                            {t(`admin.reports.severity.${r.severity}`)}
-                          </span>
-                        </div>
-                        <p className="text-muted text-sm">
-                          {t("admin.reports.by", { name: r.reporterName })} · {r.submittedAtLabel}
-                        </p>
-                        {/* Multiple reports warning */}
-                        {totalAgencyReports > 1 ? (
-                          <Chip color="danger" variant="soft" size="sm" className="mt-1.5">
-                            {t("admin.reports.agencyCount", { count: totalAgencyReports })}
-                          </Chip>
-                        ) : null}
-                      </div>
-                    </div>
-
-                    <p className="text-foreground/80 mt-3 text-sm">{r.reason}</p>
-
-                    {/* Admin note (resolved/dismissed) */}
-                    {r.adminNote ? (
-                      <div className="border-border mt-3 rounded-lg border-l-4 border-l-[var(--primary)] bg-black/5 px-3 py-2 dark:bg-white/5">
-                        <p className="text-muted text-xs font-medium uppercase tracking-wide">
-                          {t("admin.reports.adminNote")}
-                        </p>
-                        <p className="text-foreground/80 mt-1 text-sm">{r.adminNote}</p>
-                      </div>
-                    ) : null}
-
-                    {r.status === "open" ? <ResolvePanel report={r} /> : null}
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((r) => (
+            <ReportCard
+              key={r.id}
+              report={r}
+              agencyReportCount={agencyReportCount(reports, r.targetAgency)}
+            />
+          ))}
+        </div>
       )}
     </div>
   );

@@ -6,17 +6,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **The app is scaffolded and building (Next.js 16 + App Router + TS + Tailwind v4 + HeroUI v3).** Run `npm run dev`. Demo accounts (mock auth): `admin@jalat.test / Admin@123`, `agency@jalat.test / Agency@123`, `traveler@jalat.test / Traveler@123` (also shown on the login screen). OTP demo code is `123456`.
 
-**Current phase: static UI first.** No backend, database, or real auth yet — everything runs on **mock fixtures behind each feature's `data.ts`** and in-memory/localStorage Zustand stores. Auth.js session wiring, WebSocket, Knock, Sileo toasts, MapLibre 3D map, and DayFlow calendar are still deferred; structure stays ready for real data to drop in.
+**Current phase: static UI first.** No backend, database, or real auth yet — everything runs on **mock fixtures behind each feature's `data.ts`** and in-memory/localStorage Zustand stores. Auth.js session wiring, WebSocket, Knock, Sileo toasts, and DayFlow calendar are still deferred; the MapLibre 3D map, Recharts dashboards, and React Flow diagrams are now wired. Structure stays ready for real data to drop in.
 
 ### What's built so far
 
 - **Landing page (`/`)** — modern, trip.com-style, **home for everyone** (guests + signed-in travelers/agencies). Scroll-triggered Framer Motion reveals (`@/ui` `Reveal`). Signed-in users get a personalized "Recommended for you" row. `features/landing` + `features/destinations` (the shared "best places" data backbone).
 - **Auth pages** — `/login`, `/register` (traveler or become-agency request), `/verify-otp`, `/forgot-password`, `/reset-password`. RHF + Zod, mock `data.ts`. `features/auth`.
 - **Agency workspace (`/agency`)** — Tabs: booking requests (approve/reject, live status), activities (create draft + request-edit), packages. `features/agency` with a Zustand store doing permission-checked transitions.
-- **Admin control panel (`/admin`)** — Tabs: agency-onboarding requests (approve/reject), traveler reports (resolve/dismiss), all platform activities, users. `features/admin`.
+- **Admin control panel (`/admin`)** — a **multi-route area** (sidebar-driven, not a single tab strip): `/admin` overview/dashboard plus `/admin/requests`, `/admin/reports`, `/admin/content`, `/admin/bookings`, `/admin/users`, `/admin/settings`. Agency-onboarding requests (approve/reject) include a **React Flow** (`@xyflow/react`) `RequestFlowPanel` visualizing the onboarding/edit-request lifecycle. `features/admin`; chart cards live in `features/admin/components/dashboard/` (Recharts).
+- **Dashboards** — `features/dashboard` renders per-role overview cards (`config.ts` `DASHBOARDS` map → i18n copy under `dashboard.<role>.cards.*`). The agency has its own dedicated route `/agency/dashboard`. Analytics cards use **Recharts** (bar/line/area/donut) with a shared `chartTheme.ts`.
 - **Localized routing** — every route is under **`/[locale]/…`** (`en` · `kh` · `kr`). `src/middleware.ts` redirects unprefixed paths to a locale (preferring the `NEXT_LOCALE` cookie, else `en`). The `[locale]` layout drives i18next's language from the URL. **Always navigate with `LocaleLink` / `useLocalizedRouter` (`@/lib/locale`)** so links keep the locale prefix — never raw `next/link` or `useRouter` for in-app nav. Locale **constants** live in `lib/locales.ts` (pure, server-safe); `lib/i18n.ts` has the i18next init side effect and must NOT be imported from Server Components.
 - **Routing model** — `/[locale]` is home for all; login sends **admins → `/[locale]/admin`**, travelers/agencies → `/[locale]`. Each role reaches its own area via the header (`dashboardPathFor`). See `lib/permissions.ts` (`homePathFor`, `dashboardPathFor`, `can`/`assertCan` with guest support).
-- **i18n** — KH/KR/ENG complete; a **language dropdown** (`@/components/LanguageSwitcher`) is on every page (marketing header, auth layout, app shell) and switches locale by navigating to the same path under the new prefix.
+- **i18n** — KH/KR/ENG complete. Despite what `feature-structure.md` lists as an option, locale copy currently lives in **central single files** `src/locales/{en,kh,kr}.json` (not per-feature `i18n/` folders) — add keys to all three. A **language dropdown** (`@/components/LanguageSwitcher`) is on every page (marketing header, auth layout, app shell) and switches locale by navigating to the same path under the new prefix.
 - **Tests** — Vitest + RTL (`npm test`): permissions matrix, Zod schemas, and the agency/admin store transitions (incl. permission gating).
 
 When extending, follow `.claude/rules/*` and reuse the `@/ui` wrapper layer + `lib/useResource` loading pattern.
@@ -185,7 +186,17 @@ Confirmed choices — do not swap these without asking:
 - **i18n**: i18next with three locales — **Khmer (KH), Korean (KR), English (ENG)**. Every user-facing string goes through i18next; no hardcoded copy.
 - **Toasts/notifications**: **Sileo** (`npm install sileo`) — use for transient toast messages.
 - **Calendar**: **DayFlow** (`@dayflow/core`, `npm install @dayflow/core` — repo: https://github.com/dayflow-js/calendar) — multi-framework calendar with day/week/month/year views and drag-and-drop; use its React binding for trip dates and tour agendas.
-- **3D Map**: use a free, no-API-key option — **MapLibre GL JS** is the recommended choice — so travelers can view destinations in 3D.
+- **3D Map**: use a free, no-API-key option — **MapLibre GL JS** is the recommended choice (`maplibre-gl`, used by `features/destinations/.../LocationMap.tsx`) — so travelers can view destinations in 3D.
+- **Charts**: **Recharts** (`recharts`) for admin/agency dashboard analytics — bar/line/area/donut cards in `features/admin/components/dashboard/` share `chartTheme.ts`.
+- **Flow diagrams**: **React Flow** (`@xyflow/react`) for lifecycle/state visualizations (e.g. admin `RequestFlowPanel`).
+
+### Deferred vs in-use libraries
+
+Currently **installed and wired**: HeroUI v3, Zustand, RHF + Zod, Framer Motion, Iconsax (`iconsax-reactjs`), nextjs-toploader, i18next, MapLibre, Recharts, React Flow, shadcn sidebar. Still **deferred / not yet installed**: Auth.js (mock session in `lib/auth.ts`), WebSocket, **Knock**, **Sileo** toasts, **DayFlow** calendar. Don't assume a deferred lib is present — check `package.json` first.
+
+## Confirmation dialogs
+
+In-app confirmations (approve/reject/delete) use the local `@/ui` `ConfirmDialog` + `useConfirm` hook — not `window.confirm`. Reach for `useConfirm()` for any destructive/irreversible action and keep its copy in i18next.
 
 ## Commands
 

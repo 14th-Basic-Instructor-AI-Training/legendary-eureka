@@ -14,6 +14,12 @@ export { Chip } from "./Chip";
 export { StatusChip } from "./StatusChip";
 export { Reveal } from "./Reveal";
 export { TextArea, type UITextAreaProps } from "./TextArea";
+export {
+  ConfirmDialog,
+  type ConfirmDialogProps,
+  type ConfirmIntent,
+} from "./ConfirmDialog";
+export { useConfirm, ConfirmRoot, type ConfirmOptions } from "./useConfirm";
 
 // Pass-through HeroUI v3 primitives (re-exported through the wrapper layer).
 // Compound components (Tabs/Modal/AlertDialog) keep their sub-component API.
@@ -26,6 +32,7 @@ export {
   Link,
   Dropdown,
   Tabs,
+  Table,
   Modal,
   AlertDialog,
   Checkbox,

@@ -38,6 +38,14 @@ interface AdminState {
   /** Confirm a traveler's become-an-agency request (agency-onboarding flow). */
   approveAgency: (actor: Actor | null, id: string) => boolean;
   rejectAgency: (actor: Actor | null, id: string) => boolean;
+  /**
+   * Real-time ingest: fold an inbound report (emitted by a traveler/agency over
+   * WebSocket, tag `agency-report-<uuid>`) into the queue. Ungated on purpose —
+   * this is delivery of an externally-produced event, not an admin-initiated
+   * mutation; the admin actions below stay permission-checked. Duplicate ids are
+   * ignored so a redelivered frame can't clobber an admin's in-progress triage.
+   */
+  receiveReport: (report: Report) => void;
   /** Act on a traveler report. */
   resolveReport: (actor: Actor | null, id: string) => boolean;
   dismissReport: (actor: Actor | null, id: string) => boolean;
@@ -99,6 +107,14 @@ export const useAdminStore = create<AdminState>((set) => ({
     if (!can(actor, "manageAgencyRequests")) return false;
     set((s) => ({ agencyRequests: setRequestStatus(s.agencyRequests, id, "rejected") }));
     return true;
+  },
+
+  receiveReport: (report) => {
+    set((s) =>
+      s.reports.some((r) => r.id === report.id)
+        ? s // already have it (redelivery) — leave triage state untouched
+        : { reports: [report, ...s.reports] },
+    );
   },
 
   resolveReport: (actor, id) => {

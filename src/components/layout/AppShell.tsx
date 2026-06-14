@@ -2,14 +2,11 @@
 
 import { Suspense } from "react";
 import { useTranslation } from "react-i18next";
-import { LogoutCurve } from "iconsax-reactjs";
-import { Avatar, Button, Spinner } from "@/ui";
+import { Avatar, Spinner } from "@/ui";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/sidebar/sidebar";
 import { useRequireRole, useSession } from "@/lib/auth";
-import { useAuthStore } from "@/features/auth/store";
-import { useLocalizedRouter } from "@/lib/locale";
 import type { Role } from "@/features/auth/schema";
 
 function initialsOf(name: string) {
@@ -40,17 +37,10 @@ export function AppShell({ role, children }: { role: Role; children: React.React
   const { ready } = useRequireRole(role);
   const { user } = useSession();
   const { t } = useTranslation();
-  const router = useLocalizedRouter();
-  const signOut = useAuthStore((s) => s.signOut);
 
   if (!ready || !user) {
     return <LoadingScreen label={t("common.loading")} />;
   }
-
-  const handleLogout = () => {
-    signOut();
-    router.replace("/login");
-  };
 
   return (
     <Suspense fallback={<LoadingScreen label={t("common.loading")} />}>
@@ -70,10 +60,6 @@ export function AppShell({ role, children }: { role: Role; children: React.React
                 <Avatar size="sm">
                   <Avatar.Fallback>{initialsOf(user.name)}</Avatar.Fallback>
                 </Avatar>
-                <Button variant="secondary" size="sm" onPress={handleLogout}>
-                  <LogoutCurve size={16} color="currentColor" />
-                  {t("common.logout")}
-                </Button>
               </div>
             </header>
 

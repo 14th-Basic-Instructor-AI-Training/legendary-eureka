@@ -13,7 +13,15 @@
     "save": "Save",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
-    "all": "All"
+    "all": "All",
+    "confirmDialog": {
+      "logoutTitle": "Log out?",
+      "logoutDescription": "You'll need to sign in again to access your account.",
+      "deleteTitle": "Delete this item?",
+      "deleteDescription": "This action can't be undone.",
+      "bookingTitle": "Confirm this booking?",
+      "bookingDescription": "The traveler will be notified once you confirm."
+    }
   },
   "status": {
     "draft": "Draft",
@@ -406,6 +414,18 @@
       "pendingCount": "{{count}} pending",
       "searchPlaceholder": "Search by agency, applicant, or country…",
       "applicationNote": "Application note",
+      "viewCard": "Card",
+      "viewTable": "Table",
+      "cardType": "Agency Request",
+      "applicant": "Applicant",
+      "agencyLabel": "Agency",
+      "submitted": "Submitted",
+      "flow": {
+        "agencyTitle": "Agency Onboarding Flow",
+        "agencySub": "Applicant → agency request",
+        "editTitle": "Edit Request Flow",
+        "editSub": "Agency → activity edit request"
+      },
       "tabs": {
         "agencies": "Agency onboarding",
         "editRequests": "Edit requests"
@@ -422,7 +442,9 @@
       "pendingCount": "{{count}} pending",
       "searchPlaceholder": "Search by activity or agency…",
       "current": "Current",
-      "proposed": "Proposed"
+      "proposed": "Proposed",
+      "cardType": "Edit Request",
+      "activityLabel": "Activity"
     },
     "reports": {
       "title": "Traveler reports",
@@ -436,6 +458,13 @@
       "addNote": "Add an admin note (optional)",
       "adminNote": "Admin note",
       "agencyCount": "{{count}} reports against this agency",
+      "cardType": "Traveler report",
+      "reason": "Reason",
+      "summary": {
+        "open": "Open",
+        "highSeverity": "High severity",
+        "resolved": "Resolved"
+      },
       "severity": {
         "low": "Low",
         "medium": "Medium",

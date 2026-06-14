@@ -13,7 +13,15 @@
     "save": "저장",
     "showPassword": "비밀번호 표시",
     "hidePassword": "비밀번호 숨기기",
-    "all": "전체"
+    "all": "전체",
+    "confirmDialog": {
+      "logoutTitle": "로그아웃하시겠습니까?",
+      "logoutDescription": "계정에 다시 접속하려면 로그인해야 합니다.",
+      "deleteTitle": "이 항목을 삭제하시겠습니까?",
+      "deleteDescription": "이 작업은 되돌릴 수 없습니다.",
+      "bookingTitle": "이 예약을 확정하시겠습니까?",
+      "bookingDescription": "확정하면 여행자에게 알림이 전송됩니다."
+    }
   },
   "status": {
     "draft": "초안",
@@ -406,6 +414,18 @@
       "pendingCount": "{{count}}건 대기 중",
       "searchPlaceholder": "여행사, 신청자 또는 국가로 검색…",
       "applicationNote": "신청 메모",
+      "viewCard": "카드",
+      "viewTable": "테이블",
+      "cardType": "여행사 요청",
+      "applicant": "신청자",
+      "agencyLabel": "여행사",
+      "submitted": "제출됨",
+      "flow": {
+        "agencyTitle": "여행사 온보딩 흐름",
+        "agencySub": "신청자 → 여행사 요청",
+        "editTitle": "편집 요청 흐름",
+        "editSub": "여행사 → 활동 편집 요청"
+      },
       "tabs": {
         "agencies": "여행사 온보딩",
         "editRequests": "편집 요청"
@@ -422,7 +442,9 @@
       "pendingCount": "{{count}}건 대기 중",
       "searchPlaceholder": "활동 또는 여행사로 검색…",
       "current": "현재",
-      "proposed": "제안"
+      "proposed": "제안",
+      "cardType": "편집 요청",
+      "activityLabel": "활동"
     },
     "reports": {
       "title": "여행자 신고",
@@ -436,6 +458,13 @@
       "addNote": "관리자 메모 추가 (선택사항)",
       "adminNote": "관리자 메모",
       "agencyCount": "이 여행사에 대한 신고 {{count}}건",
+      "cardType": "여행자 신고",
+      "reason": "사유",
+      "summary": {
+        "open": "미처리",
+        "highSeverity": "높은 심각도",
+        "resolved": "해결됨"
+      },
       "severity": {
         "low": "낮음",
         "medium": "보통",
