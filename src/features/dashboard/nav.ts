@@ -37,9 +37,9 @@ export const SIDEBAR_NAV: Record<Role, NavItem[]> = {
   ],
   agency: [
     { labelKey: "nav.dashboard", Icon: Element3, href: "/agency/dashboard" },
-    { labelKey: "agency.tabs.bookings", Icon: ClipboardText, tab: "bookings" },
-    { labelKey: "agency.tabs.activities", Icon: Category, tab: "activities" },
-    { labelKey: "agency.tabs.packages", Icon: Calendar, tab: "packages" },
+    { labelKey: "agency.tabs.bookings", Icon: ClipboardText, href: "/agency/bookings" },
+    { labelKey: "agency.tabs.activities", Icon: Category, href: "/agency/activities" },
+    { labelKey: "agency.tabs.packages", Icon: Calendar, href: "/agency/packages" },
   ],
   traveler: [{ labelKey: "nav.dashboard", Icon: Star1 }],
 };

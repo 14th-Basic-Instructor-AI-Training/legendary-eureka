@@ -1,5 +1,10 @@
-import { AgencyWorkspace } from "@/features/agency/components/AgencyWorkspace";
+import { redirect } from "next/navigation";
 
-export default function AgencyWorkspacePage() {
-  return <AgencyWorkspace />;
+export default async function AgencyRootPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  redirect(`/${locale}/agency/dashboard`);
 }

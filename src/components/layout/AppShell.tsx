@@ -2,14 +2,12 @@
 
 import { Suspense } from "react";
 import { useTranslation } from "react-i18next";
-import { LogoutCurve } from "iconsax-reactjs";
-import { Avatar, Button, Spinner } from "@/ui";
+import { Avatar, Spinner } from "@/ui";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/sidebar/sidebar";
 import { useRequireRole, useSession } from "@/lib/auth";
-import { useAuthStore } from "@/features/auth/store";
-import { useLocalizedRouter } from "@/lib/locale";
+import { LocaleLink } from "@/components/LocaleLink";
 import type { Role } from "@/features/auth/schema";
 
 function initialsOf(name: string) {
@@ -40,17 +38,10 @@ export function AppShell({ role, children }: { role: Role; children: React.React
   const { ready } = useRequireRole(role);
   const { user } = useSession();
   const { t } = useTranslation();
-  const router = useLocalizedRouter();
-  const signOut = useAuthStore((s) => s.signOut);
 
   if (!ready || !user) {
     return <LoadingScreen label={t("common.loading")} />;
   }
-
-  const handleLogout = () => {
-    signOut();
-    router.replace("/login");
-  };
 
   return (
     <Suspense fallback={<LoadingScreen label={t("common.loading")} />}>
@@ -63,17 +54,31 @@ export function AppShell({ role, children }: { role: Role; children: React.React
               <SidebarTrigger />
               <div className="flex flex-1 items-center justify-end gap-3">
                 <LanguageSwitcher />
-                <div className="hidden text-right sm:block">
-                  <p className="text-sm leading-tight font-medium">{user.name}</p>
-                  <p className="text-muted text-xs leading-tight">{t(`roles.${role}`)}</p>
-                </div>
-                <Avatar size="sm">
-                  <Avatar.Fallback>{initialsOf(user.name)}</Avatar.Fallback>
-                </Avatar>
-                <Button variant="secondary" size="sm" onPress={handleLogout}>
-                  <LogoutCurve size={16} color="currentColor" />
-                  {t("common.logout")}
-                </Button>
+                {role === "agency" ? (
+                  <LocaleLink
+                    href="/agency/profile"
+                    className="hover:bg-content2 flex items-center gap-2.5 rounded-xl px-2 py-1.5 transition-colors"
+                    title={t("agency.profile.title")}
+                  >
+                    <div className="hidden text-right sm:block">
+                      <p className="text-sm leading-tight font-medium">{user.name}</p>
+                      <p className="text-muted text-xs leading-tight">{t(`roles.${role}`)}</p>
+                    </div>
+                    <Avatar size="sm">
+                      <Avatar.Fallback>{initialsOf(user.name)}</Avatar.Fallback>
+                    </Avatar>
+                  </LocaleLink>
+                ) : (
+                  <>
+                    <div className="hidden text-right sm:block">
+                      <p className="text-sm leading-tight font-medium">{user.name}</p>
+                      <p className="text-muted text-xs leading-tight">{t(`roles.${role}`)}</p>
+                    </div>
+                    <Avatar size="sm">
+                      <Avatar.Fallback>{initialsOf(user.name)}</Avatar.Fallback>
+                    </Avatar>
+                  </>
+                )}
               </div>
             </header>
 

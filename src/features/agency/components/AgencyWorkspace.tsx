@@ -63,27 +63,6 @@ export function AgencyWorkspace() {
         />
         <Stat label={t("agency.stats.packages")} value={activePackages} Icon={Calendar} />
       </div>
-
-      <Tabs
-        selectedKey={tab}
-        onSelectionChange={(key) => router.replace(`/agency?tab=${String(key)}`)}
-        variant="primary"
-      >
-        <Tabs.List aria-label={t("agency.title")}>
-          <Tabs.Tab id="bookings">{t("agency.tabs.bookings")}</Tabs.Tab>
-          <Tabs.Tab id="activities">{t("agency.tabs.activities")}</Tabs.Tab>
-          <Tabs.Tab id="packages">{t("agency.tabs.packages")}</Tabs.Tab>
-        </Tabs.List>
-        <Tabs.Panel id="bookings" className="pt-5">
-          <BookingRequestsPanel />
-        </Tabs.Panel>
-        <Tabs.Panel id="activities" className="pt-5">
-          <ActivitiesPanel />
-        </Tabs.Panel>
-        <Tabs.Panel id="packages" className="pt-5">
-          <PackagesPanel state={packagesState} />
-        </Tabs.Panel>
-      </Tabs>
     </div>
   );
 }
