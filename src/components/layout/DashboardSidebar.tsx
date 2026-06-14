@@ -16,7 +16,7 @@ import {
 } from "@/components/sidebar/sidebar";
 import { SIDEBAR_NAV } from "@/features/dashboard/nav";
 import { dashboardPathFor } from "@/lib/permissions";
-import { useAuthStore } from "@/features/auth/store";
+import { signOut } from "next-auth/react";
 import { useLocalizedRouter } from "@/lib/locale";
 import { useConfirm } from "@/ui";
 import { cn } from "@/lib/utils";
@@ -31,7 +31,6 @@ export function DashboardSidebar({ role }: { role: Role }) {
   const params = useSearchParams();
   const pathname = usePathname() ?? "";
   const router = useLocalizedRouter();
-  const signOut = useAuthStore((s) => s.signOut);
   const confirm = useConfirm();
 
   const handleLogout = async () => {
@@ -43,7 +42,7 @@ export function DashboardSidebar({ role }: { role: Role }) {
       confirmLabel: t("common.logout"),
     });
     if (!ok) return;
-    signOut();
+    await signOut({ redirect: false });
     router.replace("/login");
   };
   const groups = SIDEBAR_NAV[role];

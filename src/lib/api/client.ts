@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { auth } from "@/auth";
 
 const API_BASE = process.env.NEXT_API_URL ?? "http://localhost:8080/api/v1";
 
@@ -76,13 +76,9 @@ export class ApiError extends Error {
 
 // ── Token helper ─────────────────────────────────────────────────────────────
 
-// Cookie written by the login server action once real auth is wired.
-// Name must match what the auth layer (Auth.js or custom route handler) sets.
-const ACCESS_TOKEN_COOKIE = "jalat-access-token";
-
 async function getBearerToken(): Promise<string | null> {
-  const jar = await cookies();
-  return jar.get(ACCESS_TOKEN_COOKIE)?.value ?? null;
+  const session = await auth();
+  return session?.accessToken ?? null;
 }
 
 // ── Core fetch wrapper ───────────────────────────────────────────────────────

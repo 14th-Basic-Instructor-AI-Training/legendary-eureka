@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Trash } from "iconsax-reactjs";
 import { Button } from "@/ui";
+import { signOut } from "next-auth/react";
 import { useSession } from "@/lib/auth";
-import { useAuthStore } from "@/features/auth/store";
 import { useLocalizedRouter } from "@/lib/locale";
 import { useTravelerStore } from "../store";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -16,14 +16,13 @@ export function DangerZone() {
   const { role } = useSession();
   const router = useLocalizedRouter();
   const deleteAccount = useTravelerStore((s) => s.deleteAccount);
-  const signOut = useAuthStore((s) => s.signOut);
   const [confirming, setConfirming] = useState(false);
 
-  const onConfirm = () => {
+  const onConfirm = async () => {
     const ok = deleteAccount(role);
     setConfirming(false);
     if (ok) {
-      signOut();
+      await signOut({ redirect: false });
       router.replace("/login");
     }
   };

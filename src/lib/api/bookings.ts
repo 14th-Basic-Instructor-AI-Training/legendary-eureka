@@ -1,6 +1,6 @@
 import { apiFetch, type PagedData, type PageParams } from "./client";
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// ── Enums ─────────────────────────────────────────────────────────────────────
 
 export type TripStatus =
   | "PENDING"
@@ -9,18 +9,39 @@ export type TripStatus =
   | "COMPLETED"
   | "CANCELLED";
 
+// ── Response types ────────────────────────────────────────────────────────────
+
 export interface TripResponse {
   id: string;
+  // traveler identity (enriched by the backend — all fields available)
+  travelerId: string;
+  travelerName: string;
+  travelerDisplayName: string;
+  travelerInitials: string;
+  travelerEmail: string;
+  travelerPhone: string;
+  // package info
   tourPackageId: string;
   tourPackageTitle: string;
-  travelerId: string;
+  packageTitle: string;
+  // agency
   agencyId: string;
+  // booking details
   status: TripStatus;
   numberOfPeople: number;
+  guests: number;
   /** ISO date string (YYYY-MM-DD) */
   requestedDate: string;
+  datesLabel: string;
+  total: number;
+  currency: string;
+  paymentStatus: string;
+  // notes
   note: string;
+  specialRequests: string;
   agencyNote: string;
+  // meta
+  requestedAtLabel: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -35,8 +56,9 @@ export interface TripRequest {
   note?: string;
 }
 
+/** Optional note sent when an agency approves, rejects, or completes a trip. */
 export interface TripDecisionRequest {
-  agencyNote?: string;
+  note?: string;
 }
 
 // ── Traveler: own bookings ────────────────────────────────────────────────────
@@ -47,6 +69,10 @@ export function bookTrip(body: TripRequest): Promise<TripResponse> {
 
 export function getMyTrips(params?: PageParams): Promise<PagedData<TripResponse>> {
   return apiFetch("/trips/mine", { params });
+}
+
+export function getTrip(id: string): Promise<TripResponse> {
+  return apiFetch(`/trips/${id}`);
 }
 
 export function cancelTrip(id: string): Promise<TripResponse> {
@@ -69,10 +95,4 @@ export function rejectTrip(id: string, body?: TripDecisionRequest): Promise<Trip
 
 export function completeTrip(id: string, body?: TripDecisionRequest): Promise<TripResponse> {
   return apiFetch(`/trips/${id}/complete`, { method: "PUT", body });
-}
-
-// ── Shared ────────────────────────────────────────────────────────────────────
-
-export function getTrip(id: string): Promise<TripResponse> {
-  return apiFetch(`/trips/${id}`);
 }

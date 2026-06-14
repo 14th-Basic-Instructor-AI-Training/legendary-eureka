@@ -10,7 +10,7 @@ import { LocaleLink } from "@/components/LocaleLink";
 import { useLocalizedRouter } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 import { RegisterSchema, type AccountType, type RegisterInput } from "@/features/auth/schema";
-import { register as registerAccount } from "@/features/auth/data";
+import { registerAction } from "@/features/auth/actions";
 import { useAuthStore } from "@/features/auth/store";
 import { AuthShell } from "./AuthShell";
 import { Field } from "./Field";
@@ -44,12 +44,21 @@ export function RegisterForm() {
 
   const onSubmit = async (values: RegisterInput) => {
     setFormError(null);
-    const result = await registerAccount(values);
+    const result = await registerAction(
+      values.name,
+      values.email,
+      values.password,
+      values.accountType,
+    );
     if (!result.ok) {
-      setFormError(t("auth.register.emailTaken"));
+      setFormError(
+        result.error === "email_taken"
+          ? t("auth.register.emailTaken")
+          : t("auth.register.serverError"),
+      );
       return;
     }
-    setPending(result.user, result.agencyRequested);
+    setPending(values.email, values.accountType === "agency");
     router.push("/verify-otp");
   };
 

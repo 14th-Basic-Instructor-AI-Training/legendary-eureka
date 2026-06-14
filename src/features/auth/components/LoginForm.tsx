@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
+import { signIn } from "next-auth/react";
 import { Button, Card, Form, Input, Label, PasswordInput } from "@/ui";
 import { LocaleLink } from "@/components/LocaleLink";
 import { LoginSchema, type LoginInput } from "@/features/auth/schema";
 import { DEMO_CREDENTIALS } from "@/features/auth/fixtures";
-import { login } from "@/features/auth/data";
-import { useAuthStore } from "@/features/auth/store";
 import { useSession } from "@/lib/auth";
 import { homePathFor } from "@/lib/permissions";
 import { useLocalizedRouter } from "@/lib/locale";
@@ -17,7 +16,6 @@ import { useLocalizedRouter } from "@/lib/locale";
 export function LoginForm() {
   const { t } = useTranslation();
   const router = useLocalizedRouter();
-  const signIn = useAuthStore((s) => s.signIn);
   const { user, hasHydrated } = useSession();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -38,13 +36,17 @@ export function LoginForm() {
 
   const onSubmit = async (values: LoginInput) => {
     setFormError(null);
-    const result = await login(values);
-    if (!result.ok) {
+    const result = await signIn("credentials", {
+      redirect: false,
+      email: values.email,
+      password: values.password,
+    });
+    if (!result || result.error || !result.ok) {
       setFormError(t("auth.invalid"));
       return;
     }
-    signIn(result.user);
-    router.replace(homePathFor(result.user.role));
+    // auth/callback reads the session role and redirects to the correct dashboard.
+    router.replace("/auth/callback");
   };
 
   const fillDemo = (email: string, password: string) => {
@@ -56,9 +58,6 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-md">
       <div className="mb-8 text-center">
-        {/* <span className="bg-primary inline-flex h-11 items-center rounded-xl px-4 text-lg font-bold tracking-tight text-white">
-          {t("common.appName")}
-        </span> */}
         <h1 className="text-primary mt-6 text-2xl font-semibold tracking-tight">
           {t("auth.title")}
         </h1>

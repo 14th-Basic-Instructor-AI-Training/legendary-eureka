@@ -1,25 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { useLocalizedRouter } from "@/lib/locale";
+import { useLocalizedRouter, useLocale } from "@/lib/locale";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { Button, Form, Input } from "@/ui";
 import { OtpSchema, type OtpInput } from "@/features/auth/schema";
-import { verifyOtp } from "@/features/auth/data";
+import { verifyOtpAndSignIn, resendOtpAction } from "@/features/auth/actions";
 import { useAuthStore } from "@/features/auth/store";
-import { homePathFor } from "@/lib/permissions";
 import { AuthShell } from "./AuthShell";
 import { Field } from "./Field";
 
 export function VerifyOtpForm() {
   const { t } = useTranslation();
   const router = useLocalizedRouter();
-  const pendingUser = useAuthStore((s) => s.pendingUser);
-  const signIn = useAuthStore((s) => s.signIn);
+  const locale = useLocale();
+  const pendingEmail = useAuthStore((s) => s.pendingEmail);
   const clearPending = useAuthStore((s) => s.clearPending);
   const [formError, setFormError] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
 
   const {
     control,
@@ -31,27 +31,36 @@ export function VerifyOtpForm() {
   });
 
   const onSubmit = async (values: OtpInput) => {
-    setFormError(null);
-    const result = await verifyOtp(values);
-    if (!result.ok) {
-      setFormError(t("auth.otp.invalid"));
+    if (!pendingEmail) {
+      // Pending email was lost (page refresh) — send back to login.
+      router.replace("/login");
       return;
     }
-    // Sign the pending registration in. If the pending state was lost (e.g. a
-    // page refresh — it isn't persisted), fall back to the login screen.
-    if (pendingUser) {
-      signIn(pendingUser);
-      clearPending();
-      router.replace(homePathFor(pendingUser.role));
+    setFormError(null);
+    // On success, the server action throws NEXT_REDIRECT (navigates to auth/callback).
+    // On failure, it returns { ok: false, error }.
+    const result = await verifyOtpAndSignIn(pendingEmail, values.code, locale);
+    if (!result.ok) {
+      setFormError(
+        result.error === "invalid_code" ? t("auth.otp.invalid") : t("auth.otp.serverError"),
+      );
     } else {
-      router.replace("/login");
+      // Unreachable when signIn succeeds (NEXT_REDIRECT fires) — clear state for safety.
+      clearPending();
     }
+  };
+
+  const handleResend = async () => {
+    if (!pendingEmail) return;
+    setResending(true);
+    await resendOtpAction(pendingEmail);
+    setResending(false);
   };
 
   return (
     <AuthShell
       title={t("auth.otp.title")}
-      subtitle={t("auth.otp.subtitle", { email: pendingUser?.email ?? "" })}
+      subtitle={t("auth.otp.subtitle", { email: pendingEmail ?? "" })}
     >
       <Form className="flex flex-col gap-5" validationBehavior="aria" onSubmit={handleSubmit(onSubmit)}>
         <Field id="code" label={t("auth.otp.codeLabel")} error={errors.code?.message}>
@@ -86,8 +95,13 @@ export function VerifyOtpForm() {
         </Button>
 
         <div className="flex items-center justify-between text-sm">
-          <button type="button" className="text-primary font-medium hover:underline">
-            {t("auth.otp.resend")}
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={resending}
+            className="text-primary font-medium hover:underline disabled:opacity-60"
+          >
+            {resending ? t("auth.otp.resending") : t("auth.otp.resend")}
           </button>
           <span className="text-muted text-xs">{t("auth.otp.demoHint")}</span>
         </div>
