@@ -1,45 +1,58 @@
-import { apiFetch } from "./client";
+import { apiFetch, type PagedData, type PageParams } from "./client";
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// ── Enums ─────────────────────────────────────────────────────────────────────
 
 export type AgencyStatus = "PENDING" | "APPROVED" | "REJECTED";
 
+// ── Response types ────────────────────────────────────────────────────────────
+
 export interface AgencyProfileResponse {
   id: string;
-  userId: string;
   agencyName: string;
-  bio: string;
-  avatarUrl: string;
-  contactEmail: string;
-  contactPhone: string;
-  website: string;
+  phone: string;
   address: string;
+  description: string;
+  logoUrl: string;
+  website: string;
   status: AgencyStatus;
-  rejectionReason: string | null;
   createdAt: string;
-  updatedAt: string;
+}
+
+export interface AgencyStatsResponse {
+  totalPackages: number;
+  activePackages: number;
+  pendingBookings: number;
+  totalActivities: number;
+  categoryCount: number;
+  averageRating: number;
+  reviewCount: number;
+}
+
+export interface AgencyReviewResponse {
+  id: string;
+  travelerName: string;
+  rating: number;
+  comment: string;
+  date: string;
 }
 
 export interface TravelerProfileResponse {
   id: string;
-  userId: string;
   displayName: string;
   bio: string;
   avatarUrl: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 // ── Request bodies ────────────────────────────────────────────────────────────
 
 export interface UpdateAgencyProfileRequest {
   agencyName?: string;
-  bio?: string;
-  avatarUrl?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  website?: string;
+  phone?: string;
   address?: string;
+  description?: string;
+  logoUrl?: string;
+  website?: string;
 }
 
 export interface UpdateTravelerProfileRequest {
@@ -62,6 +75,16 @@ export function updateMyAgencyProfile(
   body: UpdateAgencyProfileRequest,
 ): Promise<AgencyProfileResponse> {
   return apiFetch("/agencies/me", { method: "PUT", body });
+}
+
+export function getMyAgencyStats(): Promise<AgencyStatsResponse> {
+  return apiFetch("/agencies/me/stats");
+}
+
+export function getMyAgencyReviews(
+  params?: PageParams,
+): Promise<PagedData<AgencyReviewResponse>> {
+  return apiFetch("/agencies/me/reviews", { params });
 }
 
 // ── Traveler profile ──────────────────────────────────────────────────────────

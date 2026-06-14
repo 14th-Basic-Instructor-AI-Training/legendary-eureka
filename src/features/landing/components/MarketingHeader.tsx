@@ -7,7 +7,7 @@ import { Avatar, Button } from "@/ui";
 import { LocaleLink } from "@/components/LocaleLink";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useSession } from "@/lib/auth";
-import { useAuthStore } from "@/features/auth/store";
+import { signOut } from "next-auth/react";
 import { dashboardPathFor } from "@/lib/permissions";
 import { useLocalizedRouter } from "@/lib/locale";
 import { cn } from "@/lib/utils";
@@ -43,7 +43,6 @@ export function MarketingHeader() {
   const { t } = useTranslation();
   const router = useLocalizedRouter();
   const { user } = useSession();
-  const signOut = useAuthStore((s) => s.signOut);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -53,8 +52,8 @@ export function MarketingHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const handleLogout = () => {
-    signOut();
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
     router.replace("/");
   };
 

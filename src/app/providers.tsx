@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SessionProvider } from "next-auth/react";
 import { I18nextProvider } from "react-i18next";
 import i18n from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
@@ -8,9 +9,8 @@ import { ConfirmRoot } from "@/ui";
 
 /**
  * Client-side providers, scoped under `[locale]`. The active locale comes from
- * the route segment and drives i18next's language (so the URL is the source of
- * truth). HeroUI v3 needs no provider; WebSocket / Knock providers slot in here
- * later.
+ * the route segment and drives i18next's language. SessionProvider makes
+ * the Auth.js session available to useSession() in any client component.
  */
 export function Providers({
   locale,
@@ -33,10 +33,12 @@ export function Providers({
   }, [locale]);
 
   return (
-    <I18nextProvider i18n={i18n}>
-      {children}
-      {/* Single app-wide confirmation modal, driven imperatively by useConfirm(). */}
-      <ConfirmRoot />
-    </I18nextProvider>
+    <SessionProvider>
+      <I18nextProvider i18n={i18n}>
+        {children}
+        {/* Single app-wide confirmation modal, driven imperatively by useConfirm(). */}
+        <ConfirmRoot />
+      </I18nextProvider>
+    </SessionProvider>
   );
 }

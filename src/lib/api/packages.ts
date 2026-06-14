@@ -1,19 +1,28 @@
 import { apiFetch, type PagedData, type PageParams, type Province, type TravelType } from "./client";
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// ── Enums ─────────────────────────────────────────────────────────────────────
 
 export type TourPackageStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
-export interface TourAgendaItem {
+/** What a tour agenda stop points at in the content directory. */
+export type AgendaRefType = "DESTINATION" | "ACTIVITY";
+
+// ── Response types ────────────────────────────────────────────────────────────
+
+export interface TourAgendaItemResponse {
   id: string;
   dayNumber: number;
+  sortOrder: number;
+  refType: AgendaRefType;
+  refId: string;
   title: string;
-  description: string;
-  activities: string[];
+  note: string;
 }
 
 export interface TourPackageResponse {
   id: string;
+  ownerId: string;
+  agencyName: string;
   title: string;
   description: string;
   province: Province;
@@ -22,9 +31,11 @@ export interface TourPackageResponse {
   currency: string;
   durationDays: number;
   coverImageUrl: string;
+  image: string;
   status: TourPackageStatus;
-  agencyId: string;
-  agenda: TourAgendaItem[];
+  agenda: TourAgendaItemResponse[];
+  rating: number;
+  reviewCount: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,20 +44,23 @@ export interface TourPackageResponse {
 
 export interface TourPackageRequest {
   title: string;
-  description: string;
-  province: Province;
-  travelType: TravelType;
-  price: number;
-  currency: string;
+  description?: string;
+  province?: Province;
+  travelType?: TravelType;
+  price?: number;
+  currency?: string;
   durationDays: number;
-  coverImageUrl: string;
+  coverImageUrl?: string;
 }
 
 export interface TourAgendaItemRequest {
   dayNumber: number;
-  title: string;
-  description: string;
-  activities: string[];
+  sortOrder: number;
+  refType: AgendaRefType;
+  /** UUID of the referenced destination or activity. */
+  refId: string;
+  title?: string;
+  note?: string;
 }
 
 // ── Tour packages ─────────────────────────────────────────────────────────────
