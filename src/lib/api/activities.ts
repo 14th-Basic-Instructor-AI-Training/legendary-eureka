@@ -262,6 +262,10 @@ export function getMyAccommodations(
   return apiFetch("/accommodations/mine", { params });
 }
 
+export function getMyActivities(params?: PageParams): Promise<PagedData<ActivityResponse>> {
+  return apiFetch("/activities/mine", { params });
+}
+
 export function createAccommodation(
   destinationId: string,
   body: AccommodationRequest,

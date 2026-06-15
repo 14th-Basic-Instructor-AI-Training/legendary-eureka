@@ -18,7 +18,7 @@ import {
   TickCircle,
 } from "iconsax-reactjs";
 import { Button, Card, Input, TextArea } from "@/ui";
-import { saveProfileAction, uploadAvatarAction } from "../profileActions";
+import { saveProfileAction, uploadAvatarAction, uploadFileAction } from "../profileActions";
 import type { AgencyProfile, ProfileReview } from "../schema";
 
 const CAMBODIA_PROVINCES = [
@@ -565,6 +565,8 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
   const [form, setForm] = useState<ProfileForm>({
     name: initialProfile.name,
@@ -617,6 +619,18 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
     }
   }
 
+  async function handleCoverSelected(file: File) {
+    setSaveError(null);
+    const fd = new FormData();
+    fd.append("file", file);
+    const result = await uploadFileAction(fd);
+    if (result.ok) {
+      setCoverPreview(result.url);
+    } else {
+      setSaveError(result.error);
+    }
+  }
+
   const initials = form.name
     .split(" ")
     .slice(0, 2)
@@ -635,13 +649,30 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
       {/* ─── Agency Header ─────────────────────────────────────────────────── */}
       <div className="relative mb-16">
         {/* Cover photo */}
-        <div className="group relative h-52 overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 via-sky-50 to-slate-200">
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <GalleryAdd size={40} variant="Linear" color="#CBD5E1" />
-          </div>
+        <div
+          className="group relative h-52 overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 via-sky-50 to-slate-200"
+          style={coverPreview ? { backgroundImage: `url(${coverPreview})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+        >
+          {!coverPreview && (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <GalleryAdd size={40} variant="Linear" color="#CBD5E1" />
+            </div>
+          )}
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void handleCoverSelected(file);
+              e.target.value = "";
+            }}
+          />
           <button
             type="button"
             className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-lg bg-black/40 px-3 py-1.5 text-xs font-medium text-white opacity-0 backdrop-blur-sm transition-opacity duration-150 group-hover:opacity-100"
+            onClick={() => coverInputRef.current?.click()}
           >
             <Camera size={13} variant="Linear" color="white" />
             {t("agency.profile.uploadCover")}
