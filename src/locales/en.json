@@ -218,6 +218,7 @@
     "saved": "Saved",
     "saving": "Saving…",
     "delete": "Delete",
+    "edit": "Edit",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "all": "All",
@@ -1045,6 +1046,8 @@
         "latitude": "Latitude",
         "longitude": "Longitude",
         "submit": "Create destination",
+        "editTitle": "Edit destination",
+        "editSubmit": "Save changes",
         "searchProvince": "Search province…",
         "noProvince": "No province found",
         "shortDescription": "Short description",
@@ -1088,6 +1091,11 @@
         "new": "New destination",
         "empty": "No destinations yet.",
         "requestsEmpty": "No destination requests yet.",
+        "menuLabel": "Destination actions",
+        "deleteConfirm": {
+          "title": "Delete this destination?",
+          "description": "“{{name}}” will be permanently removed. This can't be undone."
+        },
         "tabs": {
           "all": "All destinations",
           "requests": "Create requests",
@@ -2110,6 +2118,40 @@
       "body": "Thank you for helping keep Jalat safe. Our trust & safety team will review your report within 3–5 business days and follow up if we need more details.",
       "explore": "Explore Tours",
       "home": "Go Home"
+    }
+  },
+  "calendar": {
+    "title": "Calendar",
+    "nav": {
+      "title": "Calendar"
+    },
+    "subtitle": {
+      "traveler": "Your booked trips and trip plans",
+      "agency": "Booking requests and tour availability",
+      "admin": "All bookings across the platform"
+    },
+    "states": {
+      "empty": "No events to show yet",
+      "error": "We couldn't load your calendar"
+    },
+    "legend": {
+      "title": "Legend"
+    },
+    "types": {
+      "booking": "Bookings",
+      "tripPlan": "Trip plans",
+      "availability": "Availability"
+    },
+    "chrome": {
+      "today": "Today",
+      "day": "Day",
+      "week": "Week",
+      "month": "Month",
+      "year": "Year",
+      "agenda": "Agenda",
+      "more": "more",
+      "noEvents": "No events",
+      "allDay": "All day"
     }
   }
 }

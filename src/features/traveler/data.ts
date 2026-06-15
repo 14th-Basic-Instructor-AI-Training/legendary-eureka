@@ -1,13 +1,6 @@
-import {
-  ACTIVITY_FEED,
-  BOOKINGS,
-  BOOKMARKS,
-  DEFAULT_NOTIFICATION_PREFS,
-  DEFAULT_PRIVACY,
-  MY_REVIEWS,
-  TRAVELER_PROFILE,
-  TRIP_PLANS,
-} from "./fixtures";
+import { clientApiFetch, type PagedData } from "@/lib/api/client";
+import type { BookmarkResponse } from "@/lib/api/bookmarks";
+import type { TripPlanResponse } from "@/lib/api/tripPlans";
 import type {
   ActivityItem,
   BookingHistory,
@@ -19,67 +12,136 @@ import type {
   TripPlan,
 } from "./schema";
 
-/**
- * The ONE data seam for the traveler profile. Read-only getters return typed
- * results (loading/empty/error are exercised in the static phase); mutable,
- * transition-bearing state (profile, bookings, reviews, prefs) is seeded into
- * the Zustand store via the `initialX()` helpers below.
- *
- * Bookmarks are exposed as per-kind zero-arg getters so each Bookmarks sub-tab
- * can pass a stable (module-level) fetcher to `useResource`.
- */
 export type Result<T> =
   | { ok: true; data: T }
   | { ok: false; error: "not_found" | "load_failed" };
 
-const delay = (ms = 350) => new Promise((resolve) => setTimeout(resolve, ms));
+// ── Type mappers ──────────────────────────────────────────────────────────────
+
+function mapBookmark(b: BookmarkResponse): Bookmark {
+  return {
+    id: b.id,
+    kind: "destination",
+    savedAt: b.createdAt,
+    item: {
+      id: b.destinationId,
+      slug: b.destinationSlug,
+      name: b.destinationName,
+      country: "Cambodia",
+      city: "",
+      province: "",
+      category: "destination" as const,
+      travelType: "CULTURAL" as const,
+      shortDescription: "",
+      heroImage: b.destinationImage || "https://placehold.co/800x500",
+      rating: 0,
+      reviewCount: 0,
+      priceFrom: 0,
+      currency: "USD",
+      tags: [],
+      featured: false,
+      trending: false,
+      lat: 0,
+      lng: 0,
+      gallery: [],
+      pois: [],
+    },
+  };
+}
+
+function mapTripPlan(t: TripPlanResponse): TripPlan {
+  return {
+    id: t.id,
+    title: t.title,
+    destination: t.description?.slice(0, 60) || t.title,
+    visibility: t.visibility,
+    coverImage: "https://placehold.co/800x500",
+    itemCount: t.items?.length ?? 0,
+    dateRange: {
+      start: t.createdAt.slice(0, 10),
+      end: t.updatedAt?.slice(0, 10) || t.createdAt.slice(0, 10),
+    },
+    createdAt: t.createdAt,
+  };
+}
+
+// ── Getters (called via useResource from client components) ───────────────────
 
 export async function getDestinationBookmarks(): Promise<Result<Bookmark[]>> {
-  await delay();
-  return { ok: true, data: BOOKMARKS.filter((b) => b.kind === "destination") };
+  try {
+    const page = await clientApiFetch<PagedData<BookmarkResponse>>("/bookmarks", {
+      params: { size: 50 },
+    });
+    return { ok: true, data: page.content.map(mapBookmark) };
+  } catch {
+    return { ok: true, data: [] };
+  }
 }
 
 export async function getTourBookmarks(): Promise<Result<Bookmark[]>> {
-  await delay();
-  return { ok: true, data: BOOKMARKS.filter((b) => b.kind === "tour") };
+  // Tour bookmarks are not yet tracked by the backend
+  return { ok: true, data: [] };
 }
 
 export async function getTripPlanBookmarks(): Promise<Result<Bookmark[]>> {
-  await delay();
-  return { ok: true, data: BOOKMARKS.filter((b) => b.kind === "tripPlan") };
+  // Trip-plan bookmarks are not yet tracked by the backend
+  return { ok: true, data: [] };
 }
 
 export async function getTripPlans(): Promise<Result<TripPlan[]>> {
-  await delay();
-  return { ok: true, data: TRIP_PLANS };
+  try {
+    const page = await clientApiFetch<PagedData<TripPlanResponse>>("/trip-plans", {
+      params: { size: 50 },
+    });
+    return { ok: true, data: page.content.map(mapTripPlan) };
+  } catch {
+    return { ok: true, data: [] };
+  }
 }
 
 export async function getRecentActivity(): Promise<Result<ActivityItem[]>> {
-  await delay();
-  const data = [...ACTIVITY_FEED]
-    .sort((a, b) => b.at.localeCompare(a.at))
-    .slice(0, 5);
-  return { ok: true, data };
+  // No dedicated activity-feed endpoint — return empty; the UI handles the empty state
+  return { ok: true, data: [] };
 }
 
-/* ----------------------------- Store seeders ------------------------------ */
+// ── Store seeders (synchronous — return empty defaults; stores load real data async) ──
 
 export function initialProfile(): TravelerProfile {
-  return TRAVELER_PROFILE;
+  return {
+    id: "",
+    name: "",
+    avatar: "https://api.dicebear.com/7.x/initials/svg?seed=Traveler",
+    coverImage: "https://placehold.co/1200x400",
+    bio: "",
+    badgeLevel: "explorer",
+    joinedAt: new Date().toISOString(),
+    stats: {
+      countriesVisited: 0,
+      tripsCompleted: 0,
+      reviewsWritten: 0,
+      bookmarksSaved: 0,
+    },
+  };
 }
 
 export function initialBookings(): BookingHistory[] {
-  return BOOKINGS;
+  return [];
 }
 
 export function initialReviews(): MyReview[] {
-  return MY_REVIEWS;
+  return [];
 }
 
 export function initialNotificationPrefs(): NotificationPrefs {
-  return DEFAULT_NOTIFICATION_PREFS;
+  return {
+    bookingUpdates: true,
+    tripReminders: true,
+    reviewReplies: true,
+    promotions: false,
+    productNews: false,
+  };
 }
 
 export function initialPrivacy(): PrivacySettings {
-  return DEFAULT_PRIVACY;
+  return { defaultVisibility: "PRIVATE" };
 }

@@ -1,9 +1,9 @@
 "use server";
 
 import {
-  approveAdminEditRequest,
-  rejectAdminEditRequest,
-  updateAgencyStatus,
+  approveEditRequest,
+  rejectEditRequest,
+  updateAdminAgency,
 } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/client";
 
@@ -22,7 +22,7 @@ function fail(e: unknown): ActionResult {
 /** PUT /admin/agencies/{id} — confirm a become-an-agency request. */
 export async function approveAgencyAction(id: string): Promise<ActionResult> {
   try {
-    await updateAgencyStatus(id, { status: "APPROVED" });
+    await updateAdminAgency(id, { status: "APPROVED" });
     return { ok: true };
   } catch (e) {
     return fail(e);
@@ -32,7 +32,7 @@ export async function approveAgencyAction(id: string): Promise<ActionResult> {
 /** PUT /admin/agencies/{id} — reject a become-an-agency request. */
 export async function rejectAgencyAction(id: string): Promise<ActionResult> {
   try {
-    await updateAgencyStatus(id, { status: "REJECTED" });
+    await updateAdminAgency(id, { status: "REJECTED" });
     return { ok: true };
   } catch (e) {
     return fail(e);
@@ -42,7 +42,7 @@ export async function rejectAgencyAction(id: string): Promise<ActionResult> {
 /** PUT /admin/edit-requests/{id}/approve */
 export async function approveEditRequestAction(id: string): Promise<ActionResult> {
   try {
-    await approveAdminEditRequest(id);
+    await approveEditRequest(id);
     return { ok: true };
   } catch (e) {
     return fail(e);
@@ -52,7 +52,7 @@ export async function approveEditRequestAction(id: string): Promise<ActionResult
 /** PUT /admin/edit-requests/{id}/reject */
 export async function rejectEditRequestAction(id: string): Promise<ActionResult> {
   try {
-    await rejectAdminEditRequest(id);
+    await rejectEditRequest(id);
     return { ok: true };
   } catch (e) {
     return fail(e);

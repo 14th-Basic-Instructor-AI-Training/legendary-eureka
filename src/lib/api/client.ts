@@ -1,6 +1,8 @@
-import { auth } from "@/auth";
-
 const API_BASE = process.env.NEXT_API_URL ?? "http://localhost:8080/api/v1";
+
+/** Browser-safe API base — uses NEXT_PUBLIC_ so it's bundled into the client. */
+const CLIENT_API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080/api/v1";
 
 // ── Shared response envelopes ────────────────────────────────────────────────
 
@@ -77,6 +79,10 @@ export class ApiError extends Error {
 // ── Token helper ─────────────────────────────────────────────────────────────
 
 async function getBearerToken(): Promise<string | null> {
+  // Dynamic import keeps `next-auth` (and its `next/server` dependency) out of
+  // module load — so importing this file in a non-server context (e.g. tests)
+  // doesn't eagerly pull in the auth runtime.
+  const { auth } = await import("@/auth");
   const session = await auth();
   return session?.accessToken ?? null;
 }
@@ -102,6 +108,99 @@ interface FetchOptions {
   params?: Params;
   /** Set to false for public endpoints that don't need a token. */
   auth?: boolean;
+}
+
+/** Browser-safe fetch for public endpoints — no auth token. Used in client components via useResource. */
+export async function publicApiFetch<T>(
+  path: string,
+  { params }: { params?: Params } = {},
+): Promise<T> {
+  const url = new URL(`${CLIENT_API_BASE}${path}`);
+  if (params) {
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined) url.searchParams.set(key, String(value));
+    }
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(url.toString(), { cache: "no-store" });
+  } catch (err) {
+    throw new ApiError(
+      `Network error reaching the API (${err instanceof Error ? err.message : String(err)})`,
+      0,
+    );
+  }
+
+  if (res.status === 204) return undefined as T;
+  if (!res.ok) {
+    let message = `${res.status} ${res.statusText}`;
+    try {
+      const errBody = await res.json();
+      if (typeof errBody?.message === "string") message = errBody.message;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(message, res.status);
+  }
+
+  const envelope: ApiEnvelope<T> = await res.json();
+  return envelope.data;
+}
+
+/**
+ * Browser-safe fetch for **authenticated** endpoints. Reads the access token
+ * from the NextAuth session cookie via `getSession()`. Only call this from
+ * client components or Zustand store actions.
+ */
+export async function clientApiFetch<T>(
+  path: string,
+  { method = "GET", body, params }: Omit<FetchOptions, "auth"> = {},
+): Promise<T> {
+  // Dynamic import keeps `next-auth/react` out of the server bundle.
+  const { getSession } = await import("next-auth/react");
+  const session = await getSession();
+  const token = (session as unknown as Record<string, unknown>)?.accessToken as string | undefined;
+
+  const url = new URL(`${CLIENT_API_BASE}${path}`);
+  if (params) {
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined) url.searchParams.set(key, String(value));
+    }
+  }
+
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  let res: Response;
+  try {
+    res = await fetch(url.toString(), {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      cache: "no-store",
+    });
+  } catch (err) {
+    throw new ApiError(
+      `Network error reaching the API (${err instanceof Error ? err.message : String(err)})`,
+      0,
+    );
+  }
+
+  if (res.status === 204) return undefined as T;
+  if (!res.ok) {
+    let message = `${res.status} ${res.statusText}`;
+    try {
+      const errBody = await res.json();
+      if (typeof errBody?.message === "string") message = errBody.message;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(message, res.status);
+  }
+
+  const envelope: ApiEnvelope<T> = await res.json();
+  return envelope.data;
 }
 
 export async function apiFetch<T>(

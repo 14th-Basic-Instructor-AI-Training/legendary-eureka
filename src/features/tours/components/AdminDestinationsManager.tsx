@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { Add, Location } from "iconsax-reactjs";
-import { Button, Chip, Tabs } from "@/ui";
+import { Add, Location, More, Edit2, Trash } from "iconsax-reactjs";
+import { Button, Chip, Dropdown, Tabs, useConfirm } from "@/ui";
 import { formatPrice } from "@/lib/format";
 import { DestinationForm } from "./DestinationForm";
-import type { DestinationResponse } from "@/lib/api/activities";
+import { deleteDestinationAction } from "../actions";
+import type { DestinationResponse } from "@/lib/api/destinations";
 
 type DestinationTab = "all" | "mine";
 
@@ -34,11 +35,25 @@ export function AdminDestinationsManager({
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
   const router = useRouter();
+  const confirm = useConfirm();
   const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<DestinationResponse | null>(null);
   const [tab, setTab] = useState<DestinationTab>("all");
 
   const featured = destinations.filter((d) => d.featured);
   const shown = tab === "mine" ? featured : destinations;
+
+  const handleDelete = (d: DestinationResponse) =>
+    confirm({
+      title: t("tours.admin.destinations.deleteConfirm.title"),
+      description: t("tours.admin.destinations.deleteConfirm.description", { name: d.name }),
+      intent: "danger",
+      confirmLabel: t("common.delete"),
+      onConfirm: async () => {
+        await deleteDestinationAction(d.id);
+        router.refresh();
+      },
+    });
 
   return (
     <div className="flex flex-col gap-4">
@@ -78,6 +93,16 @@ export function AdminDestinationsManager({
         onCreated={() => router.refresh()}
       />
 
+      <DestinationForm
+        isOpen={editing !== null}
+        destination={editing ?? undefined}
+        onClose={() => setEditing(null)}
+        onSaved={() => {
+          setEditing(null);
+          router.refresh();
+        }}
+      />
+
       {shown.length === 0 ? (
         <p className="text-muted py-8 text-center text-sm">{t("tours.admin.destinations.empty")}</p>
       ) : (
@@ -92,11 +117,42 @@ export function AdminDestinationsManager({
                     {prettyEnum(d.province)} · {prettyEnum(d.travelType)}
                   </p>
                 </div>
-                {d.featured ? (
-                  <Chip color="accent" variant="soft" size="sm">
-                    {t("tours.admin.destinations.tabs.featured")}
-                  </Chip>
-                ) : null}
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {d.featured ? (
+                    <Chip color="accent" variant="soft" size="sm">
+                      {t("tours.admin.destinations.tabs.featured")}
+                    </Chip>
+                  ) : null}
+                  <Dropdown>
+                    <Dropdown.Trigger
+                      aria-label={t("tours.admin.destinations.menuLabel")}
+                      className="text-muted hover:text-foreground hover:bg-muted/10 -mr-1 rounded-lg p-1 transition-colors"
+                    >
+                      <More size={18} color="currentColor" className="rotate-90" />
+                    </Dropdown.Trigger>
+                    <Dropdown.Popover>
+                      <Dropdown.Menu
+                        onAction={(key) => {
+                          if (key === "edit") setEditing(d);
+                          else if (key === "delete") handleDelete(d);
+                        }}
+                      >
+                        <Dropdown.Item id="edit" className="flex items-center gap-2">
+                          <Edit2 size={16} color="currentColor" />
+                          {t("common.edit")}
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          id="delete"
+                          variant="danger"
+                          className="flex items-center gap-2"
+                        >
+                          <Trash size={16} color="currentColor" />
+                          {t("common.delete")}
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown.Popover>
+                  </Dropdown>
+                </div>
               </div>
 
               <p className="text-muted line-clamp-2 text-sm">

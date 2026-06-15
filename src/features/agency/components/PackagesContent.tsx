@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -28,6 +28,8 @@ import {
   ArrowUp2,
   Location,
 } from "iconsax-reactjs";
+import { Button, Input, TextArea, Select, ListBox, SearchField, Skeleton } from "@/ui";
+import { getPackages } from "@/features/agency/data";
 import { useSession } from "@/lib/auth";
 import { useAgencyStore, type PackageInput } from "@/features/agency/store";
 import type { Activity, ItineraryDay, Package } from "@/features/agency/schema";
@@ -37,10 +39,21 @@ import { cn } from "@/lib/utils";
 // Constants
 // ---------------------------------------------------------------------------
 
-const PROVINCES = [
-  "Siem Reap", "Phnom Penh", "Battambang", "Kampot",
-  "Sihanoukville", "Preah Vihear", "Koh Kong", "Kratie",
-];
+const PROVINCE_OPTIONS = [
+  { value: "Phnom Penh",     label: "Phnom Penh" },
+  { value: "Siem Reap",      label: "Siem Reap" },
+  { value: "Battambang",     label: "Battambang" },
+  { value: "Kampot",         label: "Kampot" },
+  { value: "Sihanoukville",  label: "Sihanoukville" },
+  { value: "Preah Vihear",   label: "Preah Vihear" },
+  { value: "Koh Kong",       label: "Koh Kong" },
+  { value: "Kratie",         label: "Kratie" },
+  { value: "Kampong Thom",   label: "Kampong Thom" },
+  { value: "Kandal",         label: "Kandal" },
+  { value: "Takeo",          label: "Takeo" },
+  { value: "Kampong Cham",   label: "Kampong Cham" },
+  { value: "Preah Sihanouk", label: "Preah Sihanouk" },
+] as const;
 
 const STATUS_CFG = {
   published: { label: "Published", bg: "#D1FAE5", color: "#065F46", dot: "#10B981" },
@@ -162,32 +175,40 @@ function BasicInfoStep({
   onNext: (data: BasicInfoValues) => void;
 }) {
   const { t } = useTranslation();
-  const { register, handleSubmit, formState: { errors } } = useForm<BasicInfoValues>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<BasicInfoValues>({
     resolver: zodResolver(BasicInfoSchema),
     defaultValues: { days: 3, ...defaultValues },
   });
 
-  const inputCls = "w-full rounded-[10px] border-[1.5px] border-agency-border px-3 py-2.5 text-[13px] text-agency-dark outline-none transition-colors placeholder:text-agency-muted focus:border-agency bg-white";
   const labelCls = "block text-[12px] font-semibold text-agency-dark mb-1.5";
 
   return (
     <form id="pkgStep1" onSubmit={handleSubmit(onNext)} className="flex flex-col gap-4">
+      {/* Package name */}
       <div>
-        <label className={labelCls}>{t("agency.packages.fieldName")}<span className="text-red-500">*</span></label>
-        <input {...register("title")} placeholder={t("agency.packages.fieldNamePlaceholder")} className={inputCls} />
+        <label className={labelCls}>
+          {t("agency.packages.fieldName")}<span className="text-red-500">*</span>
+        </label>
+        <Input
+          {...register("title")}
+          placeholder={t("agency.packages.fieldNamePlaceholder")}
+          variant="secondary"
+        />
         {errors.title && <p className="mt-1 text-[11px] text-red-500">{errors.title.message}</p>}
       </div>
 
+      {/* Description */}
       <div>
         <label className={labelCls}>{t("agency.packages.fieldDescription")}</label>
-        <textarea
+        <TextArea
           {...register("description")}
           rows={3}
           placeholder={t("agency.packages.fieldDescriptionPlaceholder")}
-          className={cn(inputCls, "resize-y")}
+          variant="secondary"
         />
       </div>
 
+      {/* Cover upload */}
       <div>
         <label className={labelCls}>{t("agency.packages.fieldCover")}</label>
         <div className="flex flex-col items-center gap-2 rounded-[10px] border-2 border-dashed border-agency-border bg-bg-ghostwhite px-4 py-5 cursor-pointer transition-all hover:border-agency hover:bg-agency-light">
@@ -202,36 +223,86 @@ function BasicInfoStep({
         </div>
       </div>
 
+      {/* Province + Price */}
       <div className="grid grid-cols-2 gap-3.5">
         <div>
-          <label className={labelCls}>{t("agency.packages.fieldProvince")}<span className="text-red-500">*</span></label>
-          <select {...register("location")} className={inputCls}>
-            <option value="">{t("agency.packages.provincePlaceholder")}</option>
-            {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
-          </select>
+          <label className={labelCls}>
+            {t("agency.packages.fieldProvince")}<span className="text-red-500">*</span>
+          </label>
+          <Controller
+            control={control}
+            name="location"
+            render={({ field }) => (
+              <Select
+                aria-label={t("agency.packages.fieldProvince")}
+                selectedKey={field.value || null}
+                onSelectionChange={(key) => field.onChange(String(key))}
+              >
+                <Select.Trigger className="w-full rounded-[10px] border border-agency-border bg-white py-1">
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    {PROVINCE_OPTIONS.map((p) => (
+                      <ListBox.Item key={p.value} id={p.value} textValue={p.label}>
+                        {p.label}
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+            )}
+          />
           {errors.location && <p className="mt-1 text-[11px] text-red-500">{errors.location.message}</p>}
         </div>
         <div>
-          <label className={labelCls}>{t("agency.packages.fieldPrice")}<span className="text-red-500">*</span></label>
+          <label className={labelCls}>
+            {t("agency.packages.fieldPrice")}<span className="text-red-500">*</span>
+          </label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] font-semibold text-agency-muted">$</span>
-            <input {...register("priceFrom", { valueAsNumber: true })} type="number" min="0" placeholder="0" className={cn(inputCls, "pl-6")} />
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 z-10 text-[13px] font-semibold text-agency-muted">$</span>
+            <Input
+              {...register("priceFrom", { valueAsNumber: true })}
+              type="number"
+              min="0"
+              placeholder="0"
+              variant="secondary"
+              className="pl-6"
+            />
           </div>
           {errors.priceFrom && <p className="mt-1 text-[11px] text-red-500">{errors.priceFrom.message}</p>}
         </div>
       </div>
 
+      {/* Group size + Days */}
       <div className="grid grid-cols-2 gap-3.5">
         <div>
           <label className={labelCls}>{t("agency.packages.fieldGroupSize")}</label>
           <div className="relative">
-            <People size={14} color="#9BA8B5" className="absolute left-3 top-1/2 -translate-y-1/2" />
-            <input {...register("maxGroupSize", { valueAsNumber: true })} type="number" min="1" placeholder="12" className={cn(inputCls, "pl-8")} />
+            <People size={14} color="#9BA8B5" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 z-10" />
+            <Input
+              {...register("maxGroupSize", { valueAsNumber: true })}
+              type="number"
+              min="1"
+              placeholder="12"
+              variant="secondary"
+              className="pl-8"
+            />
           </div>
         </div>
         <div>
-          <label className={labelCls}>{t("agency.packages.fieldDays")}<span className="text-red-500">*</span></label>
-          <input {...register("days", { valueAsNumber: true })} type="number" min="1" max="30" placeholder="3" className={inputCls} />
+          <label className={labelCls}>
+            {t("agency.packages.fieldDays")}<span className="text-red-500">*</span>
+          </label>
+          <Input
+            {...register("days", { valueAsNumber: true })}
+            type="number"
+            min="1"
+            max="30"
+            placeholder="3"
+            variant="secondary"
+          />
           {errors.days && <p className="mt-1 text-[11px] text-red-500">{errors.days.message}</p>}
         </div>
       </div>
@@ -1116,9 +1187,10 @@ export function PackagesContent() {
   const { t } = useTranslation();
   const { role } = useSession();
 
-  const packages    = useAgencyStore((s) => s.packages);
-  const activities  = useAgencyStore((s) => s.activities);
-  const addPackage  = useAgencyStore((s) => s.addPackage);
+  const packages      = useAgencyStore((s) => s.packages);
+  const activities    = useAgencyStore((s) => s.activities);
+  const setPackages   = useAgencyStore((s) => s.setPackages);
+  const addPackage    = useAgencyStore((s) => s.addPackage);
   const updatePackage = useAgencyStore((s) => s.updatePackage);
   const deletePackage = useAgencyStore((s) => s.deletePackage);
   const publishPackage = useAgencyStore((s) => s.publishPackage);
@@ -1126,6 +1198,16 @@ export function PackagesContent() {
 
   const [activeTab, setActiveTab]   = useState<TabId>("all");
   const [search, setSearch]         = useState("");
+  const [loading, setLoading]       = useState(true);
+  const [loadError, setLoadError]   = useState(false);
+
+  useEffect(() => {
+    getPackages().then((result) => {
+      if (result.ok) setPackages(result.data);
+      else setLoadError(true);
+      setLoading(false);
+    });
+  }, [setPackages]);
   const [createOpen, setCreateOpen] = useState(false);
   const [editPkg, setEditPkg]       = useState<Package | null>(null);
   const [viewPkg, setViewPkg]       = useState<Package | null>(null);
@@ -1221,32 +1303,56 @@ export function PackagesContent() {
 
       {/* Search + create */}
       <div className="flex items-center justify-between gap-4 flex-shrink-0 px-7 py-4">
-        <div className="relative" style={{ maxWidth: 340 }}>
-          <SearchNormal1
-            size={15}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-agency-muted"
-          />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("agency.packages.search")}
-            className="w-full rounded-[10px] border-[1.5px] border-agency-border bg-white py-2.5 pl-9 pr-3.5 text-[13px] text-agency-dark outline-none transition-colors placeholder:text-agency-muted focus:border-agency"
-          />
-        </div>
-        <button
-          onClick={() => setCreateOpen(true)}
-          className="flex items-center gap-1.5 rounded-full px-5 py-2.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 flex-shrink-0"
-          style={{ background: "#185FA5", boxShadow: "0 2px 8px rgba(24,95,165,0.28)" }}
+        <SearchField
+          value={search}
+          onChange={setSearch}
+          aria-label={t("agency.packages.search")}
+          className="max-w-[340px] w-full"
+        >
+          <SearchField.Group>
+            <SearchField.SearchIcon />
+            <SearchField.Input placeholder={t("agency.packages.search")} />
+            <SearchField.ClearButton />
+          </SearchField.Group>
+        </SearchField>
+
+        <Button
+          onPress={() => setCreateOpen(true)}
+          className="flex-shrink-0 rounded-full !bg-agency !text-white flex items-center gap-1.5"
         >
           <Add size={15} color="currentColor" variant="Bold" />
           {t("agency.packages.createNew")}
-        </button>
+        </Button>
       </div>
 
       {/* Grid */}
       <div className="flex-1 px-7 pb-12">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-[260px] rounded-2xl" />
+            ))}
+          </div>
+        ) : loadError ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <p className="mb-1.5 text-[17px] font-bold text-agency-navy">{t("agency.packages.emptyTitle")}</p>
+            <p className="mb-5 text-[13px] text-agency-muted">{t("common.loadError")}</p>
+            <Button
+              onPress={() => {
+                setLoadError(false);
+                setLoading(true);
+                getPackages().then((result) => {
+                  if (result.ok) setPackages(result.data);
+                  else setLoadError(true);
+                  setLoading(false);
+                });
+              }}
+              className="rounded-full !bg-agency !text-white"
+            >
+              {t("common.retry")}
+            </Button>
+          </div>
+        ) : filtered.length === 0 ? (
           <EmptyState onCreate={() => setCreateOpen(true)} />
         ) : (
           <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>

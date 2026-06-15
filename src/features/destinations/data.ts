@@ -1,5 +1,8 @@
-import { DESTINATIONS, FEATURED_TOURS, AGENCIES, REVIEWS } from "./fixtures";
-import { EXPLORE_DESTINATIONS } from "@/features/explore/fixtures";
+import { publicApiFetch, type PagedData } from "@/lib/api/client";
+import type { DestinationResponse } from "@/lib/api/activities";
+import type { TourPackageResponse } from "@/lib/api/packages";
+import type { AgencyProfileResponse } from "@/lib/api/profile";
+import type { ReviewResponse } from "@/lib/api/reviews";
 import type {
   AgencyProfile,
   Destination,
@@ -10,80 +13,12 @@ import type {
   TravelType,
 } from "./schema";
 
-/**
- * The ONE data seam for destinations. Components import from here, never from
- * fixtures directly — swapping these for route handlers / server actions later
- * is a one-file change. Functions return typed results (never throw strings).
- */
 export type Result<T> =
   | { ok: true; data: T }
   | { ok: false; error: "not_found" | "load_failed" };
 
-/** Simulate network latency so loading states are exercised in the static phase. */
-const delay = (ms = 350) => new Promise((resolve) => setTimeout(resolve, ms));
+// ── Constants ────────────────────────────────────────────────────────────────
 
-export async function getFeaturedDestinations(): Promise<Result<Destination[]>> {
-  await delay();
-  return { ok: true, data: DESTINATIONS.filter((d) => d.featured) };
-}
-
-export async function getTrendingDestinations(): Promise<Result<Destination[]>> {
-  await delay();
-  return { ok: true, data: DESTINATIONS.filter((d) => d.trending) };
-}
-
-export async function getDestinationsByCategory(
-  category: DestinationCategory,
-): Promise<Result<Destination[]>> {
-  await delay();
-  return { ok: true, data: DESTINATIONS.filter((d) => d.category === category) };
-}
-
-export async function getAllDestinations(): Promise<Result<Destination[]>> {
-  await delay();
-  return { ok: true, data: DESTINATIONS };
-}
-
-/** Convenience zero-arg getter for the landing "Things to do" row. */
-export async function getThingsToDo(): Promise<Result<Destination[]>> {
-  await delay();
-  return { ok: true, data: DESTINATIONS.filter((d) => d.category === "thingToDo") };
-}
-
-/**
- * One destination by slug for the detail page. Resolves from a UNIFIED pool —
- * the landing "best places" catalog (`DESTINATIONS`) first, then the richer
- * Cambodia Explore catalog (`EXPLORE_DESTINATIONS`, which extends `Destination`).
- * This lets detail links from BOTH the landing cards (`angkor-wat`) and the
- * Explore cards (`siem-reap`, `kampot`, …) resolve to the same screen.
- */
-export async function getDestinationBySlug(
-  slug: string,
-): Promise<Result<Destination>> {
-  await delay();
-  const match =
-    DESTINATIONS.find((d) => d.slug === slug) ??
-    EXPLORE_DESTINATIONS.find((d) => d.slug === slug);
-  return match ? { ok: true, data: match } : { ok: false, error: "not_found" };
-}
-
-/** Traveler reviews targeting one destination/tour slug (newest first). */
-export async function getDestinationReviews(
-  slug: string,
-): Promise<Result<Review[]>> {
-  await delay();
-  const data = REVIEWS.filter((r) => r.targetSlug === slug).sort((a, b) =>
-    b.createdAt.localeCompare(a.createdAt),
-  );
-  return { ok: true, data };
-}
-
-export async function getFeaturedTours(): Promise<Result<FeaturedTour[]>> {
-  await delay();
-  return { ok: true, data: FEATURED_TOURS };
-}
-
-/** All travel types, in display order — populates the Discover travel-type filter. */
 export const TRAVEL_TYPES: readonly TravelType[] = [
   "ADVENTURE",
   "CULTURAL",
@@ -92,12 +27,254 @@ export const TRAVEL_TYPES: readonly TravelType[] = [
   "NATURE",
 ];
 
-/** Distinct provinces present in the catalog — populates the Discover province filter. */
-export const PROVINCES: readonly string[] = Array.from(
-  new Set(DESTINATIONS.map((d) => d.province)),
-).sort((a, b) => a.localeCompare(b));
+export const PROVINCES: readonly string[] = [
+  "PHNOM_PENH",
+  "SIEM_REAP",
+  "BATTAMBANG",
+  "KAMPOT",
+  "KEP",
+  "PREAH_SIHANOUK",
+  "MONDULKIRI",
+  "RATANAKIRI",
+];
 
-/** Pure filter predicate, shared by the data getter and tests. */
+// ── Type helpers ─────────────────────────────────────────────────────────────
+
+const FEATURE_TRAVEL_TYPES: readonly TravelType[] = [
+  "ADVENTURE", "CULTURAL", "RELAXATION", "FOOD",
+  "NATURE", "HISTORICAL", "BEACH",
+];
+
+function toFeatureTravelType(v: string): TravelType {
+  return (FEATURE_TRAVEL_TYPES as string[]).includes(v)
+    ? (v as TravelType)
+    : "CULTURAL";
+}
+
+function categoryFromString(cat: string): DestinationCategory {
+  if (cat === "food") return "food";
+  if (cat === "stay" || cat === "accommodation") return "stay";
+  if (cat === "thingToDo" || cat === "activity") return "thingToDo";
+  return "destination";
+}
+
+// ── Type mappers ─────────────────────────────────────────────────────────────
+
+function mapDestination(d: DestinationResponse): Destination {
+  return {
+    id: d.id,
+    slug: d.slug,
+    name: d.name,
+    country: d.country || "Cambodia",
+    city: d.city || d.province?.replace(/_/g, " ") || "",
+    province: d.province,
+    category: categoryFromString(d.category),
+    travelType: toFeatureTravelType(d.travelType),
+    shortDescription: d.shortDescription || d.description?.slice(0, 140) || "",
+    heroImage: d.heroImage || d.coverImageUrl || "",
+    rating: d.rating ?? 0,
+    reviewCount: d.reviewCount ?? 0,
+    priceFrom: d.priceFrom ?? 0,
+    currency: d.currency || "USD",
+    tags: d.tags || [],
+    featured: d.featured ?? false,
+    trending: d.trending ?? false,
+    lat: d.lat || d.latitude || 0,
+    lng: d.lng || d.longitude || 0,
+    about: d.description,
+    gallery: d.photos || [],
+    pois: [],
+  };
+}
+
+function mapFeaturedTour(t: TourPackageResponse): FeaturedTour {
+  return {
+    id: t.id,
+    slug: t.id,
+    title: t.title,
+    agencyName: t.agencyName || "",
+    travelType: toFeatureTravelType(t.travelType),
+    image: t.coverImageUrl || "",
+    days: t.durationDays,
+    priceFrom: t.price ?? t.priceFrom ?? 0,
+    currency: t.currency || "USD",
+    rating: t.rating ?? 0,
+    reviewCount: t.reviewCount ?? 0,
+    destinationSlugs: [],
+  };
+}
+
+function mapAgencyProfile(a: AgencyProfileResponse): AgencyProfile {
+  return {
+    id: a.id,
+    slug: a.id,
+    name: a.agencyName || "",
+    owner: a.agencyName || "",
+    logo: a.avatarUrl || "",
+    province: a.address || "",
+    status: a.status,
+    rating: a.averageRating ?? 0,
+    reviewCount: a.reviewCount ?? 0,
+    tourCount: 0,
+    tags: [],
+    languages: [],
+    about: a.bio,
+  };
+}
+
+function mapReview(r: ReviewResponse): Review {
+  return {
+    id: r.id,
+    authorName: r.travelerName || "Traveler",
+    authorAvatar:
+      r.travelerAvatar ||
+      `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(r.travelerName || r.id)}`,
+    rating: r.rating,
+    comment: r.comment || "",
+    targetSlug: r.targetId,
+    createdAt: r.createdAt,
+    photoCount: r.photos?.length ?? 0,
+  };
+}
+
+// ── Public getters (called via useResource from client components) ─────────────
+
+export async function getFeaturedDestinations(): Promise<Result<Destination[]>> {
+  try {
+    const page = await publicApiFetch<PagedData<DestinationResponse>>("/feed/featured", {
+      params: { size: 12 },
+    });
+    return { ok: true, data: page.content.map(mapDestination) };
+  } catch {
+    return { ok: false, error: "load_failed" };
+  }
+}
+
+export async function getTrendingDestinations(): Promise<Result<Destination[]>> {
+  try {
+    const page = await publicApiFetch<PagedData<DestinationResponse>>("/feed/trending", {
+      params: { size: 12 },
+    });
+    return { ok: true, data: page.content.map(mapDestination) };
+  } catch {
+    return { ok: false, error: "load_failed" };
+  }
+}
+
+export async function getAllDestinations(): Promise<Result<Destination[]>> {
+  try {
+    const page = await publicApiFetch<PagedData<DestinationResponse>>("/destinations", {
+      params: { size: 50 },
+    });
+    return { ok: true, data: page.content.map(mapDestination) };
+  } catch {
+    return { ok: false, error: "load_failed" };
+  }
+}
+
+export async function getDestinationsByCategory(
+  category: DestinationCategory,
+): Promise<Result<Destination[]>> {
+  try {
+    const all = await getAllDestinations();
+    if (!all.ok) return all;
+    return { ok: true, data: all.data.filter((d) => d.category === category) };
+  } catch {
+    return { ok: false, error: "load_failed" };
+  }
+}
+
+export async function getThingsToDo(): Promise<Result<Destination[]>> {
+  return getDestinationsByCategory("thingToDo");
+}
+
+export async function getDestinationBySlug(slug: string): Promise<Result<Destination>> {
+  try {
+    const d = await publicApiFetch<DestinationResponse>(`/destinations/by-slug/${slug}`);
+    return { ok: true, data: mapDestination(d) };
+  } catch {
+    return { ok: false, error: "not_found" };
+  }
+}
+
+export async function getDestinationReviews(slug: string): Promise<Result<Review[]>> {
+  try {
+    const dest = await publicApiFetch<DestinationResponse>(`/destinations/by-slug/${slug}`);
+    const page = await publicApiFetch<PagedData<ReviewResponse>>("/reviews", {
+      params: { targetType: "DESTINATION", targetId: dest.id, size: 20 },
+    });
+    return { ok: true, data: page.content.map(mapReview) };
+  } catch {
+    return { ok: true, data: [] };
+  }
+}
+
+export async function getFeaturedTours(): Promise<Result<FeaturedTour[]>> {
+  try {
+    const page = await publicApiFetch<PagedData<TourPackageResponse>>("/feed/tours", {
+      params: { size: 8 },
+    });
+    return { ok: true, data: page.content.map(mapFeaturedTour) };
+  } catch {
+    return { ok: false, error: "load_failed" };
+  }
+}
+
+export async function getAgencyBySlug(slug: string): Promise<Result<AgencyProfile>> {
+  try {
+    const a = await publicApiFetch<AgencyProfileResponse>(`/agencies/${slug}`);
+    return { ok: true, data: mapAgencyProfile(a) };
+  } catch {
+    return { ok: false, error: "not_found" };
+  }
+}
+
+export async function getTopAgencies(): Promise<Result<AgencyProfile[]>> {
+  try {
+    const page = await publicApiFetch<PagedData<AgencyProfileResponse>>("/agencies", {
+      params: { size: 6 },
+    });
+    const approved = page.content
+      .filter((a) => a.status === "APPROVED")
+      .sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0));
+    return { ok: true, data: approved.map(mapAgencyProfile) };
+  } catch {
+    return { ok: true, data: [] };
+  }
+}
+
+export async function getRecentReviews(): Promise<Result<Review[]>> {
+  try {
+    const page = await publicApiFetch<PagedData<ReviewResponse>>("/reviews", {
+      params: { size: 6 },
+    });
+    return {
+      ok: true,
+      data: [...page.content]
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .map(mapReview),
+    };
+  } catch {
+    return { ok: true, data: [] };
+  }
+}
+
+export async function searchDestinations(filter: DiscoverFilter): Promise<Result<Destination[]>> {
+  try {
+    const params: Record<string, string | number | boolean | undefined> = { size: 50 };
+    if (filter.province) params.province = filter.province;
+    if (filter.travelType) params.travelType = filter.travelType;
+    if (filter.query?.trim()) params.query = filter.query.trim();
+    const page = await publicApiFetch<PagedData<DestinationResponse>>("/search", { params });
+    let results = page.content.map(mapDestination);
+    if (filter.category) results = results.filter((d) => d.category === filter.category);
+    return { ok: true, data: results };
+  } catch {
+    return { ok: false, error: "load_failed" };
+  }
+}
+
+/** Pure filter predicate — kept for backward compat with tests. */
 export function matchesFilter(d: Destination, filter: DiscoverFilter): boolean {
   if (filter.category && d.category !== filter.category) return false;
   if (filter.province && d.province !== filter.province) return false;
@@ -109,41 +286,4 @@ export function matchesFilter(d: Destination, filter: DiscoverFilter): boolean {
     if (!haystack.includes(q)) return false;
   }
   return true;
-}
-
-/**
- * Discover-page search. Filters the catalog by query + province + travel type +
- * category (mirrors the backend `/search`). Returns a typed result like every
- * other getter so the loading/empty/error states are exercised.
- */
-export async function searchDestinations(
-  filter: DiscoverFilter,
-): Promise<Result<Destination[]>> {
-  await delay();
-  return { ok: true, data: DESTINATIONS.filter((d) => matchesFilter(d, filter)) };
-}
-
-/** One agency by slug — powers the `/agencies/[slug]` profile page. */
-export async function getAgencyBySlug(
-  slug: string,
-): Promise<Result<AgencyProfile>> {
-  await delay();
-  const match = AGENCIES.find((a) => a.slug === slug);
-  return match ? { ok: true, data: match } : { ok: false, error: "not_found" };
-}
-
-/** Top tour agencies for the Discover "Top agencies" strip (approved, best rated first). */
-export async function getTopAgencies(): Promise<Result<AgencyProfile[]>> {
-  await delay();
-  const data = AGENCIES.filter((a) => a.status === "APPROVED").sort(
-    (a, b) => b.rating - a.rating,
-  );
-  return { ok: true, data };
-}
-
-/** Recent traveler reviews for the Discover "Recent reviews" section (newest first). */
-export async function getRecentReviews(): Promise<Result<Review[]>> {
-  await delay();
-  const data = [...REVIEWS].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  return { ok: true, data };
 }

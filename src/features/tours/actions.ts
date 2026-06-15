@@ -2,6 +2,7 @@
 
 import {
   createDestination,
+  updateDestination,
   deleteDestination,
   type CreateDestinationRequest,
   type DestinationResponse,
@@ -35,6 +36,14 @@ export async function createDestinationAction(
   body: CreateDestinationRequest,
 ): Promise<DestinationResponse> {
   return createDestination(body);
+}
+
+/** PUT /destinations/{id} — update a destination (owner or admin). */
+export async function updateDestinationAction(
+  id: string,
+  body: Partial<CreateDestinationRequest>,
+): Promise<DestinationResponse> {
+  return updateDestination(id, body);
 }
 
 /** DELETE /destinations/{id} */

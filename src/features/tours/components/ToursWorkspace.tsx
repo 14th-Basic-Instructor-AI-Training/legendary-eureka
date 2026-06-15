@@ -45,7 +45,7 @@ export function ToursWorkspace({ initialPackages, initialDestinations }: Props) 
         <p className="text-muted mt-1">{t("tours.agency.subtitle")}</p>
       </header>
 
-      <FlowGuide />
+    
 
       <Tabs
         selectedKey={tab}

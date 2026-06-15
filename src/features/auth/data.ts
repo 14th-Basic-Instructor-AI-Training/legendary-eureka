@@ -70,20 +70,34 @@ export async function verifyOtp({ code }: OtpInput): Promise<OtpResult> {
 
 export type ForgotPasswordResult = { ok: true } | { ok: false; error: "unknown" };
 
-/**
- * Mock "send reset code". Always succeeds (we don't reveal whether an email
- * exists — same UX a real backend should use).
- */
 export async function requestPasswordReset(
-  _input: ForgotPasswordInput,
+  input: ForgotPasswordInput,
 ): Promise<ForgotPasswordResult> {
-  await delay();
-  return { ok: true };
+  try {
+    const base =
+      (typeof window !== "undefined"
+        ? process.env.NEXT_PUBLIC_API_BASE_URL
+        : process.env.NEXT_API_URL) ?? "http://localhost:8080/api/v1";
+    const res = await fetch(`${base}/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: input.email }),
+    });
+    if (!res.ok && res.status !== 204) return { ok: false, error: "unknown" };
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "unknown" };
+  }
 }
 
 export type ResetPasswordResult = { ok: true } | { ok: false; error: "expired_token" };
 
-/** Mock set-new-password. */
+/**
+ * The reset-password form only carries password + confirmPassword; email and
+ * token come from the URL link. Until the page extracts and forwards those
+ * params, this stays a stub — the real call goes to POST /auth/reset-password
+ * with { email, token, newPassword }.
+ */
 export async function resetPassword(
   _input: ResetPasswordInput,
 ): Promise<ResetPasswordResult> {

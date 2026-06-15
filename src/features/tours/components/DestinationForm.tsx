@@ -32,7 +32,7 @@ import {
 } from "../schema";
 import type { DestinationResponse } from "@/lib/api/destinations";
 import type { Province, TravelType } from "@/lib/api/client";
-import { createDestinationAction } from "../actions";
+import { createDestinationAction, updateDestinationAction } from "../actions";
 import { useToursStore } from "../store";
 
 const PROVINCES = CAMBODIA_PROVINCE_CODES;
@@ -53,6 +53,8 @@ const DEFAULTS: NewDestinationFormValues = {
 type Props = {
   /** Controls modal visibility. */
   isOpen: boolean;
+  /** When set, the modal edits this destination (PUT) instead of creating one. */
+  destination?: DestinationResponse;
   /** Marks the created destination as admin- or agency-owned (Flow 1 vs Flow 2). */
   origin?: DestinationOrigin;
   /** Display name stored as the destination owner. */
@@ -60,14 +62,41 @@ type Props = {
   onClose: () => void;
   /** When set, creates via API and calls back with the response. */
   onCreated?: (dest: DestinationResponse) => void;
+  /** Called after a successful edit so the caller can refresh. */
+  onSaved?: () => void;
 };
 
-/** Create-destination modal. Shared by the agency tours panel and admin manager. */
-export function DestinationForm({ isOpen, origin, ownerName, onClose, onCreated }: Props) {
+/** Map an existing destination onto the create/edit form's input shape. */
+function toFormValues(d: DestinationResponse): NewDestinationFormValues {
+  return {
+    name: d.name,
+    description: d.description,
+    // The API enums are wider than the form's options — narrow with a cast.
+    province: d.province as NewDestinationFormValues["province"],
+    travelType: d.travelType as NewDestinationFormValues["travelType"],
+    coverImageUrl: d.coverImageUrl,
+    priceFrom: d.priceFrom,
+    currency: d.currency,
+    latitude: d.latitude,
+    longitude: d.longitude,
+  };
+}
+
+/** Create- or edit-destination modal. Shared by the agency tours panel and admin manager. */
+export function DestinationForm({
+  isOpen,
+  destination,
+  origin,
+  ownerName,
+  onClose,
+  onCreated,
+  onSaved,
+}: Props) {
   const { t } = useTranslation();
   const { role } = useSession();
   const addDestination = useToursStore((s) => s.addDestination);
   const { contains } = useFilter({ sensitivity: "base" });
+  const isEditing = Boolean(destination);
 
   const {
     control,
@@ -79,24 +108,33 @@ export function DestinationForm({ isOpen, origin, ownerName, onClose, onCreated 
     defaultValues: DEFAULTS,
   });
 
-  // Reset to a clean form each time the modal opens.
+  // Seed the form when the modal opens — the edit target's values, or a clean slate.
   useEffect(() => {
-    if (isOpen) reset(DEFAULTS);
-  }, [isOpen, reset]);
+    if (isOpen) reset(destination ? toFormValues(destination) : DEFAULTS);
+  }, [isOpen, destination, reset]);
 
   const onSubmit = async (values: NewDestinationInput) => {
+    const body = {
+      name: values.name,
+      description: values.description,
+      province: values.province as Province,
+      travelType: values.travelType as TravelType,
+      coverImageUrl: values.coverImageUrl,
+      priceFrom: values.priceFrom,
+      currency: values.currency,
+      latitude: values.latitude,
+      longitude: values.longitude,
+    };
+
+    if (destination) {
+      await updateDestinationAction(destination.id, body);
+      onSaved?.();
+      onClose();
+      return;
+    }
+
     if (onCreated) {
-      const dest = await createDestinationAction({
-        name: values.name,
-        description: values.description,
-        province: values.province as Province,
-        travelType: values.travelType as TravelType,
-        coverImageUrl: values.coverImageUrl,
-        priceFrom: values.priceFrom,
-        currency: values.currency,
-        latitude: values.latitude,
-        longitude: values.longitude,
-      });
+      const dest = await createDestinationAction(body);
       onCreated(dest);
       onClose();
       return;
@@ -116,7 +154,9 @@ export function DestinationForm({ isOpen, origin, ownerName, onClose, onCreated 
               <Modal.Icon className="text-primary">
                 <Location size={20} color="currentColor" />
               </Modal.Icon>
-              <Modal.Heading>{t("tours.destinations.form.title")}</Modal.Heading>
+              <Modal.Heading>
+                {t(isEditing ? "tours.destinations.form.editTitle" : "tours.destinations.form.title")}
+              </Modal.Heading>
             </Modal.Header>
 
             <Form
@@ -390,7 +430,7 @@ export function DestinationForm({ isOpen, origin, ownerName, onClose, onCreated 
                   {t("common.cancel")}
                 </Button>
                 <Button type="submit" variant="primary" isPending={isSubmitting}>
-                  {t("tours.destinations.form.submit")}
+                  {t(isEditing ? "tours.destinations.form.editSubmit" : "tours.destinations.form.submit")}
                 </Button>
               </Modal.Footer>
             </Form>

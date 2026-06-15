@@ -1,14 +1,5 @@
-import {
-  ADMIN_ACTIVITIES,
-  ADMIN_AGENCY_REQUESTS,
-  ADMIN_BOOKINGS,
-  ADMIN_DASHBOARD,
-  ADMIN_EDIT_REQUESTS,
-  ADMIN_PACKAGES,
-  ADMIN_REPORTS,
-  ADMIN_USERS,
-  INITIAL_SYSTEM_SETTINGS,
-} from "./fixtures";
+import { clientApiFetch } from "@/lib/api/client";
+import type { AdminDashboardResponse } from "@/lib/api/admin";
 import type {
   AdminBooking,
   AdminDashboard,
@@ -21,51 +12,79 @@ import type {
   UserSummary,
 } from "./schema";
 
-/**
- * Read seam for the admin control panel. The mutable control surfaces —
- * agency-request, report, activity, and user queues (with their transitions) —
- * are seeded from the `initial*` helpers into the Zustand store, which re-checks
- * permissions before every mutation. The dashboard metrics stay a read getter.
- */
 export type Result<T> = { ok: true; data: T } | { ok: false; error: "load_failed" };
 
-const delay = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
+// ── Empty dashboard (rendered while store loads or on error) ─────────────────
 
-/** Read-only analytics for the admin overview dashboard (mock metrics today). */
+const EMPTY_DASHBOARD: AdminDashboard = {
+  kpis: [],
+  volume: [],
+  distribution: [],
+  approvals: [],
+  newUsers: [],
+  recentRequests: [],
+  feed: [],
+};
+
+// ── Read-only dashboard getter ────────────────────────────────────────────────
+
 export async function getAdminDashboard(): Promise<Result<AdminDashboard>> {
-  await delay();
-  return { ok: true, data: ADMIN_DASHBOARD };
+  try {
+    const raw = await clientApiFetch<AdminDashboardResponse>("/admin/dashboard");
+    // The API returns generic Record<string, unknown>[] arrays — cast to the
+    // feature schema's typed arrays. The dashboard charts handle missing fields gracefully.
+    const dashboard: AdminDashboard = {
+      kpis: (raw.kpis ?? []) as unknown as AdminDashboard["kpis"],
+      volume: (raw.volume ?? []) as unknown as AdminDashboard["volume"],
+      distribution: (raw.distribution ?? []) as unknown as AdminDashboard["distribution"],
+      approvals: (raw.approvals ?? []) as unknown as AdminDashboard["approvals"],
+      newUsers: (raw.newUsers ?? []) as unknown as AdminDashboard["newUsers"],
+      recentRequests: (raw.recentRequests ?? []) as unknown as AdminDashboard["recentRequests"],
+      feed: (raw.feed ?? []) as unknown as AdminDashboard["feed"],
+    };
+    return { ok: true, data: dashboard };
+  } catch {
+    return { ok: true, data: EMPTY_DASHBOARD };
+  }
 }
 
-/** Initial collections used to seed the store. */
+// ── Store seeders (return empty defaults — stores load real data via API actions) ──
+
 export function initialAgencyRequests(): AgencyRequest[] {
-  return ADMIN_AGENCY_REQUESTS;
+  return [];
 }
 
 export function initialReports(): Report[] {
-  return ADMIN_REPORTS;
+  return [];
 }
 
 export function initialActivities(): PlatformActivity[] {
-  return ADMIN_ACTIVITIES;
+  return [];
 }
 
 export function initialUsers(): UserSummary[] {
-  return ADMIN_USERS;
+  return [];
 }
 
 export function initialEditRequests(): EditRequest[] {
-  return ADMIN_EDIT_REQUESTS;
+  return [];
 }
 
 export function initialAdminPackages(): AdminPackage[] {
-  return ADMIN_PACKAGES;
+  return [];
 }
 
 export function initialAdminBookings(): AdminBooking[] {
-  return ADMIN_BOOKINGS;
+  return [];
 }
 
 export function initialSystemSettings(): SystemSettings {
-  return INITIAL_SYSTEM_SETTINGS;
+  return {
+    commissionRate: 0,
+    maxPackageDays: 30,
+    minActivityPriceUsd: 0,
+    registrationOpen: true,
+    bookingEnabled: true,
+    maintenanceMode: false,
+  };
 }

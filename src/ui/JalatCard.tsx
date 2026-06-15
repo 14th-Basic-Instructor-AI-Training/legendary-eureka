@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import Image from "next/image";
 import { Card } from "./Card";
+import { CardImage } from "./CardImage";
 import { cn } from "@/lib/utils";
 import { LocaleLink } from "@/components/LocaleLink";
 import { concaveMaskStyle } from "./concaveCorners";
@@ -99,12 +99,11 @@ export function JalatCard({
           )}
           style={isTopRight ? undefined : concaveMaskStyle(cornerRadius)}
         >
-          <Image
+          <CardImage
             src={image.src}
             alt={image.alt}
-            fill
             sizes={imageSizes}
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="transition-transform duration-500 group-hover:scale-105"
           />
         </div>
         {badge ? (
