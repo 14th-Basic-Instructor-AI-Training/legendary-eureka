@@ -6,6 +6,8 @@ import type {
   AdminPackage,
   AgencyRequest,
   EditRequest,
+  KpiKey,
+  KpiMetric,
   PlatformActivity,
   Report,
   SystemSettings,
@@ -28,13 +30,40 @@ const EMPTY_DASHBOARD: AdminDashboard = {
 
 // ── Read-only dashboard getter ────────────────────────────────────────────────
 
+const KPI_KEYS = new Set<KpiKey>([
+  "totalUsers",
+  "totalDestinations",
+  "totalTours",
+  "totalTrips",
+  "pendingAgencies",
+  "pendingReports",
+]);
+
+function mapKpi(raw: Record<string, unknown>): KpiMetric | null {
+  const key = raw.key;
+  if (typeof key !== "string" || !KPI_KEYS.has(key as KpiKey)) return null;
+
+  const deltaDir = raw.deltaDir;
+  const normalizedDir =
+    deltaDir === "up" || deltaDir === "down" || deltaDir === "neutral" ? deltaDir : "neutral";
+
+  return {
+    key: key as KpiKey,
+    value: Number(raw.value ?? 0),
+    deltaPct: Number(raw.deltaPct ?? 0),
+    deltaDir: normalizedDir,
+    deltaGood: Boolean(raw.deltaGood),
+    comparison: typeof raw.comparison === "string" ? raw.comparison : "",
+  };
+}
+
 export async function getAdminDashboard(): Promise<Result<AdminDashboard>> {
   try {
     const raw = await clientApiFetch<AdminDashboardResponse>("/admin/dashboard");
-    // The API returns generic Record<string, unknown>[] arrays — cast to the
-    // feature schema's typed arrays. The dashboard charts handle missing fields gracefully.
     const dashboard: AdminDashboard = {
-      kpis: (raw.kpis ?? []) as AdminDashboard["kpis"],
+      kpis: (raw.kpis ?? [])
+        .map((item) => mapKpi(item as Record<string, unknown>))
+        .filter((item): item is KpiMetric => item !== null),
       volume: (raw.volume ?? []) as AdminDashboard["volume"],
       distribution: (raw.distribution ?? []) as AdminDashboard["distribution"],
       approvals: (raw.approvals ?? []) as AdminDashboard["approvals"],

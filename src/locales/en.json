@@ -1562,15 +1562,12 @@
       "error": "Couldn't load the dashboard.",
       "empty": "No analytics to show yet.",
       "kpi": {
-        "pendingRequests": "Pending agency requests",
-        "openReports": "Open reports",
-        "activities": "Total activities",
-        "users": "Total users",
-        "comparison": {
-          "vsYesterday": "vs yesterday",
-          "vsLastWeek": "vs last week",
-          "vsPrior30d": "vs prior 30 days"
-        }
+        "totalUsers": "Total users",
+        "totalDestinations": "Total destinations",
+        "totalTours": "Total tours",
+        "totalTrips": "Total trips",
+        "pendingAgencies": "Pending agencies",
+        "pendingReports": "Pending reports"
       },
       "range": {
         "last7d": "Last 7 days",

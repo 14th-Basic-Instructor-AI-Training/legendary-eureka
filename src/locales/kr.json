@@ -1562,15 +1562,12 @@
       "error": "대시보드를 불러오지 못했습니다.",
       "empty": "표시할 분석 데이터가 없습니다.",
       "kpi": {
-        "pendingRequests": "대기 중인 여행사 요청",
-        "openReports": "미해결 신고",
-        "activities": "전체 활동",
-        "users": "전체 사용자",
-        "comparison": {
-          "vsYesterday": "어제 대비",
-          "vsLastWeek": "지난주 대비",
-          "vsPrior30d": "이전 30일 대비"
-        }
+        "totalUsers": "전체 사용자",
+        "totalDestinations": "전체 여행지",
+        "totalTours": "전체 투어",
+        "totalTrips": "전체 예약",
+        "pendingAgencies": "대기 중인 여행사",
+        "pendingReports": "대기 중인 신고"
       },
       "range": {
         "last7d": "최근 7일",

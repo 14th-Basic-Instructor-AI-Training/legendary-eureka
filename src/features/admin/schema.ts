@@ -131,21 +131,26 @@ export type UserSummary = z.infer<typeof UserSummarySchema>;
  * ------------------------------------------------------------------ */
 
 /** Which KPI a card represents — drives its i18n label. */
-export const KpiKeySchema = z.enum(["pendingRequests", "openReports", "activities", "users"]);
+export const KpiKeySchema = z.enum([
+  "totalUsers",
+  "totalDestinations",
+  "totalTours",
+  "totalTrips",
+  "pendingAgencies",
+  "pendingReports",
+]);
 export type KpiKey = z.infer<typeof KpiKeySchema>;
-
-/** What the delta is compared against — drives the localized comparison copy. */
-export const KpiComparisonSchema = z.enum(["vsYesterday", "vsLastWeek", "vsPrior30d"]);
 
 /** A single KPI tile: a value plus a signed delta and whether that delta is good. */
 export const KpiMetricSchema = z.object({
   key: KpiKeySchema,
   value: z.number(),
   deltaPct: z.number(),
-  deltaDir: z.enum(["up", "down"]),
+  deltaDir: z.enum(["up", "down", "neutral"]),
   /** Whether the direction is a positive signal (greener) — context-dependent. */
   deltaGood: z.boolean(),
-  comparison: KpiComparisonSchema,
+  /** Human-readable comparison label from the API (e.g. "vs last month"). */
+  comparison: z.string(),
 });
 export type KpiMetric = z.infer<typeof KpiMetricSchema>;
 
