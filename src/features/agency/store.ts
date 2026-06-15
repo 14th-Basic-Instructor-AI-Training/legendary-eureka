@@ -29,6 +29,8 @@ interface AgencyState {
   publishPackage: (actor: Actor | null, id: string) => boolean;
   /** Archive a published package. */
   archivePackage: (actor: Actor | null, id: string) => boolean;
+  /** Seed/replace the packages list (used to hydrate from the API on mount). */
+  setPackages: (packages: Package[]) => void;
 }
 
 export interface PackageInput {
@@ -185,4 +187,6 @@ export const useAgencyStore = create<AgencyState>((set, get) => ({
     set((s) => ({ packages: setPackageStatus(s.packages, id, "archived") }));
     return true;
   },
+
+  setPackages: (packages) => set({ packages }),
 }));
