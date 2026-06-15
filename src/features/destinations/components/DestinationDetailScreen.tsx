@@ -1,20 +1,25 @@
 "use client";
 
-import { useCallback } from "react";
-import Image from "next/image";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Star1, Location, Calendar, Category } from "iconsax-reactjs";
-import { Button, Card, Chip, Reveal, Skeleton } from "@/ui";
+import { Map1, Routing2, Coffee, Buildings } from "iconsax-reactjs";
+import { Button, Reveal, Skeleton } from "@/ui";
 import { LocaleLink } from "@/components/LocaleLink";
-import { useSession } from "@/lib/auth";
-import { useLocalizedRouter } from "@/lib/locale";
-import { formatPrice, formatRating } from "@/lib/format";
 import { getDestinationBySlug } from "../data";
+import { getToursByProvince } from "@/features/explore/data";
 import { useResource } from "../hooks";
 import type { Destination } from "../schema";
 import { LocationMap } from "./LocationMap";
 import { MarketingHeader } from "@/features/landing/components/MarketingHeader";
 import { Footer } from "@/features/landing/components/Footer";
+import { LoginPromptModal } from "@/features/landing/components/LoginPromptModal";
+import { DetailHero } from "./detail/DetailHero";
+import { AboutGallery } from "./detail/AboutGallery";
+import { PoiSection } from "./detail/PoiSection";
+import { ToursForDestination } from "./detail/ToursForDestination";
+import { ReviewsBlock } from "./detail/ReviewsBlock";
+import { QuickFactsCard } from "./detail/QuickFactsCard";
+import { PlanTripCard } from "./detail/PlanTripCard";
 
 /** Page shell shared by every state so the header/footer never flash. */
 function Shell({ children }: { children: React.ReactNode }) {
@@ -30,15 +35,15 @@ function Shell({ children }: { children: React.ReactNode }) {
 function DetailSkeleton() {
   return (
     <Shell>
-      <Skeleton className="h-[60vh] w-full rounded-none" />
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-3 md:px-8">
-        <div className="flex flex-col gap-4 md:col-span-2">
-          <Skeleton className="h-7 w-1/3" />
+      <Skeleton className="h-[58vh] w-full rounded-none" />
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 md:px-8 lg:grid-cols-[1fr_320px]">
+        <div className="flex flex-col gap-4">
+          <Skeleton className="h-8 w-1/3" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-5/6" />
-          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="mt-2 h-52 w-full rounded-2xl" />
         </div>
-        <Skeleton className="h-64 w-full rounded-3xl" />
+        <Skeleton className="h-72 w-full rounded-2xl" />
       </div>
     </Shell>
   );
@@ -57,9 +62,9 @@ function DetailError({ message, onRetry }: { message: string; onRetry?: () => vo
               {t("common.retry")}
             </Button>
           ) : null}
-          <LocaleLink href="/#destinations">
+          <LocaleLink href="/explore">
             <Button variant="primary" size="sm">
-              {t("destinations.detail.back")}
+              {t("destinations.detail.breadcrumb.destinations")}
             </Button>
           </LocaleLink>
         </div>
@@ -68,190 +73,72 @@ function DetailError({ message, onRetry }: { message: string; onRetry?: () => vo
   );
 }
 
-/** A small labeled fact row in the booking sidebar. */
-function Fact({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <span className="text-muted flex items-center gap-2">
-        {icon}
-        {label}
-      </span>
-      <span className="text-foreground font-medium">{value}</span>
-    </div>
-  );
-}
-
 function DetailContent({ destination }: { destination: Destination }) {
-  const { t, i18n } = useTranslation();
-  const lng = i18n.language;
-  const { user } = useSession();
-  const router = useLocalizedRouter();
+  const { t } = useTranslation();
+  const [showLogin, setShowLogin] = useState(false);
+  const onRequireAuth = () => setShowLogin(true);
 
-  const priceLabel =
-    destination.priceFrom === 0
-      ? t("common.free")
-      : formatPrice(destination.priceFrom, destination.currency, lng);
+  const toursFetcher = useCallback(
+    () => getToursByProvince(destination.province),
+    [destination.province],
+  );
+  const tours = useResource(toursFetcher);
 
-  const handleBook = () => {
-    if (!user) router.push("/login");
-    // Authenticated booking flow is wired with the bookings feature later.
-  };
+  const thingsToDo = destination.pois.filter(
+    (p) => p.category === "sight" || p.category === "activity",
+  );
+  const food = destination.pois.filter((p) => p.category === "food");
+  const stays = destination.pois.filter((p) => p.category === "stay");
 
   return (
     <Shell>
-      {/* Full-bleed hero with the marketing header floating over it. */}
-      <section className="relative flex min-h-[60vh] items-end overflow-hidden">
-        <Image
-          src={destination.heroImage}
-          alt={destination.name}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/20" />
+      <DetailHero destination={destination} toursCount={tours.data?.length} />
 
-        <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pt-28 pb-10 md:px-8">
-          <LocaleLink
-            href="/#destinations"
-            className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-white/85 transition-colors hover:text-white"
-          >
-            <ArrowLeft size={18} color="currentColor" />
-            {t("destinations.detail.back")}
-          </LocaleLink>
-
-          <Chip color="default" variant="soft" size="sm">
-            {t(`destinations.categories.${destination.category}`)}
-          </Chip>
-
-          <h1 className="mt-4 max-w-3xl text-3xl font-bold tracking-tight text-white drop-shadow-sm sm:text-4xl md:text-5xl">
-            {destination.name}
-          </h1>
-
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-white/90">
-            <span className="flex items-center gap-1.5 text-sm">
-              <Location size={16} color="currentColor" variant="Bold" />
-              {destination.city}, {destination.country}
-            </span>
-            <span className="flex items-center gap-1.5 text-sm">
-              <Star1 size={16} color="currentColor" variant="Bold" className="text-yellow" />
-              {formatRating(destination.rating, lng)}
-              <span className="text-white/70">
-                · {t("destinations.card.reviews", { count: destination.reviewCount })}
-              </span>
-            </span>
-          </div>
-        </div>
-      </section>
-
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-3 md:px-8 md:py-16">
+      <div className="mx-auto grid max-w-7xl items-start gap-10 px-4 py-12 md:px-8 md:py-16 lg:grid-cols-[1fr_320px]">
         {/* Main column */}
-        <div className="flex flex-col gap-10 md:col-span-2">
-          <Reveal>
-            <h2 className="text-foreground text-xl font-bold tracking-tight">
-              {t("destinations.detail.overview")}
-            </h2>
-            <p className="text-muted mt-3 text-base leading-relaxed">
-              {destination.shortDescription}
-            </p>
-          </Reveal>
+        <div className="flex min-w-0 flex-col gap-12">
+          <AboutGallery destination={destination} />
 
-          {destination.tags.length > 0 ? (
-            <Reveal>
-              <h2 className="text-foreground text-xl font-bold tracking-tight">
-                {t("destinations.detail.highlights")}
-              </h2>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {destination.tags.map((tag) => (
-                  <Chip key={tag} color="default" variant="soft" size="sm">
-                    {tag}
-                  </Chip>
-                ))}
-              </div>
-            </Reveal>
-          ) : null}
-
+          {/* Map — kept right after the About section, using our MapLibre map. */}
           <Reveal>
-            <h2 className="text-foreground text-xl font-bold tracking-tight">
-              {t("destinations.detail.location")}
+            <h2 className="text-foreground flex items-center gap-2.5 text-2xl font-bold tracking-tight">
+              <Map1 size={22} color="currentColor" variant="Bold" className="text-primary" />
+              {t("destinations.detail.exploreMap")}
             </h2>
-            <p className="text-muted mt-2 flex items-center gap-1.5 text-sm">
-              <Location size={16} color="currentColor" variant="Bold" className="text-primary" />
-              {destination.city}, {destination.country}
-            </p>
             <LocationMap lat={destination.lat} lng={destination.lng} label={destination.name} />
           </Reveal>
 
-          <Reveal>
-            <h2 className="text-foreground text-xl font-bold tracking-tight">
-              {t("destinations.detail.reviews")}
-            </h2>
-            <p className="text-muted mt-3 text-sm">{t("destinations.detail.reviewsSoon")}</p>
-          </Reveal>
+          <PoiSection title={t("destinations.detail.thingsToDo")} icon={Routing2} items={thingsToDo} />
+          <PoiSection title={t("destinations.detail.whereToEat")} icon={Coffee} items={food} />
+          <PoiSection title={t("destinations.detail.whereToStay")} icon={Buildings} items={stays} />
+
+          <ToursForDestination
+            destinationName={destination.name}
+            status={tours.status}
+            tours={tours.data}
+          />
+
+          <ReviewsBlock destination={destination} onRequireAuth={onRequireAuth} />
         </div>
 
-        {/* Booking sidebar */}
-        <aside className="md:col-span-1">
-          <Reveal>
-            <Card className="bg-background border-border sticky top-24 flex flex-col gap-5 rounded-3xl border p-6 shadow-sm">
-              <div>
-                <span className="text-muted text-xs font-medium tracking-wide uppercase">
-                  {t("destinations.detail.priceFrom")}
-                </span>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-foreground text-3xl font-extrabold tracking-tight">
-                    {priceLabel}
-                  </span>
-                  {destination.priceFrom > 0 ? (
-                    <span className="text-muted text-sm">
-                      / {t("destinations.detail.perPerson")}
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="border-border flex flex-col gap-3 border-y py-4">
-                <Fact
-                  icon={<Star1 size={16} color="currentColor" variant="Bold" />}
-                  label={t("destinations.detail.rating")}
-                  value={formatRating(destination.rating, lng)}
-                />
-                {destination.durationLabel ? (
-                  <Fact
-                    icon={<Calendar size={16} color="currentColor" variant="Bold" />}
-                    label={t("destinations.detail.duration")}
-                    value={destination.durationLabel}
-                  />
-                ) : null}
-                <Fact
-                  icon={<Category size={16} color="currentColor" variant="Bold" />}
-                  label={t("destinations.detail.category")}
-                  value={t(`destinations.categories.${destination.category}`)}
-                />
-              </div>
-
-              <Button variant="primary" size="lg" onPress={handleBook}>
-                {user ? t("destinations.detail.book") : t("destinations.detail.loginToBook")}
-              </Button>
-            </Card>
-          </Reveal>
+        {/* Sticky sidebar */}
+        <aside className="flex flex-col gap-5 lg:sticky lg:top-24 lg:self-start">
+          <QuickFactsCard destination={destination} />
+          <PlanTripCard onRequireAuth={onRequireAuth} />
         </aside>
       </div>
+
+      <LoginPromptModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
     </Shell>
   );
 }
 
 /**
  * Destination detail screen — public (guests included). Loads one destination by
- * slug through the data seam and renders loading / not-found / error / success.
+ * slug through the unified data seam and renders loading / not-found / error /
+ * success. Follows the Claude Design handoff layout in the Jalat brand: cinematic
+ * hero, About + 3D map, Things-to-do / Eat / Stay, tours, TripAdvisor-style
+ * reviews, and a sticky Quick-Facts + "Make it your trip" sidebar.
  */
 export function DestinationDetailScreen({ slug }: { slug: string }) {
   const { t } = useTranslation();

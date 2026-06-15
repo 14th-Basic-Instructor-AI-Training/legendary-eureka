@@ -16,7 +16,7 @@ const DEFAULT_LOCALE = "en";
  *  2. The function body handles locale routing — every public page lives under
  *     /[locale]/… so unprefixed paths are redirected to a locale.
  */
-export default auth(function middleware(req) {
+export const proxy = auth(function (req) {
   const { pathname } = req.nextUrl;
 
   const hasLocale = LOCALES.some(

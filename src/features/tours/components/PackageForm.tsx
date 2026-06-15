@@ -4,29 +4,30 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { Button, Card, Form, Input, Label, ListBox, Select } from "@/ui";
-import { useSession } from "@/lib/auth";
+import { CAMBODIA_PROVINCE_CODES, TravelTypeSchema } from "@/features/destinations/schema";
+import type { TourPackageResponse } from "@/lib/api/packages";
+import type { Province, TravelType } from "@/lib/api/client";
+import { createPackageAction } from "../actions";
+import type { DestinationResponse } from "@/lib/api/destinations";
 import {
   NewPackageSchema,
   type NewPackageFormValues,
   type NewPackageInput,
-  type TourDestination,
 } from "../schema";
-import { useToursStore } from "../store";
+
+const PROVINCES = CAMBODIA_PROVINCE_CODES;
+const TRAVEL_TYPES = TravelTypeSchema.options;
 
 type Props = {
-  /** Destinations the agency can build a package on (admin + own). */
-  destinations: TourDestination[];
+  destinations: DestinationResponse[];
   agencyName: string;
-  /** Pre-select a destination (e.g. "Build package" from a destination card). */
-  presetDestinationId?: string;
-  onDone: () => void;
+  presetDestination?: DestinationResponse;
+  onCreated: (pkg: TourPackageResponse) => void;
+  onCancel: () => void;
 };
 
-/** Create-package form with a destination picker (RHF + Zod). */
-export function PackageForm({ destinations, agencyName, presetDestinationId, onDone }: Props) {
+export function PackageForm({ presetDestination, onCreated, onCancel }: Props) {
   const { t } = useTranslation();
-  const { role } = useSession();
-  const addPackage = useToursStore((s) => s.addPackage);
 
   const {
     control,
@@ -37,16 +38,30 @@ export function PackageForm({ destinations, agencyName, presetDestinationId, onD
     resolver: zodResolver(NewPackageSchema),
     defaultValues: {
       title: "",
-      destinationId: presetDestinationId ?? "",
+      province: (presetDestination?.province as NewPackageFormValues["province"]) ?? "SIEM_REAP",
+      travelType:
+        (presetDestination?.travelType as NewPackageFormValues["travelType"]) ?? "HISTORICAL",
       days: 1,
-      priceFrom: 0,
+      priceFrom: presetDestination?.priceFrom ?? 0,
+      currency: presetDestination?.currency ?? "USD",
+      description: "",
+      coverImageUrl: "",
     },
   });
 
-  const onSubmit = (values: NewPackageInput) => {
-    addPackage(role, values, agencyName);
+  const onSubmit = async (values: NewPackageInput) => {
+    const pkg = await createPackageAction({
+      title: values.title,
+      description: values.description || undefined,
+      province: values.province as Province | undefined,
+      travelType: values.travelType as TravelType | undefined,
+      price: values.priceFrom,
+      currency: values.currency,
+      durationDays: values.days,
+      coverImageUrl: values.coverImageUrl || undefined,
+    });
     reset();
-    onDone();
+    onCreated(pkg);
   };
 
   return (
@@ -79,45 +94,84 @@ export function PackageForm({ destinations, agencyName, presetDestinationId, onD
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="p-destination">{t("tours.packages.form.destination")}</Label>
-          <Controller
-            control={control}
-            name="destinationId"
-            render={({ field }) => (
-              <Select
-                id="p-destination"
-                aria-label={t("tours.packages.form.destination")}
-                selectedKey={field.value || null}
-                onSelectionChange={(key) => key !== null && field.onChange(String(key))}
-                onBlur={field.onBlur}
-              >
-                <Select.Trigger>
-                  <Select.Value>
-                    {() => {
-                      const d = destinations.find((x) => x.id === field.value);
-                      return d ? d.name : t("tours.packages.form.selectDestination");
-                    }}
-                  </Select.Value>
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Select.Popover>
-                  <ListBox>
-                    {destinations.map((d) => (
-                      <ListBox.Item key={d.id} id={d.id} textValue={d.name}>
-                        {d.name} · {t(`tours.destinations.origin.${d.origin}`)}
-                      </ListBox.Item>
-                    ))}
-                  </ListBox>
-                </Select.Popover>
-              </Select>
-            )}
-          />
-          {errors.destinationId ? (
-            <p className="text-danger text-sm" role="alert">
-              {errors.destinationId.message}
-            </p>
-          ) : null}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="p-province">{t("tours.destinations.form.province")}</Label>
+            <Controller
+              control={control}
+              name="province"
+              render={({ field }) => (
+                <Select
+                  id="p-province"
+                  aria-label={t("tours.destinations.form.province")}
+                  selectedKey={field.value ?? null}
+                  onSelectionChange={(key) => key !== null && field.onChange(String(key))}
+                  onBlur={field.onBlur}
+                >
+                  <Select.Trigger>
+                    <Select.Value>
+                      {() =>
+                        field.value
+                          ? t(`destinations.provinces.${field.value}`)
+                          : t("tours.packages.form.selectProvince")
+                      }
+                    </Select.Value>
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  <Select.Popover>
+                    <ListBox>
+                      {PROVINCES.map((p) => (
+                        <ListBox.Item key={p} id={p} textValue={t(`destinations.provinces.${p}`)}>
+                          {t(`destinations.provinces.${p}`)}
+                        </ListBox.Item>
+                      ))}
+                    </ListBox>
+                  </Select.Popover>
+                </Select>
+              )}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="p-travel">{t("tours.destinations.form.travelType")}</Label>
+            <Controller
+              control={control}
+              name="travelType"
+              render={({ field }) => (
+                <Select
+                  id="p-travel"
+                  aria-label={t("tours.destinations.form.travelType")}
+                  selectedKey={field.value ?? null}
+                  onSelectionChange={(key) => key !== null && field.onChange(String(key))}
+                  onBlur={field.onBlur}
+                >
+                  <Select.Trigger>
+                    <Select.Value>
+                      {() =>
+                        field.value
+                          ? t(`destinations.travelTypes.${field.value}`)
+                          : t("tours.packages.form.selectTravelType")
+                      }
+                    </Select.Value>
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  <Select.Popover>
+                    <ListBox>
+                      {TRAVEL_TYPES.map((tt) => (
+                        <ListBox.Item
+                          key={tt}
+                          id={tt}
+                          textValue={t(`destinations.travelTypes.${tt}`)}
+                        >
+                          {t(`destinations.travelTypes.${tt}`)}
+                        </ListBox.Item>
+                      ))}
+                    </ListBox>
+                  </Select.Popover>
+                </Select>
+              )}
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -171,7 +225,7 @@ export function PackageForm({ destinations, agencyName, presetDestinationId, onD
         </div>
 
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="tertiary" onPress={onDone}>
+          <Button type="button" variant="tertiary" onPress={onCancel}>
             {t("common.cancel")}
           </Button>
           <Button type="submit" variant="primary" isPending={isSubmitting}>

@@ -29,6 +29,26 @@ describe("permissions.can", () => {
     expect(can("admin", "book")).toBe(false);
   });
 
+  it("gates tour booking and review writing to travelers", () => {
+    expect(can("traveler", "bookTour")).toBe(true);
+    expect(can("traveler", "writeReview")).toBe(true);
+    expect(can("guest", "bookTour")).toBe(false);
+    expect(can("guest", "writeReview")).toBe(false);
+    expect(can("agency", "bookTour")).toBe(false);
+    expect(can("agency", "writeReview")).toBe(false);
+    expect(can("admin", "bookTour")).toBe(false);
+    expect(can("admin", "writeReview")).toBe(false);
+    expect(can(null, "bookTour")).toBe(false);
+  });
+
+  it("lets only travelers edit their own profile", () => {
+    expect(can("traveler", "editOwnProfile")).toBe(true);
+    expect(can("guest", "editOwnProfile")).toBe(false);
+    expect(can("agency", "editOwnProfile")).toBe(false);
+    expect(can("admin", "editOwnProfile")).toBe(false);
+    expect(can(null, "editOwnProfile")).toBe(false);
+  });
+
   it("gates agency-only actions", () => {
     expect(can("agency", "approveBookings")).toBe(true);
     expect(can("agency", "manageOwnActivities")).toBe(true);

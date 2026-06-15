@@ -31,7 +31,6 @@ const NAV_ITEMS = [
   { key: "destinations", hash: "destinations" },
   { key: "tours", hash: "tours" },
   { key: "about", hash: "about" },
-  { key: "thingsToDo", hash: "things-to-do" },
 ] as const;
 
 /**
@@ -69,26 +68,26 @@ export function MarketingHeader() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 md:px-8">
         <div className="flex items-center gap-6">
           <LocaleLink href="/" className="flex items-center">
-            <span
-              className={cn(
-                "inline-flex h-8 items-center rounded-lg px-2.5 font-bold tracking-tight transition-colors",
-                scrolled ? "bg-primary text-white" : "bg-white/95 text-primary",
-              )}
-            >
+            <span className="bg-primary inline-flex h-8 items-center rounded-lg px-2.5 font-bold tracking-tight text-white">
+
               {t("common.appName")}
             </span>
           </LocaleLink>
           <nav className="hidden items-center gap-1 lg:flex">
+            <LocaleLink
+              href="/explore"
+              className="group text-muted hover:text-foreground relative rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200"
+            >
+              <span className="transition-transform duration-200 group-hover:-translate-y-px inline-block">
+                {t("explore.navLabel")}
+              </span>
+              <span className="bg-primary pointer-events-none absolute inset-x-3 bottom-1 h-0.5 origin-left scale-x-0 rounded-full transition-transform duration-300 ease-out group-hover:scale-x-100" />
+            </LocaleLink>
             {NAV_ITEMS.map(({ key, hash }) => (
               <LocaleLink
                 key={key}
                 href={`/#${hash}`}
-                className={cn(
-                  "group relative rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200",
-                  scrolled
-                    ? "text-muted hover:text-foreground"
-                    : "text-white/90 hover:text-white",
-                )}
+                className="group text-muted hover:text-foreground relative rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200"
               >
                 <span className="transition-transform duration-200 group-hover:-translate-y-px inline-block">
                   {t(`nav.${key}`)}
@@ -105,10 +104,7 @@ export function MarketingHeader() {
         </div>
 
         <div className="flex items-center gap-2">
-          <LanguageSwitcher
-            className="hidden sm:block"
-            tone={scrolled ? "default" : "onDark"}
-          />
+          <LanguageSwitcher className="hidden sm:block" tone="default" />
           {user ? (
             <>
               <Button
@@ -137,7 +133,7 @@ export function MarketingHeader() {
           ) : (
             <>
               <Button
-                variant={scrolled ? "tertiary" : "secondary"}
+                variant="tertiary"
                 size="sm"
                 onPress={() => router.push("/login")}
               >

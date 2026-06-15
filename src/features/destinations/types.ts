@@ -6,4 +6,10 @@ export type {
   Destination,
   DestinationCategory,
   FeaturedTour,
+  TravelType,
+  Province,
+  AgencyStatus,
+  AgencyProfile,
+  Review,
+  DiscoverFilter,
 } from "./schema";

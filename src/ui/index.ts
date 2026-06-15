@@ -8,6 +8,17 @@ export { Button, type UIButtonProps } from "./Button";
 export { Input, type UIInputProps } from "./Input";
 export { PasswordInput, type UIPasswordInputProps } from "./PasswordInput";
 export { Card } from "./Card";
+export { JalatCard, type JalatCardProps } from "./JalatCard";
+export { RatingBadge } from "./RatingBadge";
+export { RatingInline } from "./RatingInline";
+export { PriceTag } from "./PriceTag";
+export { concaveMaskStyle, CONCAVE_RADIUS } from "./concaveCorners";
+export {
+  JalatCardClipDefs,
+  JALAT_CARD_CLIP_ID,
+  jalatCardClipStyle,
+  jalatCardClipShadowStyle,
+} from "./jalatCardClip";
 export { Select, ListBox } from "./Select";
 export { Autocomplete } from "./Autocomplete";
 export { SearchField } from "./SearchField";
@@ -16,6 +27,10 @@ export { Chip } from "./Chip";
 export { StatusChip } from "./StatusChip";
 export { Reveal } from "./Reveal";
 export { TextArea, type UITextAreaProps } from "./TextArea";
+export { DatePicker, type UIDatePickerProps } from "./DatePicker";
+export { NumberStepper, type UINumberStepperProps } from "./NumberStepper";
+export { Switch, type UISwitchProps } from "./Switch";
+export { RangeSlider, type UIRangeSliderProps } from "./RangeSlider";
 export { Pagination, type UIPaginationProps } from "./Pagination";
 export {
   ConfirmDialog,

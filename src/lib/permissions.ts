@@ -45,11 +45,14 @@ export type Action =
   | "browse"
   // traveler
   | "book"
+  | "bookTour"
   | "bookmark"
   | "createTripPlan"
   | "rateActivity"
+  | "writeReview"
   | "reportAgency"
   | "requestAgencyUpgrade"
+  | "editOwnProfile"
   // agency
   | "viewWorkspace"
   | "manageOwnActivities"
@@ -75,11 +78,14 @@ const MATRIX: Record<Actor, Action[]> = {
   traveler: [
     "browse",
     "book",
+    "bookTour",
     "bookmark",
     "createTripPlan",
     "rateActivity",
+    "writeReview",
     "reportAgency",
     "requestAgencyUpgrade",
+    "editOwnProfile",
   ],
   agency: [
     "browse",

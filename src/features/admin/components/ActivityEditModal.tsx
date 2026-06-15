@@ -21,8 +21,8 @@ import {
 } from "@/ui";
 import { useSession } from "@/lib/auth";
 import {
+  CAMBODIA_PROVINCE_CODES,
   DestinationCategorySchema,
-  ProvinceSchema,
   TravelTypeSchema,
 } from "@/features/destinations/schema";
 import { useAdminStore } from "../store";
@@ -36,7 +36,7 @@ import {
 
 const CATEGORY_OPTIONS = DestinationCategorySchema.options;
 const STATUS_OPTIONS = ActivityStatusSchema.options;
-const PROVINCE_OPTIONS = ProvinceSchema.options;
+const PROVINCE_OPTIONS = CAMBODIA_PROVINCE_CODES;
 const TRAVEL_OPTIONS = TravelTypeSchema.options;
 
 /** A blank destination — the defaults for "Create destination". */

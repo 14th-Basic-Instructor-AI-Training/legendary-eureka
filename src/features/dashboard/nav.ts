@@ -10,6 +10,7 @@ import {
   Chart2,
   Receipt21,
   Setting2,
+  Notification,
   Location,
 } from "iconsax-reactjs";
 import type { Role } from "@/features/auth/schema";
@@ -76,5 +77,21 @@ export const SIDEBAR_NAV: Record<Role, NavGroup[]> = {
       ],
     },
   ],
-  traveler: [{ items: [{ labelKey: "nav.dashboard", Icon: Star1 }] }],
+  traveler: [
+    {
+      items: [
+        { labelKey: "nav.dashboard", Icon: Star1, href: "/traveler" },
+        {
+          labelKey: "profile.nav.profile",
+          Icon: Profile2User,
+          href: "/traveler/profile",
+        },
+        {
+          labelKey: "notifications.nav.title",
+          Icon: Notification,
+          href: "/traveler/notifications",
+        },
+      ],
+    },
+  ],
 };

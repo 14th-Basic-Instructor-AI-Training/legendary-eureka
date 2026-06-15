@@ -20,16 +20,31 @@ import {
   TextArea,
   useFilter,
 } from "@/ui";
+<<<<<<< HEAD
 import { ProvinceSchema, TravelTypeSchema } from "@/features/destinations/schema";
+=======
+import { useSession } from "@/lib/auth";
+import {
+  CAMBODIA_PROVINCE_CODES,
+  TravelTypeSchema,
+} from "@/features/destinations/schema";
+>>>>>>> 2d673ed7538579d7af67789c239619f46f219203
 import {
   NewDestinationSchema,
   type NewDestinationFormValues,
   type NewDestinationInput,
 } from "../schema";
+<<<<<<< HEAD
 import { createDestinationAction } from "../actions";
 import type { DestinationRequest } from "@/lib/api/activities";
+=======
+import type { DestinationResponse } from "@/lib/api/destinations";
+import type { Province, TravelType } from "@/lib/api/client";
+import { createDestinationAction } from "../actions";
+import { useToursStore } from "../store";
+>>>>>>> 2d673ed7538579d7af67789c239619f46f219203
 
-const PROVINCES = ProvinceSchema.options;
+const PROVINCES = CAMBODIA_PROVINCE_CODES;
 const TRAVEL_TYPES = TravelTypeSchema.options;
 
 const DEFAULTS: NewDestinationFormValues = {
@@ -53,6 +68,7 @@ type Props = {
   /** Controls modal visibility. */
   isOpen: boolean;
   onClose: () => void;
+<<<<<<< HEAD
   /** Called after a successful create — e.g. to refresh the server-fetched list. */
   onCreated?: () => void;
 };
@@ -63,6 +79,14 @@ type Props = {
  * and the admin content manager.
  */
 export function DestinationForm({ isOpen, onClose, onCreated }: Props) {
+=======
+  /** When set, creates via API and calls back with the response. */
+  onCreated?: (dest: DestinationResponse) => void;
+};
+
+/** Create-destination modal. Shared by the agency tours panel and admin manager. */
+export function DestinationForm({ isOpen, origin, ownerName, onClose, onCreated }: Props) {
+>>>>>>> 2d673ed7538579d7af67789c239619f46f219203
   const { t } = useTranslation();
   const { contains } = useFilter({ sensitivity: "base" });
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -82,8 +106,30 @@ export function DestinationForm({ isOpen, onClose, onCreated }: Props) {
     if (isOpen) reset(DEFAULTS);
   }, [isOpen, reset]);
 
+<<<<<<< HEAD
   const handleClose = () => {
     setSubmitError(null);
+=======
+  const onSubmit = async (values: NewDestinationInput) => {
+    if (onCreated) {
+      const dest = await createDestinationAction({
+        name: values.name,
+        description: values.description,
+        province: values.province as Province,
+        travelType: values.travelType as TravelType,
+        coverImageUrl: values.coverImageUrl,
+        priceFrom: values.priceFrom,
+        currency: values.currency,
+        latitude: values.latitude,
+        longitude: values.longitude,
+      });
+      onCreated(dest);
+      onClose();
+      return;
+    }
+
+    addDestination(role, values, origin, ownerName);
+>>>>>>> 2d673ed7538579d7af67789c239619f46f219203
     onClose();
   };
 

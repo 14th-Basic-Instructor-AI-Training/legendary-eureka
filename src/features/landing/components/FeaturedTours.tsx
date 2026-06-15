@@ -2,32 +2,55 @@
 
 import { useTranslation } from "react-i18next";
 import { Button, Reveal, Skeleton } from "@/ui";
-import { TourCard } from "@/features/destinations/components/TourCard";
+import { TrendingTourCard } from "@/features/tours/components/TrendingTourCard";
 import { useResource } from "@/features/destinations/hooks";
 import { getFeaturedTours } from "@/features/destinations/data";
 import { SectionHeading } from "./SectionHeading";
 
 function TourSkeleton() {
   return (
-    <div className="bg-surface border-border overflow-hidden rounded-2xl border">
+    <div className="bg-background shadow-primary overflow-hidden rounded-2xl">
       <Skeleton className="aspect-[16/10] w-full rounded-none" />
       <div className="flex flex-col gap-2 p-4">
         <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-3 w-1/2" />
         <Skeleton className="h-3 w-1/3" />
       </div>
     </div>
   );
 }
 
-/** Landing "Featured tours" row — multi-day packages from agencies. */
-export function FeaturedTours() {
+/**
+ * Landing tours row — multi-day packages from agencies. Copy defaults to
+ * "Featured tours" but accepts a title/subtitle so the same loader powers the
+ * "Trending tours" row on the landing page.
+ */
+export function FeaturedTours({
+  title,
+  subtitle,
+  actionLabel,
+  actionHref,
+  onAction,
+}: {
+  title?: string;
+  subtitle?: string;
+  actionLabel?: string;
+  actionHref?: string;
+  onAction?: () => void;
+} = {}) {
   const { t } = useTranslation();
   const { status, data, reload } = useResource(getFeaturedTours);
 
   return (
     <section id="tours" className="bg-surface/40 py-12 md:py-16">
       <div className="mx-auto max-w-7xl px-4 md:px-8">
-        <SectionHeading title={t("landing.tours.title")} subtitle={t("landing.tours.subtitle")} />
+        <SectionHeading
+          title={title ?? t("landing.tours.title")}
+          subtitle={subtitle ?? t("landing.tours.subtitle")}
+          actionLabel={actionLabel}
+          actionHref={actionHref}
+          onAction={onAction}
+        />
 
         {status === "loading" ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -50,7 +73,7 @@ export function FeaturedTours() {
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {data.map((tour, i) => (
               <Reveal key={tour.id} delay={Math.min(i, 3) * 0.06}>
-                <TourCard tour={tour} />
+                <TrendingTourCard tour={tour} />
               </Reveal>
             ))}
           </div>

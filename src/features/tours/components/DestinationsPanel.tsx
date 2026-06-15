@@ -3,22 +3,51 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Add, Location } from "iconsax-reactjs";
-import { Button, Chip } from "@/ui";
+import { Button } from "@/ui";
 import { formatPrice } from "@/lib/format";
+import type { DestinationResponse } from "@/lib/api/destinations";
+import { deleteDestinationAction } from "../actions";
 import { DestinationForm } from "./DestinationForm";
-import type { TourDestination } from "../schema";
 
 type Props = {
+<<<<<<< HEAD
   destinations: TourDestination[];
   /** Switch to the packages tab with this destination pre-selected (Flow 1/2). */
+=======
+  destinations: DestinationResponse[];
+  agencyName: string;
+>>>>>>> 2d673ed7538579d7af67789c239619f46f219203
   onBuildPackage: (destinationId: string) => void;
+  onCreated: (dest: DestinationResponse) => void;
+  onDeleted: (id: string) => void;
 };
 
+<<<<<<< HEAD
 /** Agency: browse admin + own destinations, create a new one, build a package. */
 export function DestinationsPanel({ destinations, onBuildPackage }: Props) {
+=======
+export function DestinationsPanel({
+  destinations,
+  agencyName,
+  onBuildPackage,
+  onCreated,
+  onDeleted,
+}: Props) {
+>>>>>>> 2d673ed7538579d7af67789c239619f46f219203
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
   const [showForm, setShowForm] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (id: string) => {
+    setDeletingId(id);
+    try {
+      await deleteDestinationAction(id);
+      onDeleted(id);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -30,7 +59,20 @@ export function DestinationsPanel({ destinations, onBuildPackage }: Props) {
         </Button>
       </div>
 
+<<<<<<< HEAD
       <DestinationForm isOpen={showForm} onClose={() => setShowForm(false)} />
+=======
+      <DestinationForm
+        isOpen={showForm}
+        origin="agency"
+        ownerName={agencyName}
+        onClose={() => setShowForm(false)}
+        onCreated={(dest) => {
+          onCreated(dest);
+          setShowForm(false);
+        }}
+      />
+>>>>>>> 2d673ed7538579d7af67789c239619f46f219203
 
       {destinations.length === 0 ? (
         <p className="text-muted py-8 text-center text-sm">{t("tours.destinations.empty")}</p>
@@ -41,29 +83,35 @@ export function DestinationsPanel({ destinations, onBuildPackage }: Props) {
               key={d.id}
               className="bg-surface border-border flex flex-col gap-3 rounded-2xl border p-4 shadow-primary"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate font-semibold">{d.name}</p>
-                  <p className="text-muted mt-0.5 flex items-center gap-1 text-xs">
-                    <Location size={12} color="currentColor" />
-                    {t(`destinations.provinces.${d.province}`)} ·{" "}
-                    {t(`destinations.travelTypes.${d.travelType}`)}
-                  </p>
-                </div>
-                <Chip color={d.origin === "admin" ? "accent" : "default"} variant="soft" size="sm">
-                  {t(`tours.destinations.origin.${d.origin}`)}
-                </Chip>
+              <div className="min-w-0">
+                <p className="truncate font-semibold">{d.name}</p>
+                <p className="text-muted mt-0.5 flex items-center gap-1 text-xs">
+                  <Location size={12} color="currentColor" />
+                  {t(`destinations.provinces.${d.province}`)} ·{" "}
+                  {t(`destinations.travelTypes.${d.travelType}`)}
+                </p>
               </div>
 
-              <p className="text-muted line-clamp-2 text-sm">{d.description}</p>
+              <p className="text-muted line-clamp-2 text-sm">{d.description || d.shortDescription}</p>
 
               <div className="mt-auto flex items-center justify-between gap-3 pt-1">
                 <span className="text-sm font-semibold">
                   {t("tours.destinations.from")} {formatPrice(d.priceFrom, d.currency, lng)}
                 </span>
-                <Button variant="secondary" size="sm" onPress={() => onBuildPackage(d.id)}>
-                  {t("tours.destinations.buildPackage")}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="secondary" size="sm" onPress={() => onBuildPackage(d.id)}>
+                    {t("tours.destinations.buildPackage")}
+                  </Button>
+                  <Button
+                    variant="tertiary"
+                    size="sm"
+                    isPending={deletingId === d.id}
+                    onPress={() => handleDelete(d.id)}
+                    aria-label={t("common.delete")}
+                  >
+                    ×
+                  </Button>
+                </div>
               </div>
             </li>
           ))}
