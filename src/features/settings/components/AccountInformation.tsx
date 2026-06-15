@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { DocumentUpload, Sms, Edit2 } from "iconsax-reactjs";
 import { Button, Input, Select, ListBox } from "@/ui";
@@ -37,6 +37,8 @@ export function AccountInformation() {
   const [email, setEmail] = useState("emmanuel@email.com");
   const [phone, setPhone] = useState("1234 567 890");
   const [country, setCountry] = useState<string>("us");
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="flex flex-col">
@@ -58,19 +60,39 @@ export function AccountInformation() {
       </header>
 
       <FieldRow label={t("settings.account.photoLabel")} hint={t("settings.account.photoHint")}>
-        <button
-          type="button"
-          className="border-border hover:border-primary/40 flex w-full max-w-md flex-col items-center justify-center gap-2 rounded-xl border border-dashed px-4 py-6 text-center transition-colors"
-        >
-          <span className="bg-muted/10 inline-flex h-10 w-10 items-center justify-center rounded-lg">
-            <DocumentUpload size={20} color="currentColor" className="text-muted" />
-          </span>
-          <span className="text-sm">
-            <span className="text-primary font-semibold">{t("settings.account.uploadCta")}</span>{" "}
-            <span className="text-muted">{t("settings.account.uploadRest")}</span>
-          </span>
-          <span className="text-muted text-xs">{t("settings.account.uploadFormats")}</span>
-        </button>
+        <div className="max-w-md">
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) setPhotoPreview(URL.createObjectURL(file));
+              e.target.value = "";
+            }}
+          />
+          <button
+            type="button"
+            className="border-border hover:border-primary/40 flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed px-4 py-6 text-center transition-colors"
+            onClick={() => photoInputRef.current?.click()}
+          >
+            {photoPreview ? (
+              <img src={photoPreview} className="h-16 w-16 rounded-full object-cover" alt="preview" />
+            ) : (
+              <>
+                <span className="bg-muted/10 inline-flex h-10 w-10 items-center justify-center rounded-lg">
+                  <DocumentUpload size={20} color="currentColor" className="text-muted" />
+                </span>
+                <span className="text-sm">
+                  <span className="text-primary font-semibold">{t("settings.account.uploadCta")}</span>{" "}
+                  <span className="text-muted">{t("settings.account.uploadRest")}</span>
+                </span>
+                <span className="text-muted text-xs">{t("settings.account.uploadFormats")}</span>
+              </>
+            )}
+          </button>
+        </div>
       </FieldRow>
 
       <FieldRow label={t("settings.account.name")}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,7 +29,15 @@ import {
   Location,
 } from "iconsax-reactjs";
 import { Button, Input, TextArea, Select, ListBox, SearchField, Skeleton } from "@/ui";
-import { getPackages } from "@/features/agency/data";
+import {
+  getPackages,
+  createPackageApi,
+  updatePackageApi,
+  deletePackageApi,
+  publishPackageApi,
+  archivePackageApi,
+} from "@/features/agency/data";
+import { uploadFileAction } from "@/features/agency/profileActions";
 import { useSession } from "@/lib/auth";
 import { useAgencyStore, type PackageInput } from "@/features/agency/store";
 import type { Activity, ItineraryDay, Package } from "@/features/agency/schema";
@@ -179,6 +187,24 @@ function BasicInfoStep({
     resolver: zodResolver(BasicInfoSchema),
     defaultValues: { days: 3, ...defaultValues },
   });
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverError, setCoverError] = useState<string | null>(null);
+
+  async function handleCoverFile(file: File) {
+    setCoverError(null);
+    setCoverUploading(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    const result = await uploadFileAction(fd);
+    setCoverUploading(false);
+    if (result.ok) {
+      setCoverPreview(result.url);
+    } else {
+      setCoverError(result.error);
+    }
+  }
 
   const labelCls = "block text-[12px] font-semibold text-agency-dark mb-1.5";
 
@@ -211,16 +237,40 @@ function BasicInfoStep({
       {/* Cover upload */}
       <div>
         <label className={labelCls}>{t("agency.packages.fieldCover")}</label>
-        <div className="flex flex-col items-center gap-2 rounded-[10px] border-2 border-dashed border-agency-border bg-bg-ghostwhite px-4 py-5 cursor-pointer transition-all hover:border-agency hover:bg-agency-light">
-          <DocumentUpload size={26} color="#9BA8B5" />
-          <div className="text-center">
-            <p className="text-[13px] font-semibold text-agency-dark">
-              {t("agency.packages.dropCover")}{" "}
-              <span className="text-agency">{t("agency.packages.browse")}</span>
-            </p>
-            <p className="mt-0.5 text-[11.5px] text-agency-muted">{t("agency.packages.coverHint")}</p>
-          </div>
-        </div>
+        <input
+          ref={coverInputRef}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) void handleCoverFile(file);
+            e.target.value = "";
+          }}
+        />
+        <button
+          type="button"
+          disabled={coverUploading}
+          onClick={() => coverInputRef.current?.click()}
+          className="flex w-full flex-col items-center gap-2 rounded-[10px] border-2 border-dashed border-agency-border bg-bg-ghostwhite px-4 py-5 transition-all hover:border-agency hover:bg-agency-light disabled:opacity-60"
+        >
+          {coverPreview ? (
+            <img src={coverPreview} alt="cover preview" className="h-24 w-full rounded-[6px] object-cover" />
+          ) : (
+            <>
+              <DocumentUpload size={26} color={coverUploading ? "#185FA5" : "#9BA8B5"} />
+              <div className="text-center">
+                <p className="text-[13px] font-semibold text-agency-dark">
+                  {coverUploading ? t("common.loading") : (
+                    <>{t("agency.packages.dropCover")}{" "}<span className="text-agency">{t("agency.packages.browse")}</span></>
+                  )}
+                </p>
+                <p className="mt-0.5 text-[11.5px] text-agency-muted">{t("agency.packages.coverHint")}</p>
+              </div>
+            </>
+          )}
+        </button>
+        {coverError && <p className="mt-1 text-[11px] text-red-500">{coverError}</p>}
       </div>
 
       {/* Province + Price */}
@@ -654,11 +704,13 @@ function PackageModal({
   pkg?: Package;
   activities: Activity[];
   onClose: () => void;
-  onSaveDraft: (input: PackageInput) => void;
-  onPublish: (input: PackageInput) => void;
+  onSaveDraft: (input: PackageInput) => Promise<void>;
+  onPublish: (input: PackageInput) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const isEdit = !!pkg;
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const [step, setStep] = useState(1);
   const [basicInfo, setBasicInfo] = useState<BasicInfoValues | null>(
@@ -748,62 +800,84 @@ function PackageModal({
         </div>
 
         {/* Footer */}
-        <div className="flex flex-shrink-0 items-center justify-between border-t border-agency-border bg-bg-ghostwhite px-6 py-4">
-          {/* Back */}
-          <div>
-            {step > 1 && (
+        <div className="flex flex-shrink-0 flex-col gap-2 border-t border-agency-border bg-bg-ghostwhite px-6 py-4">
+          {saveError && (
+            <p className="text-center text-[12px] font-semibold text-red-500">{saveError}</p>
+          )}
+          <div className="flex items-center justify-between">
+            {/* Back */}
+            <div>
+              {step > 1 && (
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => setStep(step - 1)}
+                  className="flex items-center gap-1.5 rounded-full border border-agency-border px-5 py-2 text-[13px] font-semibold text-agency-dark transition-colors hover:bg-white disabled:opacity-50"
+                >
+                  <ArrowLeft2 size={14} color="currentColor" />
+                  {t("agency.packages.back")}
+                </button>
+              )}
+            </div>
+
+            {/* Right actions */}
+            <div className="flex gap-2.5">
               <button
                 type="button"
-                onClick={() => setStep(step - 1)}
-                className="flex items-center gap-1.5 rounded-full border border-agency-border px-5 py-2 text-[13px] font-semibold text-agency-dark transition-colors hover:bg-white"
+                disabled={saving}
+                onClick={onClose}
+                className="rounded-full border border-agency-border px-5 py-2 text-[13px] font-semibold text-agency-dark transition-colors hover:bg-white disabled:opacity-50"
               >
-                <ArrowLeft2 size={14} color="currentColor" />
-                {t("agency.packages.back")}
+                {t("agency.packages.cancel")}
               </button>
-            )}
-          </div>
 
-          {/* Right actions */}
-          <div className="flex gap-2.5">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full border border-agency-border px-5 py-2 text-[13px] font-semibold text-agency-dark transition-colors hover:bg-white"
-            >
-              {t("agency.packages.cancel")}
-            </button>
-
-            {step < 3 ? (
-              <button
-                type={step === 1 ? "submit" : "button"}
-                form={step === 1 ? "pkgStep1" : undefined}
-                onClick={step === 2 ? () => setStep(3) : undefined}
-                className="flex items-center gap-1.5 rounded-full px-5 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
-                style={{ background: "#185FA5" }}
-              >
-                {t("agency.packages.nextStep")}
-                <ArrowRight2 size={14} color="currentColor" />
-              </button>
-            ) : (
-              <>
+              {step < 3 ? (
                 <button
-                  type="button"
-                  onClick={() => basicInfo && onSaveDraft(buildInput(basicInfo))}
-                  className="rounded-full border border-agency-border px-5 py-2 text-[13px] font-semibold text-agency-dark transition-colors hover:bg-white"
-                >
-                  {t("agency.packages.saveDraft")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => basicInfo && onPublish(buildInput(basicInfo))}
-                  className="flex items-center gap-1.5 rounded-full px-5 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
+                  type={step === 1 ? "submit" : "button"}
+                  form={step === 1 ? "pkgStep1" : undefined}
+                  disabled={saving}
+                  onClick={step === 2 ? () => setStep(3) : undefined}
+                  className="flex items-center gap-1.5 rounded-full px-5 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                   style={{ background: "#185FA5" }}
                 >
-                  <TickCircle size={14} color="currentColor" />
-                  {t("agency.packages.publish")}
+                  {t("agency.packages.nextStep")}
+                  <ArrowRight2 size={14} color="currentColor" />
                 </button>
-              </>
-            )}
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={async () => {
+                      if (!basicInfo) return;
+                      setSaving(true);
+                      setSaveError(null);
+                      try { await onSaveDraft(buildInput(basicInfo)); }
+                      finally { setSaving(false); }
+                    }}
+                    className="rounded-full border border-agency-border px-5 py-2 text-[13px] font-semibold text-agency-dark transition-colors hover:bg-white disabled:opacity-50"
+                  >
+                    {saving ? t("common.loading") : t("agency.packages.saveDraft")}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={async () => {
+                      if (!basicInfo) return;
+                      setSaving(true);
+                      setSaveError(null);
+                      try { await onPublish(buildInput(basicInfo)); }
+                      finally { setSaving(false); }
+                    }}
+                    className="flex items-center gap-1.5 rounded-full px-5 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                    style={{ background: "#185FA5" }}
+                  >
+                    <TickCircle size={14} color="currentColor" />
+                    {saving ? t("common.loading") : t("agency.packages.publish")}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -1187,12 +1261,10 @@ export function PackagesContent() {
   const { t } = useTranslation();
   const { role } = useSession();
 
-  const packages      = useAgencyStore((s) => s.packages);
-  const activities    = useAgencyStore((s) => s.activities);
-  const setPackages   = useAgencyStore((s) => s.setPackages);
-  const addPackage    = useAgencyStore((s) => s.addPackage);
-  const updatePackage = useAgencyStore((s) => s.updatePackage);
-  const deletePackage = useAgencyStore((s) => s.deletePackage);
+  const packages       = useAgencyStore((s) => s.packages);
+  const activities     = useAgencyStore((s) => s.activities);
+  const setPackages    = useAgencyStore((s) => s.setPackages);
+  const deletePackage  = useAgencyStore((s) => s.deletePackage);
   const publishPackage = useAgencyStore((s) => s.publishPackage);
   const archivePackage = useAgencyStore((s) => s.archivePackage);
 
@@ -1232,26 +1304,40 @@ export function PackagesContent() {
     });
   }, [packages, activeTab, search]);
 
-  function handleSaveDraft(input: PackageInput) {
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  async function handleSaveDraft(input: PackageInput): Promise<void> {
+    setActionError(null);
     if (editPkg) {
-      updatePackage(role, editPkg.id, input);
+      const result = await updatePackageApi(editPkg.id, input);
+      if (!result.ok) { setActionError(t("common.saveError")); return; }
+      const list = await getPackages();
+      if (list.ok) setPackages(list.data);
       setEditPkg(null);
     } else {
-      addPackage(role, input);
+      const result = await createPackageApi(input);
+      if (!result.ok) { setActionError(t("common.saveError")); return; }
+      const list = await getPackages();
+      if (list.ok) setPackages(list.data);
       setCreateOpen(false);
     }
   }
 
-  function handlePublishSave(input: PackageInput) {
+  async function handlePublishSave(input: PackageInput): Promise<void> {
+    setActionError(null);
     if (editPkg) {
-      updatePackage(role, editPkg.id, input);
-      publishPackage(role, editPkg.id);
+      const updateResult = await updatePackageApi(editPkg.id, input);
+      if (!updateResult.ok) { setActionError(t("common.saveError")); return; }
+      await publishPackageApi(editPkg.id);
+      const list = await getPackages();
+      if (list.ok) setPackages(list.data);
       setEditPkg(null);
     } else {
-      addPackage(role, input);
-      // find newly added package and publish it
-      const newest = packages[0];
-      if (newest) publishPackage(role, newest.id);
+      const createResult = await createPackageApi(input);
+      if (!createResult.ok) { setActionError(t("common.saveError")); return; }
+      await publishPackageApi(createResult.data.id);
+      const list = await getPackages();
+      if (list.ok) setPackages(list.data);
       setCreateOpen(false);
     }
   }
@@ -1364,8 +1450,16 @@ export function PackagesContent() {
                 onView={() => setViewPkg(pkg)}
                 onEdit={() => setEditPkg(pkg)}
                 onDelete={() => setDeletePkg(pkg)}
-                onPublish={() => publishPackage(role, pkg.id)}
-                onArchive={() => archivePackage(role, pkg.id)}
+                onPublish={async () => {
+                  const result = await publishPackageApi(pkg.id);
+                  if (result.ok) publishPackage(role, pkg.id);
+                  else setActionError(t("common.saveError"));
+                }}
+                onArchive={async () => {
+                  const result = await archivePackageApi(pkg.id);
+                  if (result.ok) archivePackage(role, pkg.id);
+                  else setActionError(t("common.saveError"));
+                }}
               />
             ))}
           </div>
@@ -1402,8 +1496,16 @@ export function PackagesContent() {
           activities={activities}
           onClose={() => setViewPkg(null)}
           onEdit={() => { setEditPkg(viewPkg); setViewPkg(null); }}
-          onPublish={() => { publishPackage(role, viewPkg.id); setViewPkg(null); }}
-          onArchive={() => { archivePackage(role, viewPkg.id); setViewPkg(null); }}
+          onPublish={async () => {
+            const result = await publishPackageApi(viewPkg.id);
+            if (result.ok) { publishPackage(role, viewPkg.id); setViewPkg(null); }
+            else setActionError(t("common.saveError"));
+          }}
+          onArchive={async () => {
+            const result = await archivePackageApi(viewPkg.id);
+            if (result.ok) { archivePackage(role, viewPkg.id); setViewPkg(null); }
+            else setActionError(t("common.saveError"));
+          }}
         />
       )}
 
@@ -1411,7 +1513,11 @@ export function PackagesContent() {
       {deletePkg && (
         <DeleteModal
           pkg={deletePkg}
-          onConfirm={() => { deletePackage(role, deletePkg.id); setDeletePkg(null); }}
+          onConfirm={async () => {
+            const result = await deletePackageApi(deletePkg.id);
+            if (result.ok) { deletePackage(role, deletePkg.id); setDeletePkg(null); }
+            else setActionError(t("common.saveError"));
+          }}
           onCancel={() => setDeletePkg(null)}
         />
       )}

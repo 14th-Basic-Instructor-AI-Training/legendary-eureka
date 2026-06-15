@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,6 +26,12 @@ import {
 import { useSession } from "@/lib/auth";
 import { useAgencyStore } from "@/features/agency/store";
 import {
+  getActivities,
+  createAgencyActivity,
+  updateAgencyActivity,
+  deleteAgencyActivity,
+} from "@/features/agency/data";
+import {
   NewActivitySchema,
   type Activity,
   type NewActivityInput,
@@ -41,6 +47,7 @@ import {
   Chip,
   Select,
   ListBox,
+  Skeleton,
 } from "@/ui";
 
 // ---------------------------------------------------------------------------
@@ -363,7 +370,7 @@ function ActivityFormModal({
   isOpen: boolean;
   activity: Activity | null;
   onClose: () => void;
-  onSubmit: (data: ActivityFormValues) => void;
+  onSubmit: (data: ActivityFormValues) => Promise<string | void>;
 }) {
   const { t } = useTranslation();
   const isEdit = activity !== null;
@@ -388,21 +395,30 @@ function ActivityFormModal({
     },
   });
 
-  // Re-populate when the selected activity changes
-  useState(() => {
-    if (!activity) return;
+  // Re-populate when the modal opens or the target activity changes
+  useEffect(() => {
+    if (!isOpen) return;
     reset({
-      category: activity.category,
-      title: activity.title,
-      location: activity.location,
-      priceFrom: activity.priceFrom,
-      description: activity.description ?? "",
+      category: activity?.category ?? "destination",
+      title: activity?.title ?? "",
+      location: activity?.location ?? "",
+      priceFrom: activity?.priceFrom ?? 0,
+      description: activity?.description ?? "",
       difficulty: "Easy",
       amenities: [],
     });
-  });
+    setApiError(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, activity]);
 
   const category = watch("category");
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  async function handleFormSubmit(data: ActivityFormValues) {
+    setApiError(null);
+    const err = await onSubmit(data);
+    if (err) setApiError(err);
+  }
 
   return (
     <Modal
@@ -425,7 +441,7 @@ function ActivityFormModal({
 
             <Form
               validationBehavior="aria"
-              onSubmit={handleSubmit(onSubmit)}
+              onSubmit={handleSubmit(handleFormSubmit)}
               className="flex min-h-0 flex-1 flex-col"
             >
               <Modal.Body className="flex flex-1 flex-col gap-5 overflow-y-auto">
@@ -593,13 +609,20 @@ function ActivityFormModal({
                 <TypeSpecificFields category={category} control={control} register={register} />
               </Modal.Body>
 
-              <Modal.Footer className="flex flex-shrink-0 justify-end gap-2">
-                <Button type="button" variant="tertiary" onPress={onClose}>
-                  {t("agency.activitiesPage.cancel")}
-                </Button>
-                <Button type="submit" variant="primary" isPending={isSubmitting}>
-                  {isEdit ? t("agency.activitiesPage.saveChanges") : t("agency.activitiesPage.save")}
-                </Button>
+              <Modal.Footer className="flex flex-shrink-0 items-center justify-between gap-2">
+                {apiError ? (
+                  <p className="text-danger text-sm flex-1">{apiError}</p>
+                ) : (
+                  <span />
+                )}
+                <div className="flex gap-2">
+                  <Button type="button" variant="tertiary" onPress={onClose}>
+                    {t("agency.activitiesPage.cancel")}
+                  </Button>
+                  <Button type="submit" variant="primary" isPending={isSubmitting}>
+                    {isEdit ? t("agency.activitiesPage.saveChanges") : t("agency.activitiesPage.save")}
+                  </Button>
+                </div>
               </Modal.Footer>
             </Form>
           </Modal.Dialog>
@@ -782,18 +805,34 @@ export function ActivitiesContent() {
   const { t } = useTranslation();
   const { role } = useSession();
 
-  const activities   = useAgencyStore((s) => s.activities);
-  const addActivity  = useAgencyStore((s) => s.addActivity);
-  const updateActivity = useAgencyStore((s) => s.updateActivity);
-  const deleteActivity = useAgencyStore((s) => s.deleteActivity);
+  const activities     = useAgencyStore((s) => s.activities);
+  const setActivities  = useAgencyStore((s) => s.setActivities);
 
   const [activeTab, setActiveTab]   = useState<TabId>("all");
   const [search, setSearch]         = useState("");
   const [page, setPage]             = useState(1);
+  const [loading, setLoading]       = useState(true);
+  const [loadError, setLoadError]   = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
-  const [editActivity, setEditActivity]       = useState<Activity | null>(null);
+  const [editActivity, setEditActivity]           = useState<Activity | null>(null);
   const [requestEditTarget, setRequestEditTarget] = useState<Activity | null>(null);
-  const [confirmingId, setConfirmingId]       = useState<string | null>(null);
+  const [confirmingId, setConfirmingId]           = useState<string | null>(null);
+
+  // province → first owned destination id (needed for creating sub-items)
+  const destByProvinceRef = useRef<Record<string, string>>({});
+
+  useEffect(() => {
+    getActivities().then((result) => {
+      if (result.ok) {
+        setActivities(result.data.activities);
+        destByProvinceRef.current = result.data.destByProvince;
+      } else {
+        setLoadError(true);
+      }
+      setLoading(false);
+    });
+  }, [setActivities]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -811,7 +850,7 @@ export function ActivitiesContent() {
   const currentPage = Math.min(page, totalPages);
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  function handleCreate(data: ActivityFormValues) {
+  async function handleCreate(data: ActivityFormValues): Promise<string | void> {
     const input: NewActivityInput = {
       title: data.title,
       category: data.category,
@@ -819,11 +858,28 @@ export function ActivitiesContent() {
       priceFrom: data.priceFrom,
       description: data.description,
     };
-    addActivity(role, input);
+    const destId =
+      input.category === "destination"
+        ? null
+        : (destByProvinceRef.current[input.location] ?? Object.values(destByProvinceRef.current)[0] ?? null);
+    if (input.category !== "destination" && !destId) {
+      return "Create a Destination first — activities, restaurants, and accommodations must belong to a destination in the same province.";
+    }
+    const result = await createAgencyActivity(input, destId);
+    if (!result.ok) {
+      return result.message ?? "Failed to create activity. Please try again.";
+    }
+    const listResult = await getActivities();
+    if (listResult.ok) {
+      setActivities(listResult.data.activities);
+      destByProvinceRef.current = listResult.data.destByProvince;
+    } else {
+      setActivities([result.data, ...activities]);
+    }
     setCreateOpen(false);
   }
 
-  function handleEdit(data: ActivityFormValues) {
+  async function handleEdit(data: ActivityFormValues): Promise<string | void> {
     if (!editActivity) return;
     const input: NewActivityInput = {
       title: data.title,
@@ -832,8 +888,35 @@ export function ActivitiesContent() {
       priceFrom: data.priceFrom,
       description: data.description,
     };
-    updateActivity(role, editActivity.id, input);
+    const result = await updateAgencyActivity(editActivity.id, editActivity.category, input);
+    if (!result.ok) {
+      return result.message ?? "Failed to save changes. Please try again.";
+    }
+    const listResult = await getActivities();
+    if (listResult.ok) {
+      setActivities(listResult.data.activities);
+      destByProvinceRef.current = listResult.data.destByProvince;
+    } else {
+      setActivities(activities.map((a) => (a.id === editActivity.id ? result.data : a)));
+    }
     setEditActivity(null);
+  }
+
+  function handleConfirmDelete(activity: Activity) {
+    setIsDeleting(activity.id);
+    deleteAgencyActivity(activity.id, activity.category).then(async (result) => {
+      if (result.ok) {
+        const listResult = await getActivities();
+        if (listResult.ok) {
+          setActivities(listResult.data.activities);
+          destByProvinceRef.current = listResult.data.destByProvince;
+        } else {
+          setActivities(activities.filter((a) => a.id !== activity.id));
+        }
+      }
+      setIsDeleting(null);
+      setConfirmingId(null);
+    });
   }
 
   function handleTabChange(tab: TabId) {
@@ -911,7 +994,38 @@ export function ActivitiesContent() {
       </div>
 
       {/* List */}
-      {paginated.length === 0 ? (
+      {loading ? (
+        <ul className="flex flex-col gap-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <li key={i} className="bg-surface border-border flex items-center gap-3 rounded-xl border p-4">
+              <Skeleton className="h-14 w-14 flex-shrink-0 rounded-xl" />
+              <div className="flex flex-1 flex-col gap-2">
+                <Skeleton className="h-4 w-48 rounded" />
+                <Skeleton className="h-3 w-64 rounded" />
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : loadError ? (
+        <div className="flex flex-col items-center gap-3 py-16 text-center">
+          <p className="text-foreground font-semibold">{t("common.error")}</p>
+          <Button variant="secondary" onPress={() => {
+            setLoadError(false);
+            setLoading(true);
+            getActivities().then((result) => {
+              if (result.ok) {
+                setActivities(result.data.activities);
+                destByProvinceRef.current = result.data.destByProvince;
+              } else {
+                setLoadError(true);
+              }
+              setLoading(false);
+            });
+          }}>
+            {t("common.retry")}
+          </Button>
+        </div>
+      ) : paginated.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-16 text-center">
           <span className="bg-content2 text-muted inline-flex h-14 w-14 items-center justify-center rounded-2xl">
             <Category size={32} color="currentColor" />
@@ -929,13 +1043,10 @@ export function ActivitiesContent() {
             <ActivityRow
               key={a.id}
               activity={a}
-              confirmingId={confirmingId}
+              confirmingId={isDeleting === a.id ? a.id : confirmingId}
               onEdit={() => setEditActivity(a)}
               onDelete={() => setConfirmingId(a.id)}
-              onConfirmDelete={() => {
-                deleteActivity(role, a.id);
-                setConfirmingId(null);
-              }}
+              onConfirmDelete={() => handleConfirmDelete(a)}
               onCancelDelete={() => setConfirmingId(null)}
               onRequestEdit={() => setRequestEditTarget(a)}
             />
