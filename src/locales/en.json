@@ -32,6 +32,7 @@
     "approved": "Approved",
     "rejected": "Rejected",
     "completed": "Completed",
+    "cancelled": "Cancelled",
     "open": "Open",
     "resolved": "Resolved",
     "dismissed": "Dismissed",
@@ -423,7 +424,7 @@
       "PHNOM_PENH": "Phnom Penh",
       "SIEM_REAP": "Siem Reap",
       "BATTAMBANG": "Battambang",
-      "PREAH_SIHANOUK": "Preah Sihanouk",
+      "SIHANOUKVILLE": "Sihanoukville",
       "KAMPOT": "Kampot",
       "KEP": "Kep",
       "KOH_KONG": "Koh Kong",
@@ -438,7 +439,7 @@
       "BEACH": "Beach",
       "HISTORICAL": "Historical",
       "RELAXATION": "Relaxation",
-      "WILDLIFE": "Wildlife"
+      "FOOD": "Food"
     },
     "states": {
       "empty": "No destinations to show yet.",
@@ -934,14 +935,16 @@
       "error": "Couldn't load the dashboard.",
       "empty": "No analytics to show yet.",
       "kpi": {
-        "pendingRequests": "Pending agency requests",
-        "openReports": "Open reports",
-        "activities": "Total activities",
-        "users": "Total users",
+        "totalUsers": "Total users",
+        "totalDestinations": "Total destinations",
+        "totalTours": "Total tour packages",
+        "totalTrips": "Total trips",
+        "pendingAgencies": "Pending agency requests",
+        "pendingReports": "Open reports",
         "comparison": {
-          "vsYesterday": "vs yesterday",
-          "vsLastWeek": "vs last week",
-          "vsPrior30d": "vs prior 30 days"
+          "vsLastMonth": "vs last month",
+          "awaitingReview": "awaiting review",
+          "openIssues": "open issues"
         }
       },
       "range": {
@@ -955,8 +958,8 @@
         "seriesLabel": "Activities"
       },
       "distribution": {
-        "title": "Activities by category",
-        "subtitle": "Share of published activities.",
+        "title": "Packages by province",
+        "subtitle": "Share of tour packages.",
         "total": "Total"
       },
       "approvals": {
@@ -1010,7 +1013,9 @@
       "tabs": {
         "activities": "Activities",
         "packages": "Packages"
-      }
+      },
+      "error": "Couldn't load content. Is the backend running?",
+      "empty": "No content yet."
     },
     "bookings": {
       "title": "Bookings & revenue",
@@ -1054,7 +1059,8 @@
           "title": "Bookings Overview",
           "week": "Week",
           "month": "Month",
-          "year": "Year"
+          "year": "Year",
+          "empty": "No bookings yet."
         },
         "revenue": {
           "title": "Revenue Overview",
@@ -1191,12 +1197,20 @@
         "travelType": "Travel type",
         "description": "Description",
         "descriptionPlaceholder": "Short description of the place",
+        "shortDescription": "Short description",
+        "shortDescriptionPlaceholder": "One-line summary",
         "coverImageUrl": "Cover image URL",
         "coverImageUrlPlaceholder": "https://…",
         "price": "Price from (USD)",
         "currency": "Currency",
         "latitude": "Latitude",
         "longitude": "Longitude",
+        "tags": "Tags",
+        "tagsPlaceholder": "Comma-separated, e.g. temple, sunrise, heritage",
+        "photos": "Photos",
+        "photosPlaceholder": "One image URL per line (or comma-separated)",
+        "featured": "Featured",
+        "trending": "Trending",
         "submit": "Create destination",
         "searchProvince": "Search province…",
         "noProvince": "No province found"
@@ -1231,7 +1245,8 @@
         "requestsEmpty": "No destination requests yet.",
         "tabs": {
           "all": "All destinations",
-          "requests": "Create requests"
+          "requests": "Create requests",
+          "featured": "Featured"
         }
       },
       "approvals": {

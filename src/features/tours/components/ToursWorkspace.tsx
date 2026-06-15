@@ -57,11 +57,7 @@ export function ToursWorkspace() {
           <Tabs.Tab id="packages">{t("tours.tabs.packages")}</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel id="destinations" className="pt-5">
-          <DestinationsPanel
-            destinations={destinations}
-            agencyName={agencyName}
-            onBuildPackage={handleBuildPackage}
-          />
+          <DestinationsPanel destinations={destinations} onBuildPackage={handleBuildPackage} />
         </Tabs.Panel>
         <Tabs.Panel id="packages" className="pt-5">
           <PackagesPanel

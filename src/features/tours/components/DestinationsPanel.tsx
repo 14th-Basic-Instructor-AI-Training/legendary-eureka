@@ -10,13 +10,12 @@ import type { TourDestination } from "../schema";
 
 type Props = {
   destinations: TourDestination[];
-  agencyName: string;
   /** Switch to the packages tab with this destination pre-selected (Flow 1/2). */
   onBuildPackage: (destinationId: string) => void;
 };
 
 /** Agency: browse admin + own destinations, create a new one, build a package. */
-export function DestinationsPanel({ destinations, agencyName, onBuildPackage }: Props) {
+export function DestinationsPanel({ destinations, onBuildPackage }: Props) {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
   const [showForm, setShowForm] = useState(false);
@@ -31,12 +30,7 @@ export function DestinationsPanel({ destinations, agencyName, onBuildPackage }: 
         </Button>
       </div>
 
-      <DestinationForm
-        isOpen={showForm}
-        origin="agency"
-        ownerName={agencyName}
-        onClose={() => setShowForm(false)}
-      />
+      <DestinationForm isOpen={showForm} onClose={() => setShowForm(false)} />
 
       {destinations.length === 0 ? (
         <p className="text-muted py-8 text-center text-sm">{t("tours.destinations.empty")}</p>

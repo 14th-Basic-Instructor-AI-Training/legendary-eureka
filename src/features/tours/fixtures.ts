@@ -32,7 +32,7 @@ export const TOUR_DESTINATIONS: TourDestination[] = [
     id: "td-2",
     name: "Koh Rong Island",
     description: "White-sand beaches and bioluminescent plankton.",
-    province: "PREAH_SIHANOUK",
+    province: "SIHANOUKVILLE",
     travelType: "BEACH",
     coverImageUrl: "https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6",
     priceFrom: 40,

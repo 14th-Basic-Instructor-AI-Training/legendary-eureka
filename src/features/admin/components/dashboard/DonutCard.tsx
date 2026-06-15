@@ -6,17 +6,19 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { formatNumber } from "@/lib/format";
 import { tooltipProps } from "./chartTheme";
 import { Panel } from "./Panel";
-import type { DistributionSlice } from "../../schema";
+import type { AdminDistributionSlice } from "@/lib/api/admin";
 
-/** Share of platform activities by category, as a donut with a legend + center total. */
-export function DonutCard({ data }: { data: DistributionSlice[] }) {
+/** Share of tour packages by province, as a donut with a legend + center total. */
+export function DonutCard({ data }: { data: AdminDistributionSlice[] }) {
   const { t, i18n } = useTranslation();
   const total = useMemo(() => data.reduce((sum, s) => sum + s.value, 0), [data]);
 
+  // The backend may send a province enum (translate it) or a ready label like
+  // "All Provinces" (show as-is). `defaultValue` keeps unknown names readable.
   const chartData = data.map((s) => ({
     ...s,
-    label: t(`destinations.categories.${s.key}`),
-    color: `var(${s.colorVar})`,
+    label: t(`destinations.provinces.${s.name}`, { defaultValue: s.name }),
+    color: s.fill,
   }));
 
   return (
@@ -38,7 +40,7 @@ export function DonutCard({ data }: { data: DistributionSlice[] }) {
               stroke="none"
             >
               {chartData.map((s) => (
-                <Cell key={s.key} fill={s.color} />
+                <Cell key={s.name} fill={s.color} />
               ))}
             </Pie>
             <Tooltip {...tooltipProps} />
@@ -52,7 +54,7 @@ export function DonutCard({ data }: { data: DistributionSlice[] }) {
 
       <ul className="mt-4 flex flex-col gap-2">
         {chartData.map((s) => (
-          <li key={s.key} className="flex items-center justify-between text-sm">
+          <li key={s.name} className="flex items-center justify-between text-sm">
             <span className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: s.color }} />
               <span className="text-primary">{s.label}</span>

@@ -1,27 +1,57 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { Buildings, Flag, Category, Profile2User, ArrowUp3, ArrowDown2 } from "iconsax-reactjs";
+import {
+  Profile2User,
+  Location,
+  Box1,
+  Airplane,
+  Buildings,
+  Flag,
+  ArrowUp3,
+  ArrowDown2,
+} from "iconsax-reactjs";
 import { formatNumber } from "@/lib/format";
-import { cn } from "@/lib/utils";
 import type { ComponentType } from "react";
-import type { KpiKey, KpiMetric } from "../../schema";
+import type { AdminKpiMetric } from "@/lib/api/admin";
 
 type IconType = ComponentType<{ size?: number; color?: string; variant?: "Bold" | "Linear" }>;
 
-/** Each KPI gets an icon + a tinted accent drawn from globals.css tokens. */
-const KPI_META: Record<KpiKey, { Icon: IconType; colorVar: string; tintVar: string }> = {
-  pendingRequests: { Icon: Buildings, colorVar: "--blue", tintVar: "--bg-blue" },
-  openReports: { Icon: Flag, colorVar: "--orange", tintVar: "--bg-seashell" },
-  activities: { Icon: Category, colorVar: "--purple", tintVar: "--bg-purple" },
-  users: { Icon: Profile2User, colorVar: "--primary-lightskyblue", tintVar: "--bg-aliceblue" },
+/** Icon + tint per backend KPI key. Falls back to a neutral tile for unknown keys. */
+const KPI_META: Record<string, { Icon: IconType; colorVar: string; tintVar: string }> = {
+  totalUsers: { Icon: Profile2User, colorVar: "--primary-lightskyblue", tintVar: "--bg-aliceblue" },
+  totalDestinations: { Icon: Location, colorVar: "--blue", tintVar: "--bg-blue" },
+  totalTours: { Icon: Box1, colorVar: "--purple", tintVar: "--bg-purple" },
+  totalTrips: { Icon: Airplane, colorVar: "--green", tintVar: "--bg-lightgreen" },
+  pendingAgencies: { Icon: Buildings, colorVar: "--orange", tintVar: "--bg-seashell" },
+  pendingReports: { Icon: Flag, colorVar: "--red", tintVar: "--bg-lightred" },
 };
 
-export function StatCard({ metric }: { metric: KpiMetric }) {
+const FALLBACK_META = {
+  Icon: Box1 as IconType,
+  colorVar: "--primary-lightskyblue",
+  tintVar: "--bg-aliceblue",
+};
+
+/** Map the backend's free-text comparison to an i18n key (else show it raw). */
+const COMPARISON_KEY: Record<string, string> = {
+  "vs last month": "vsLastMonth",
+  "awaiting review": "awaitingReview",
+  "open issues": "openIssues",
+};
+
+export function StatCard({ metric }: { metric: AdminKpiMetric }) {
   const { t, i18n } = useTranslation();
-  const { Icon, colorVar, tintVar } = KPI_META[metric.key];
+  const { Icon, colorVar, tintVar } = KPI_META[metric.key] ?? FALLBACK_META;
+
+  const showDelta = metric.deltaPct !== 0;
   const Arrow = metric.deltaDir === "up" ? ArrowUp3 : ArrowDown2;
   const deltaColorVar = metric.deltaGood ? "--green" : "--red";
+
+  const comparisonKey = COMPARISON_KEY[metric.comparison];
+  const comparisonText = comparisonKey
+    ? t(`admin.dashboard.kpi.comparison.${comparisonKey}`)
+    : metric.comparison;
 
   return (
     <div className="bg-surface shadow-primary flex flex-col gap-3 rounded-2xl p-5">
@@ -38,14 +68,16 @@ export function StatCard({ metric }: { metric: KpiMetric }) {
         {formatNumber(metric.value, i18n.language)}
       </p>
       <div className="flex items-center gap-1.5 text-xs">
-        <span
-          className={cn("inline-flex items-center gap-0.5 font-semibold")}
-          style={{ color: `var(${deltaColorVar})` }}
-        >
-          <Arrow size={14} color="currentColor" variant="Bold" />
-          {formatNumber(metric.deltaPct, i18n.language)}%
-        </span>
-        <span className="text-muted">{t(`admin.dashboard.kpi.comparison.${metric.comparison}`)}</span>
+        {showDelta ? (
+          <span
+            className="inline-flex items-center gap-0.5 font-semibold"
+            style={{ color: `var(${deltaColorVar})` }}
+          >
+            <Arrow size={14} color="currentColor" variant="Bold" />
+            {formatNumber(metric.deltaPct, i18n.language)}%
+          </span>
+        ) : null}
+        <span className="text-muted">{comparisonText}</span>
       </div>
     </div>
   );

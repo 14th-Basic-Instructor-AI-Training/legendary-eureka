@@ -32,6 +32,7 @@
     "approved": "승인됨",
     "rejected": "거절됨",
     "completed": "완료됨",
+    "cancelled": "취소됨",
     "open": "미처리",
     "resolved": "해결됨",
     "dismissed": "기각됨",
@@ -423,7 +424,7 @@
       "PHNOM_PENH": "프놈펜",
       "SIEM_REAP": "시엠립",
       "BATTAMBANG": "바탐방",
-      "PREAH_SIHANOUK": "프레아시아누크",
+      "SIHANOUKVILLE": "시아누크빌",
       "KAMPOT": "캄포트",
       "KEP": "케프",
       "KOH_KONG": "코콩",
@@ -438,7 +439,7 @@
       "BEACH": "해변",
       "HISTORICAL": "역사",
       "RELAXATION": "휴양",
-      "WILDLIFE": "야생동물"
+      "FOOD": "음식"
     },
     "states": {
       "empty": "표시할 여행지가 아직 없습니다.",
@@ -934,14 +935,16 @@
       "error": "대시보드를 불러오지 못했습니다.",
       "empty": "표시할 분석 데이터가 없습니다.",
       "kpi": {
-        "pendingRequests": "대기 중인 여행사 요청",
-        "openReports": "미해결 신고",
-        "activities": "전체 활동",
-        "users": "전체 사용자",
+        "totalUsers": "전체 사용자",
+        "totalDestinations": "전체 여행지",
+        "totalTours": "전체 투어 패키지",
+        "totalTrips": "전체 여행",
+        "pendingAgencies": "대기 중인 여행사 요청",
+        "pendingReports": "미해결 신고",
         "comparison": {
-          "vsYesterday": "어제 대비",
-          "vsLastWeek": "지난주 대비",
-          "vsPrior30d": "이전 30일 대비"
+          "vsLastMonth": "지난달 대비",
+          "awaitingReview": "검토 대기 중",
+          "openIssues": "미해결 문제"
         }
       },
       "range": {
@@ -955,8 +958,8 @@
         "seriesLabel": "활동"
       },
       "distribution": {
-        "title": "카테고리별 활동",
-        "subtitle": "게시된 활동의 비율.",
+        "title": "지역별 패키지",
+        "subtitle": "투어 패키지 비율.",
         "total": "합계"
       },
       "approvals": {
@@ -1068,7 +1071,8 @@
           "title": "예약 개요",
           "week": "주",
           "month": "월",
-          "year": "년"
+          "year": "년",
+          "empty": "아직 예약이 없습니다."
         },
         "revenue": {
           "title": "매출 개요",
@@ -1105,7 +1109,9 @@
       "tabs": {
         "activities": "활동",
         "packages": "패키지"
-      }
+      },
+      "error": "콘텐츠를 불러오지 못했습니다. 백엔드가 실행 중인가요?",
+      "empty": "아직 콘텐츠가 없습니다."
     }
   },
   "dashboard": {
@@ -1191,12 +1197,20 @@
         "travelType": "여행 유형",
         "description": "설명",
         "descriptionPlaceholder": "장소에 대한 간단한 설명",
+        "shortDescription": "짧은 설명",
+        "shortDescriptionPlaceholder": "한 줄 요약",
         "coverImageUrl": "커버 이미지 URL",
         "coverImageUrlPlaceholder": "https://…",
         "price": "최저 가격 (USD)",
         "currency": "통화",
         "latitude": "위도",
         "longitude": "경도",
+        "tags": "태그",
+        "tagsPlaceholder": "쉼표로 구분, 예: 사원, 일출, 유산",
+        "photos": "사진",
+        "photosPlaceholder": "한 줄에 이미지 URL 하나 (또는 쉼표로 구분)",
+        "featured": "추천",
+        "trending": "인기",
         "submit": "여행지 생성",
         "searchProvince": "지역 검색…",
         "noProvince": "지역을 찾을 수 없습니다"
@@ -1231,7 +1245,8 @@
         "requestsEmpty": "아직 여행지 요청이 없습니다.",
         "tabs": {
           "all": "모든 여행지",
-          "requests": "생성 요청"
+          "requests": "생성 요청",
+          "featured": "추천"
         }
       },
       "approvals": {

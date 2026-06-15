@@ -3,8 +3,9 @@
 import { useTranslation } from "react-i18next";
 import { useSession } from "@/lib/auth";
 import { AdminDashboard } from "./dashboard/AdminDashboard";
+import type { AdminDashboardResponse } from "@/lib/api/admin";
 
-export function AdminControlPanel() {
+export function AdminControlPanel({ dashboard }: { dashboard: AdminDashboardResponse }) {
   const { t } = useTranslation();
   const { user } = useSession();
 
@@ -17,7 +18,7 @@ export function AdminControlPanel() {
         </p>
       </header>
 
-      <AdminDashboard />
+      <AdminDashboard data={dashboard} />
     </div>
   );
 }

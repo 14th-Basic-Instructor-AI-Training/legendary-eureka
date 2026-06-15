@@ -19,7 +19,7 @@ export const ProvinceSchema = z.enum([
   "PHNOM_PENH",
   "SIEM_REAP",
   "BATTAMBANG",
-  "PREAH_SIHANOUK",
+  "SIHANOUKVILLE",
   "KAMPOT",
   "KEP",
   "KOH_KONG",
@@ -37,7 +37,7 @@ export const TravelTypeSchema = z.enum([
   "BEACH",
   "HISTORICAL",
   "RELAXATION",
-  "WILDLIFE",
+  "FOOD",
 ]);
 export type TravelType = z.infer<typeof TravelTypeSchema>;
 

@@ -32,6 +32,7 @@
     "approved": "បានអនុម័ត",
     "rejected": "បានបដិសេធ",
     "completed": "បានបញ្ចប់",
+    "cancelled": "បានបោះបង់",
     "open": "បើកចំហ",
     "resolved": "បានដោះស្រាយ",
     "dismissed": "បានបដិសេធ",
@@ -423,7 +424,7 @@
       "PHNOM_PENH": "ភ្នំពេញ",
       "SIEM_REAP": "សៀមរាប",
       "BATTAMBANG": "បាត់ដំបង",
-      "PREAH_SIHANOUK": "ព្រះសីហនុ",
+      "SIHANOUKVILLE": "ក្រុងព្រះសីហនុ",
       "KAMPOT": "កំពត",
       "KEP": "កែប",
       "KOH_KONG": "កោះកុង",
@@ -438,7 +439,7 @@
       "BEACH": "ឆ្នេរ",
       "HISTORICAL": "ប្រវត្តិសាស្ត្រ",
       "RELAXATION": "សម្រាក",
-      "WILDLIFE": "សត្វព្រៃ"
+      "FOOD": "អាហារ"
     },
     "states": {
       "empty": "មិនទាន់មានគោលដៅសម្រាប់បង្ហាញ។",
@@ -934,14 +935,16 @@
       "error": "មិនអាចផ្ទុកផ្ទាំងគ្រប់គ្រងបានទេ។",
       "empty": "មិនទាន់មានទិន្នន័យវិភាគទេ។",
       "kpi": {
-        "pendingRequests": "សំណើភ្នាក់ងារទេសចរណ៍កំពុងរង់ចាំ",
-        "openReports": "របាយការណ៍មិនទាន់ដោះស្រាយ",
-        "activities": "សកម្មភាពសរុប",
-        "users": "អ្នកប្រើប្រាស់សរុប",
+        "totalUsers": "អ្នកប្រើប្រាស់សរុប",
+        "totalDestinations": "គោលដៅសរុប",
+        "totalTours": "កញ្ចប់ដំណើរសរុប",
+        "totalTrips": "ដំណើរសរុប",
+        "pendingAgencies": "សំណើភ្នាក់ងារទេសចរណ៍កំពុងរង់ចាំ",
+        "pendingReports": "របាយការណ៍មិនទាន់ដោះស្រាយ",
         "comparison": {
-          "vsYesterday": "ធៀបនឹងម្សិលមិញ",
-          "vsLastWeek": "ធៀបនឹងសប្តាហ៍មុន",
-          "vsPrior30d": "ធៀបនឹង ៣០ ថ្ងៃមុន"
+          "vsLastMonth": "ធៀបនឹងខែមុន",
+          "awaitingReview": "កំពុងរង់ចាំការត្រួតពិនិត្យ",
+          "openIssues": "បញ្ហាមិនទាន់ដោះស្រាយ"
         }
       },
       "range": {
@@ -955,8 +958,8 @@
         "seriesLabel": "សកម្មភាព"
       },
       "distribution": {
-        "title": "សកម្មភាពតាមប្រភេទ",
-        "subtitle": "សមាមាត្រនៃសកម្មភាពដែលបានផ្សាយ។",
+        "title": "កញ្ចប់តាមខេត្ត",
+        "subtitle": "សមាមាត្រនៃកញ្ចប់ដំណើរ។",
         "total": "សរុប"
       },
       "approvals": {
@@ -1068,7 +1071,8 @@
           "title": "ទិដ្ឋភាពការកក់",
           "week": "សប្តាហ៍",
           "month": "ខែ",
-          "year": "ឆ្នាំ"
+          "year": "ឆ្នាំ",
+          "empty": "មិនទាន់មានការកក់ទេ។"
         },
         "revenue": {
           "title": "ទិដ្ឋភាពចំណូល",
@@ -1105,7 +1109,9 @@
       "tabs": {
         "activities": "សកម្មភាព",
         "packages": "កញ្ចប់ទ្រដ្ឋ"
-      }
+      },
+      "error": "មិនអាចផ្ទុកមាតិកាបានទេ។ តើ backend កំពុងដំណើរការទេ?",
+      "empty": "មិនទាន់មានមាតិកាទេ។"
     }
   },
   "dashboard": {
@@ -1191,12 +1197,20 @@
         "travelType": "ប្រភេទដំណើរ",
         "description": "ការពិពណ៌នា",
         "descriptionPlaceholder": "ការពិពណ៌នាខ្លីៗអំពីទីកន្លែង",
+        "shortDescription": "ការពិពណ៌នាខ្លី",
+        "shortDescriptionPlaceholder": "សេចក្ដីសង្ខេបមួយបន្ទាត់",
         "coverImageUrl": "តំណរូបភាពគម្រប",
         "coverImageUrlPlaceholder": "https://…",
         "price": "តម្លៃចាប់ពី (USD)",
         "currency": "រូបិយប័ណ្ណ",
         "latitude": "រយៈទទឹង",
         "longitude": "រយៈបណ្តោយ",
+        "tags": "ស្លាក",
+        "tagsPlaceholder": "បំបែកដោយសញ្ញាក្បៀស ឧ. ប្រាសាទ, ថ្ងៃរះ, បេតិកភណ្ឌ",
+        "photos": "រូបភាព",
+        "photosPlaceholder": "តំណរូបភាពមួយក្នុងមួយបន្ទាត់ (ឬបំបែកដោយសញ្ញាក្បៀស)",
+        "featured": "លេចធ្លោ",
+        "trending": "កំពុងពេញនិយម",
         "submit": "បង្កើតគោលដៅ",
         "searchProvince": "ស្វែងរកខេត្ត…",
         "noProvince": "រកមិនឃើញខេត្ត"
@@ -1231,7 +1245,8 @@
         "requestsEmpty": "មិនទាន់មានសំណើគោលដៅនៅឡើយទេ។",
         "tabs": {
           "all": "គោលដៅទាំងអស់",
-          "requests": "សំណើបង្កើត"
+          "requests": "សំណើបង្កើត",
+          "featured": "លេចធ្លោ"
         }
       },
       "approvals": {

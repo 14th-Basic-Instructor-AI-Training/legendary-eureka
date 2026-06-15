@@ -32,3 +32,14 @@ export function formatRating(value: number, lng: string): string {
     maximumFractionDigits: 1,
   }).format(value);
 }
+
+/** Locale-aware short date (e.g. "Jun 15, 2026") from an ISO timestamp. */
+export function formatDate(iso: string, lng: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat(intlLocale(lng), {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(date);
+}
