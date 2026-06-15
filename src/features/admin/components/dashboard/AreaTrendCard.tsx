@@ -6,14 +6,19 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { Select, ListBox } from "@/ui";
 import { Panel } from "./Panel";
 import { axisProps, gridProps, tooltipProps } from "./chartTheme";
-import type { TrendPoint } from "../../schema";
+import type { AdminTrendPoint } from "@/lib/api/admin";
 
 const RANGES = ["last7d", "last30d", "last90d"] as const;
 
-/** New activities published per day. The range control is presentational in the static phase. */
-export function AreaTrendCard({ data }: { data: TrendPoint[] }) {
+/** Daily volume trend. The range control is presentational in the static phase. */
+export function AreaTrendCard({ data }: { data: AdminTrendPoint[] }) {
   const { t } = useTranslation();
   const [range, setRange] = useState<string>("last30d");
+
+  const chartData = data.map((p) => ({
+    label: p.label,
+    value: p.count ?? p.bookings ?? p.packages ?? 0,
+  }));
 
   return (
     <Panel
@@ -44,7 +49,7 @@ export function AreaTrendCard({ data }: { data: TrendPoint[] }) {
     >
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
             <defs>
               <linearGradient id="adminVolumeFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="var(--primary-lightskyblue)" stopOpacity={0.35} />

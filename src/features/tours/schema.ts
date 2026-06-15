@@ -152,14 +152,24 @@ export const TourDestinationSchema = z.object({
 });
 export type TourDestination = z.infer<typeof TourDestinationSchema>;
 
+/** Split a comma/newline-separated text field into a trimmed, non-empty list. */
+const toStringList = (value: string | undefined): string[] =>
+  (value ?? "")
+    .split(/[\n,]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
 /**
  * Create-destination form shape — mirrors the backend POST body 1:1 so the same
  * schema validates the form today and the request later. Number fields coerce so
- * they bind to native `<input type="number">` string values.
+ * they bind to native `<input type="number">` string values. `tags`/`photos` are
+ * entered as comma/newline-separated text and transform into the array the API
+ * expects.
  */
 export const NewDestinationSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
+  shortDescription: z.string().max(500, "Keep it under 500 characters").default(""),
   province: ProvinceSchema,
   travelType: TravelTypeSchema,
   coverImageUrl: z.string().url("Enter a valid image URL"),
@@ -167,6 +177,22 @@ export const NewDestinationSchema = z.object({
   currency: z.string().min(1, "Currency is required").max(8).default("USD"),
   latitude: z.coerce.number().min(-90, "Invalid latitude").max(90, "Invalid latitude"),
   longitude: z.coerce.number().min(-180, "Invalid longitude").max(180, "Invalid longitude"),
+  featured: z.boolean().default(false),
+  trending: z.boolean().default(false),
+  tags: z
+    .string()
+    .optional()
+    .transform(toStringList)
+    .pipe(z.array(z.string().max(100)).max(20, "Maximum 20 tags allowed")),
+  photos: z
+    .string()
+    .optional()
+    .transform(toStringList)
+    .pipe(
+      z
+        .array(z.string().url("Each photo must be a valid URL").max(500))
+        .max(10, "Maximum 10 photos allowed"),
+    ),
 });
 export type NewDestinationInput = z.output<typeof NewDestinationSchema>;
 export type NewDestinationFormValues = z.input<typeof NewDestinationSchema>;
@@ -195,12 +221,17 @@ export const TourPackageSchema = z.object({
 });
 export type TourPackage = z.infer<typeof TourPackageSchema>;
 
-/** Create-package form shape. A package must reference a destination. */
+/** Create-package form shape. Matches the backend TourPackageRequest. */
 export const NewPackageSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  destinationId: z.string().min(1, "Select a destination"),
+  destinationId: z.string().optional(),
+  province: ProvinceSchema.optional(),
+  travelType: TravelTypeSchema.optional(),
   days: z.coerce.number().int().min(1, "At least 1 day"),
   priceFrom: z.coerce.number().min(0, "Enter a price"),
+  currency: z.string().min(1).max(8).default("USD"),
+  description: z.string().optional(),
+  coverImageUrl: z.string().url("Enter a valid image URL").optional().or(z.literal("")),
 });
 export type NewPackageInput = z.output<typeof NewPackageSchema>;
 export type NewPackageFormValues = z.input<typeof NewPackageSchema>;

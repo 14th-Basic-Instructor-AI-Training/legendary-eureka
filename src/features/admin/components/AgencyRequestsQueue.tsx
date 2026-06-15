@@ -1,15 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { TickCircle, CloseCircle, Buildings, SearchNormal1 } from "iconsax-reactjs";
 import { Button, Input, Pagination, StatusChip, Tabs, Table, useConfirm } from "@/ui";
 import { useSession } from "@/lib/auth";
-import { useAdminStore } from "../store";
+import { can } from "@/lib/permissions";
+import { formatDate } from "@/lib/format";
+import { approveAgencyAction, rejectAgencyAction } from "../actions";
 import { cn } from "@/lib/utils";
-import type { AgencyRequest, AgencyRequestStatus } from "../schema";
+import type { AdminAgencyProfile, AgencyStatus } from "@/lib/api/admin";
 
-const STATUS_FILTERS: Array<{ value: "all" | AgencyRequestStatus; labelKey: string }> = [
+/** Lowercased status used for filters / theming (StatusChip expects lowercase). */
+type StatusLower = "pending" | "approved" | "rejected";
+const lower = (s: AgencyStatus): StatusLower => s.toLowerCase() as StatusLower;
+
+const STATUS_FILTERS: Array<{ value: "all" | StatusLower; labelKey: string }> = [
   { value: "all", labelKey: "common.all" },
   { value: "pending", labelKey: "status.pending" },
   { value: "approved", labelKey: "status.approved" },
@@ -17,7 +24,7 @@ const STATUS_FILTERS: Array<{ value: "all" | AgencyRequestStatus; labelKey: stri
 ];
 
 /** Arc gradient + accent colors per status (white-card theme). */
-const ARC: Record<AgencyRequestStatus, { from: string; to: string; dot: string; soft: string; text: string }> = {
+const ARC: Record<StatusLower, { from: string; to: string; dot: string; soft: string; text: string }> = {
   pending: { from: "#4FB5DB", to: "#84CDE9", dot: "#4FB5DB", soft: "bg-primary/10", text: "text-primary" },
   approved: { from: "#5FC381", to: "#9BE0E7", dot: "#5FC381", soft: "bg-green/10", text: "text-green" },
   rejected: { from: "#FF0C3C", to: "#F48D5D", dot: "#FF0C3C", soft: "bg-red/10", text: "text-red" },
@@ -26,47 +33,51 @@ const ARC: Record<AgencyRequestStatus, { from: string; to: string; dot: string; 
 /** Cards per page in the card view. */
 const PAGE_SIZE = 9;
 
-type Props = { view: "card" | "table" };
+type Props = { view: "card" | "table"; requests: AdminAgencyProfile[] };
 
-export function AgencyRequestsQueue({ view }: Props) {
-  const { t } = useTranslation();
+export function AgencyRequestsQueue({ view, requests }: Props) {
+  const { t, i18n } = useTranslation();
   const { role } = useSession();
-  const requests = useAdminStore((s) => s.agencyRequests);
-  const approveAgency = useAdminStore((s) => s.approveAgency);
-  const rejectAgency = useAdminStore((s) => s.rejectAgency);
+  const router = useRouter();
   const confirm = useConfirm();
+  const canManage = can(role, "manageAgencyRequests");
 
-  const onApprove = (r: AgencyRequest) =>
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  /** Run a mutation server action, then refresh the server-fetched list. */
+  const runAction = async (id: string, action: (id: string) => Promise<{ ok: boolean }>) => {
+    setBusyId(id);
+    await action(id);
+    setBusyId(null);
+    router.refresh();
+  };
+
+  const onApprove = (r: AdminAgencyProfile) =>
     confirm({
       title: t("admin.requests.approve"),
       description: r.agencyName,
       intent: "primary",
-      onConfirm: () => {
-        approveAgency(role, r.id);
-      },
+      onConfirm: () => runAction(r.id, approveAgencyAction),
     });
 
-  const onReject = (r: AgencyRequest) =>
+  const onReject = (r: AdminAgencyProfile) =>
     confirm({
       title: t("admin.requests.reject"),
       description: r.agencyName,
       intent: "danger",
-      onConfirm: () => {
-        rejectAgency(role, r.id);
-      },
+      onConfirm: () => runAction(r.id, rejectAgencyAction),
     });
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | AgencyRequestStatus>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | StatusLower>("all");
 
   const filtered = requests.filter((r) => {
-    const matchesStatus = statusFilter === "all" || r.status === statusFilter;
+    const matchesStatus = statusFilter === "all" || lower(r.status) === statusFilter;
     const q = search.toLowerCase();
     const matchesSearch =
       !q ||
       r.agencyName.toLowerCase().includes(q) ||
-      r.applicantName.toLowerCase().includes(q) ||
-      r.country.toLowerCase().includes(q);
+      (r.description?.toLowerCase().includes(q) ?? false);
     return matchesStatus && matchesSearch;
   });
 
@@ -76,6 +87,8 @@ export function AgencyRequestsQueue({ view }: Props) {
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
   const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const lng = i18n.language;
 
   return (
     <div className="flex flex-col gap-4">
@@ -101,7 +114,7 @@ export function AgencyRequestsQueue({ view }: Props) {
         <Tabs
           selectedKey={statusFilter}
           onSelectionChange={(key) => {
-            setStatusFilter(key as "all" | AgencyRequestStatus);
+            setStatusFilter(key as "all" | StatusLower);
             setPage(1);
           }}
         >
@@ -134,9 +147,12 @@ export function AgencyRequestsQueue({ view }: Props) {
           {view === "table" ? (
             <TableView
               filtered={paged}
+              canManage={canManage}
+              busyId={busyId}
               onApprove={onApprove}
               onReject={onReject}
               t={t}
+              lng={lng}
             />
           ) : (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
@@ -144,9 +160,12 @@ export function AgencyRequestsQueue({ view }: Props) {
                 <RouteCard
                   key={r.id}
                   request={r}
+                  canManage={canManage}
+                  busyId={busyId}
                   onApprove={onApprove}
                   onReject={onReject}
                   t={t}
+                  lng={lng}
                 />
               ))}
             </div>
@@ -165,23 +184,30 @@ export function AgencyRequestsQueue({ view }: Props) {
 
 // ─── shared prop type ────────────────────────────────────────────────────────
 
-type ActionFn = (r: AgencyRequest) => void;
+type ActionFn = (r: AdminAgencyProfile) => void;
 type TFn = (key: string, opts?: Record<string, unknown>) => string;
 
 // ─── route card (flight-route style, white theme) ────────────────────────────
 
 function RouteCard({
   request: r,
+  canManage,
+  busyId,
   onApprove,
   onReject,
   t,
+  lng,
 }: {
-  request: AgencyRequest;
+  request: AdminAgencyProfile;
+  canManage: boolean;
+  busyId: string | null;
   onApprove: ActionFn;
   onReject: ActionFn;
   t: TFn;
+  lng: string;
 }) {
-  const cfg = ARC[r.status];
+  const status = lower(r.status);
+  const cfg = ARC[status];
   const gradId = `arc-${r.id}`;
 
   return (
@@ -203,7 +229,7 @@ function RouteCard({
               {t("admin.requests.cardType")}
             </span>
           </div>
-          <StatusChip status={r.status} />
+          <StatusChip status={status} />
         </div>
 
         {/* arc visualization */}
@@ -230,7 +256,7 @@ function RouteCard({
             />
           </svg>
 
-          {/* departure dot (applicant) */}
+          {/* departure dot (request) */}
           <span
             className="absolute block h-3 w-3 rounded-full ring-4 ring-white"
             style={{ left: "6.5%", top: "72px", transform: "translate(-50%,-50%)", backgroundColor: cfg.dot }}
@@ -254,7 +280,7 @@ function RouteCard({
             style={{ left: "50%", top: "44px", transform: "translateX(-50%)" }}
           >
             <span className="text-text-primary block whitespace-nowrap text-[11px] font-medium">
-              {r.submittedAtLabel}
+              {formatDate(r.createdAt, lng)}
             </span>
           </span>
         </div>
@@ -263,38 +289,45 @@ function RouteCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 max-w-[46%]">
             <p className="text-muted text-[10px] uppercase tracking-wide">
-              {t("admin.requests.applicant")}
-            </p>
-            <p className="text-text-primary truncate text-sm font-semibold">
-              {r.applicantName}
-            </p>
-            <p className="text-muted truncate text-xs">{r.country}</p>
-          </div>
-          <div className="min-w-0 max-w-[50%] text-right">
-            <p className="text-muted text-[10px] uppercase tracking-wide">
               {t("admin.requests.agencyLabel")}
             </p>
             <p className="text-text-primary truncate text-sm font-semibold">
               {r.agencyName}
             </p>
-            <p className="text-muted truncate text-xs">{r.email}</p>
+            {r.description ? (
+              <p className="text-muted truncate text-xs">{r.description}</p>
+            ) : null}
+          </div>
+          <div className="min-w-0 max-w-[50%] text-right">
+            <p className="text-muted text-[10px] uppercase tracking-wide">
+              {t("admin.requests.applicationNote")}
+            </p>
+            <p className="text-text-primary truncate text-sm font-semibold">
+              {r.adminNote ?? "—"}
+            </p>
           </div>
         </div>
       </div>
 
       {/* action footer */}
-      {r.status === "pending" ? (
+      {canManage && status === "pending" ? (
         <div className="border-border bg-bg-ghostwhite mt-auto flex items-center justify-end gap-2 border-t px-4 py-2.5">
           <Button
             variant="tertiary"
             size="sm"
             className="text-danger"
+            isPending={busyId === r.id}
             onPress={() => onReject(r)}
           >
             <CloseCircle size={15} color="currentColor" />
             {t("admin.requests.reject")}
           </Button>
-          <Button variant="primary" size="sm" onPress={() => onApprove(r)}>
+          <Button
+            variant="primary"
+            size="sm"
+            isPending={busyId === r.id}
+            onPress={() => onApprove(r)}
+          >
             <TickCircle size={15} color="currentColor" />
             {t("admin.requests.approve")}
           </Button>
@@ -308,37 +341,44 @@ function RouteCard({
 
 function TableView({
   filtered,
+  canManage,
+  busyId,
   onApprove,
   onReject,
   t,
+  lng,
 }: {
-  filtered: AgencyRequest[];
+  filtered: AdminAgencyProfile[];
+  canManage: boolean;
+  busyId: string | null;
   onApprove: ActionFn;
   onReject: ActionFn;
   t: TFn;
+  lng: string;
 }) {
   return (
     <Table>
       <Table.ScrollContainer>
         <Table.Content aria-label={t("admin.requests.tabs.agencies")} className="min-w-[640px]">
           <Table.Header>
-            <Table.Column isRowHeader>Agency</Table.Column>
-            <Table.Column>Applicant</Table.Column>
-            <Table.Column>Country</Table.Column>
-            <Table.Column>Submitted</Table.Column>
-            <Table.Column>Status</Table.Column>
+            <Table.Column isRowHeader>{t("admin.requests.agencyLabel")}</Table.Column>
+            <Table.Column>{t("admin.requests.applicationNote")}</Table.Column>
+            <Table.Column>{t("admin.requests.submitted")}</Table.Column>
+            <Table.Column>{t("status.pending")}</Table.Column>
             <Table.Column>{""}</Table.Column>
           </Table.Header>
           <Table.Body>
-            {filtered.map((r) => (
+            {filtered.map((r) => {
+              const status = lower(r.status);
+              return (
               <Table.Row key={r.id} id={r.id}>
             <Table.Cell>
               <div className="flex items-center gap-2.5">
                 <span
                   className={cn(
                     "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[10px] font-bold",
-                    ARC[r.status].soft,
-                    ARC[r.status].text,
+                    ARC[status].soft,
+                    ARC[status].text,
                   )}
                 >
                   {r.agencyName
@@ -351,27 +391,34 @@ function TableView({
                 <span className="text-text-primary font-medium">{r.agencyName}</span>
               </div>
             </Table.Cell>
-            <Table.Cell className="text-text-secondary">{r.applicantName}</Table.Cell>
-            <Table.Cell className="text-text-secondary">{r.country}</Table.Cell>
+            <Table.Cell className="text-text-secondary max-w-[220px]">
+              <p className="truncate">{r.adminNote ?? r.description ?? "—"}</p>
+            </Table.Cell>
             <Table.Cell className="text-text-secondary whitespace-nowrap">
-              {r.submittedAtLabel}
+              {formatDate(r.createdAt, lng)}
             </Table.Cell>
             <Table.Cell>
-              <StatusChip status={r.status} />
+              <StatusChip status={status} />
             </Table.Cell>
             <Table.Cell>
-              {r.status === "pending" ? (
+              {canManage && status === "pending" ? (
                 <div className="flex items-center justify-end gap-1.5">
                   <Button
                     variant="tertiary"
                     size="sm"
                     className="text-danger"
+                    isPending={busyId === r.id}
                     onPress={() => onReject(r)}
                   >
                     <CloseCircle size={14} color="currentColor" />
                     {t("admin.requests.reject")}
                   </Button>
-                  <Button variant="primary" size="sm" onPress={() => onApprove(r)}>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    isPending={busyId === r.id}
+                    onPress={() => onApprove(r)}
+                  >
                     <TickCircle size={14} color="currentColor" />
                     {t("admin.requests.approve")}
                   </Button>
@@ -379,7 +426,8 @@ function TableView({
               ) : null}
             </Table.Cell>
           </Table.Row>
-            ))}
+              );
+            })}
           </Table.Body>
         </Table.Content>
       </Table.ScrollContainer>

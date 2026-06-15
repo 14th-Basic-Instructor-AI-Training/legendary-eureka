@@ -4,20 +4,21 @@ import { useTranslation } from "react-i18next";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { formatPrice } from "@/lib/format";
 import { tooltipProps } from "../dashboard/chartTheme";
-import type { AdminBooking, AdminBookingStatus } from "../../schema";
+import type { TripResponse } from "@/lib/api/bookings";
 
 /** Token color per booking status — drives the donut slices + legend dots. */
-const STATUS_COLOR: Record<AdminBookingStatus, string> = {
+const STATUS_COLOR: Record<string, string> = {
   pending: "var(--orange)",
   approved: "var(--primary)",
   completed: "var(--green)",
   rejected: "var(--red)",
+  cancelled: "var(--text-secondary)",
 };
 
-const ORDER: AdminBookingStatus[] = ["completed", "approved", "pending", "rejected"];
+const ORDER = ["completed", "approved", "pending", "rejected", "cancelled"];
 
 /** Revenue split by booking status, as a donut with a center total + legend. */
-export function BookingRevenueCard({ bookings }: { bookings: AdminBooking[] }) {
+export function BookingRevenueCard({ bookings }: { bookings: TripResponse[] }) {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
 
@@ -25,7 +26,9 @@ export function BookingRevenueCard({ bookings }: { bookings: AdminBooking[] }) {
     status,
     label: t(`status.${status}`),
     color: STATUS_COLOR[status],
-    value: bookings.filter((b) => b.status === status).reduce((sum, b) => sum + b.total, 0),
+    value: bookings
+      .filter((b) => b.status.toLowerCase() === status)
+      .reduce((sum, b) => sum + b.total, 0),
   })).filter((s) => s.value > 0);
 
   const total = byStatus.reduce((sum, s) => sum + s.value, 0);

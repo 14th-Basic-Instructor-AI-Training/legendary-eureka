@@ -6,34 +6,34 @@ import { useTranslation } from "react-i18next";
 import { Tabs } from "@/ui";
 import { useSession } from "@/lib/auth";
 import { useLocalizedRouter } from "@/lib/locale";
-import { DEMO_AGENCY_NAME } from "../data";
-import { useToursStore } from "../store";
+import type { TourPackageResponse } from "@/lib/api/packages";
+import type { DestinationResponse } from "@/lib/api/destinations";
 import { DestinationsPanel } from "./DestinationsPanel";
 import { FlowGuide } from "./FlowGuide";
 import { PackagesPanel } from "./PackagesPanel";
 
-/**
- * Agency tour builder. Drives both flows: pick/create a destination, build a
- * package against it, then request admin approval. Tab state lives in the URL
- * (`?tab=`); "Build package" deep-links into the packages tab with the
- * destination pre-selected.
- */
-export function ToursWorkspace() {
+interface Props {
+  initialPackages: TourPackageResponse[];
+  initialDestinations: DestinationResponse[];
+}
+
+export function ToursWorkspace({ initialPackages, initialDestinations }: Props) {
   const { t } = useTranslation();
   const { user } = useSession();
   const params = useSearchParams();
   const router = useLocalizedRouter();
   const tab = params.get("tab") ?? "destinations";
 
-  const destinations = useToursStore((s) => s.destinations);
-  const packages = useToursStore((s) => s.packages);
-  const agencyName = user?.name ?? DEMO_AGENCY_NAME;
+  const [packages, setPackages] = useState(initialPackages);
+  const [destinations, setDestinations] = useState(initialDestinations);
+  const agencyName = user?.name ?? "";
 
   const [packageFormOpen, setPackageFormOpen] = useState(false);
-  const [presetDestinationId, setPresetDestinationId] = useState<string | undefined>();
+  const [presetDestination, setPresetDestination] = useState<DestinationResponse | undefined>();
 
   const handleBuildPackage = (destinationId: string) => {
-    setPresetDestinationId(destinationId);
+    const dest = destinations.find((d) => d.id === destinationId);
+    setPresetDestination(dest);
     setPackageFormOpen(true);
     router.replace("/agency/tours?tab=packages");
   };
@@ -57,20 +57,31 @@ export function ToursWorkspace() {
           <Tabs.Tab id="packages">{t("tours.tabs.packages")}</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel id="destinations" className="pt-5">
+<<<<<<< HEAD
+          <DestinationsPanel destinations={destinations} onBuildPackage={handleBuildPackage} />
+=======
           <DestinationsPanel
             destinations={destinations}
             agencyName={agencyName}
             onBuildPackage={handleBuildPackage}
+            onCreated={(dest) => setDestinations((prev) => [dest, ...prev])}
+            onDeleted={(id) => setDestinations((prev) => prev.filter((d) => d.id !== id))}
           />
+>>>>>>> 2d673ed7538579d7af67789c239619f46f219203
         </Tabs.Panel>
         <Tabs.Panel id="packages" className="pt-5">
           <PackagesPanel
-            destinations={destinations}
             packages={packages}
+            destinations={destinations}
             agencyName={agencyName}
             formOpen={packageFormOpen}
             setFormOpen={setPackageFormOpen}
-            presetDestinationId={presetDestinationId}
+            presetDestination={presetDestination}
+            onPackageCreated={(pkg) => setPackages((prev) => [pkg, ...prev])}
+            onStatusChanged={(id, status) =>
+              setPackages((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)))
+            }
+            onDeleted={(id) => setPackages((prev) => prev.filter((p) => p.id !== id))}
           />
         </Tabs.Panel>
       </Tabs>

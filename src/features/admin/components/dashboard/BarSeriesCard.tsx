@@ -4,10 +4,10 @@ import { useTranslation } from "react-i18next";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Panel } from "./Panel";
 import { axisProps, gridProps, tooltipProps } from "./chartTheme";
-import type { ApprovalBar } from "../../schema";
+import type { AdminApprovalPoint } from "@/lib/api/admin";
 
-/** Agency requests resolved per day — approved vs rejected, stacked. */
-export function BarSeriesCard({ data }: { data: ApprovalBar[] }) {
+/** Agency requests resolved per period — approved vs rejected, stacked. */
+export function BarSeriesCard({ data }: { data: AdminApprovalPoint[] }) {
   const { t } = useTranslation();
 
   return (

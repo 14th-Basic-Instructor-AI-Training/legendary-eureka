@@ -1,20 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Trash, CloseCircle, Box1, SearchNormal1, Filter } from "iconsax-reactjs";
 import { Button, Chip, ListBox, Select, StatusChip, Tabs } from "@/ui";
 import { formatPrice } from "@/lib/format";
 import { useSession } from "@/lib/auth";
 import { can } from "@/lib/permissions";
-import { useAdminStore } from "../store";
+import {
+  archivePackageAction,
+  deletePackageAction,
+  publishPackageAction,
+} from "@/features/tours/actions";
 import { TourApprovalsQueue } from "@/features/tours/components/TourApprovalsQueue";
 import { useToursStore } from "@/features/tours/store";
-import type { AdminPackageStatus } from "../schema";
+import type { TourPackageResponse } from "@/lib/api/packages";
 import type { PackageApprovalStatus } from "@/features/tours/schema";
 
-/** Catalog status filters plus the package-approval queue ("approvals"). */
-type PackageFilter = "all" | AdminPackageStatus | "approvals";
+/** Lowercased catalog statuses + the package-approval queue ("approvals"). */
+type PackageFilter = "all" | "published" | "draft" | "archived" | "approvals";
 
 const STATUS_FILTERS: Array<{ value: PackageFilter; labelKey: string }> = [
   { value: "all", labelKey: "common.all" },
@@ -24,7 +29,6 @@ const STATUS_FILTERS: Array<{ value: PackageFilter; labelKey: string }> = [
   { value: "approvals", labelKey: "tours.nav.approvals" },
 ];
 
-/** Status filter for the approval queue, shown as a dropdown when approvals is active. */
 type ApprovalFilter = "all" | PackageApprovalStatus;
 
 const APPROVAL_STATUS_FILTERS: Array<{ value: ApprovalFilter; labelKey: string }> = [
@@ -34,15 +38,14 @@ const APPROVAL_STATUS_FILTERS: Array<{ value: ApprovalFilter; labelKey: string }
   { value: "rejected", labelKey: "status.rejected" },
 ];
 
-export function PackagesAdmin() {
+export function PackagesAdmin({ packages }: { packages: TourPackageResponse[] }) {
   const { t, i18n } = useTranslation();
   const { role } = useSession();
-  const packages = useAdminStore((s) => s.adminPackages);
-  const deletePackage = useAdminStore((s) => s.deletePackage);
-  const setPackageStatus = useAdminStore((s) => s.setPackageStatus);
+  const router = useRouter();
   const canManage = can(role, "managePackages");
 
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<PackageFilter>("all");
   const [approvalStatus, setApprovalStatus] = useState<ApprovalFilter>("all");
@@ -52,20 +55,29 @@ export function PackagesAdmin() {
     APPROVAL_STATUS_FILTERS.find((f) => f.value === approvalStatus)?.labelKey ?? "common.all";
 
   const filtered = packages.filter((p) => {
-    const matchesStatus = statusFilter === "all" || p.status === statusFilter;
+    const status = p.status.toLowerCase();
+    const matchesStatus = statusFilter === "all" || status === statusFilter;
     const q = search.toLowerCase();
     const matchesSearch =
       !q || p.title.toLowerCase().includes(q) || p.agencyName.toLowerCase().includes(q);
     return matchesStatus && matchesSearch;
   });
 
-  const publishedCount = packages.filter((p) => p.status === "published").length;
-  const totalBookings = packages.reduce((sum, p) => sum + p.bookingsCount, 0);
+  const publishedCount = packages.filter((p) => p.status === "PUBLISHED").length;
 
-  // Pending package-approval requests come from the tours store (Flow 2).
+  // Pending package-approval requests come from the tours store (Flow 2 — mock).
   const pendingApprovals = useToursStore(
     (s) => s.packages.filter((p) => p.status === "pending").length,
   );
+
+  /** Run a mutation server action, then refresh the server-fetched list. */
+  const runAction = async (id: string, action: (id: string) => Promise<{ ok: boolean }>) => {
+    setBusyId(id);
+    await action(id);
+    setBusyId(null);
+    setConfirmingId(null);
+    router.refresh();
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -76,8 +88,8 @@ export function PackagesAdmin() {
           <span className="text-muted text-sm">{t("admin.packages.publishedCount")}</span>
         </div>
         <div className="bg-surface border-border flex items-center gap-2 rounded-xl border px-4 py-2">
-          <span className="text-foreground text-lg font-bold">{totalBookings}</span>
-          <span className="text-muted text-sm">{t("admin.packages.totalBookings")}</span>
+          <span className="text-foreground text-lg font-bold">{packages.length}</span>
+          <span className="text-muted text-sm">{t("admin.content.tabs.packages")}</span>
         </div>
         {showApprovals ? (
           <div className="bg-surface border-border flex items-center gap-2 rounded-xl border px-4 py-2">
@@ -112,10 +124,7 @@ export function PackagesAdmin() {
           onSelectionChange={(key) => setStatusFilter(key as PackageFilter)}
         >
           <Tabs.ListContainer>
-            <Tabs.List
-              aria-label={t("admin.content.tabs.packages")}
-              className="bg-primary/15!"
-            >
+            <Tabs.List aria-label={t("admin.content.tabs.packages")} className="bg-primary/15!">
               {STATUS_FILTERS.map((f) => (
                 <Tabs.Tab key={f.value} id={f.value}>
                   <span className="whitespace-nowrap">{t(f.labelKey)}</span>
@@ -158,91 +167,94 @@ export function PackagesAdmin() {
         <p className="text-muted py-8 text-center text-sm">{t("admin.packages.empty")}</p>
       ) : (
         <ul className="flex flex-col gap-2">
-          {filtered.map((pkg) => (
-            <li
-              key={pkg.id}
-              className="bg-surface border-border flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4"
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="bg-purple-500/10 text-purple-600 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
-                  <Box1 size={18} color="currentColor" variant="Bold" />
-                </span>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate font-medium">{pkg.title}</p>
-                    <StatusChip status={pkg.status} />
-                  </div>
-                  <p className="text-muted mt-0.5 text-sm">
-                    {t("admin.packages.by", { agency: pkg.agencyName })}
-                  </p>
-                  <div className="text-muted/80 mt-1 flex flex-wrap gap-3 text-xs">
-                    <span>{t("admin.packages.days", { count: pkg.days })}</span>
-                    <span>·</span>
-                    <span>{t("admin.packages.activities", { count: pkg.activityCount })}</span>
-                    <span>·</span>
-                    <span>{t("admin.packages.bookings", { count: pkg.bookingsCount })}</span>
+          {filtered.map((pkg) => {
+            const status = pkg.status.toLowerCase();
+            return (
+              <li
+                key={pkg.id}
+                className="bg-surface border-border flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="bg-purple-500/10 text-purple-600 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
+                    <Box1 size={18} color="currentColor" variant="Bold" />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate font-medium">{pkg.title}</p>
+                      <StatusChip status={status} />
+                    </div>
+                    <p className="text-muted mt-0.5 text-sm">
+                      {t("admin.packages.by", { agency: pkg.agencyName })}
+                    </p>
+                    <div className="text-muted/80 mt-1 flex flex-wrap gap-3 text-xs">
+                      <span>{t("admin.packages.days", { count: pkg.durationDays })}</span>
+                      <span>·</span>
+                      <span>{t("admin.packages.activities", { count: pkg.agenda.length })}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-3">
-                <Chip color="default" variant="soft" size="sm">
-                  {formatPrice(pkg.priceFrom, pkg.currency, i18n.language)}
-                </Chip>
+                <div className="flex items-center gap-3">
+                  <Chip color="default" variant="soft" size="sm">
+                    {formatPrice(pkg.price, pkg.currency, i18n.language)}
+                  </Chip>
 
-                {canManage ? (
-                  confirmingId === pkg.id ? (
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted text-xs">{t("admin.packages.deleteConfirm")}</span>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        className="text-danger"
-                        onPress={() => {
-                          deletePackage(role, pkg.id);
-                          setConfirmingId(null);
-                        }}
-                      >
-                        {t("admin.packages.actions.confirmDelete")}
-                      </Button>
-                      <Button variant="tertiary" size="sm" onPress={() => setConfirmingId(null)}>
-                        <CloseCircle size={16} color="currentColor" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      {pkg.status === "published" ? (
+                  {canManage ? (
+                    confirmingId === pkg.id ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted text-xs">
+                          {t("admin.packages.deleteConfirm")}
+                        </span>
                         <Button
-                          variant="secondary"
+                          variant="primary"
                           size="sm"
-                          onPress={() => setPackageStatus(role, pkg.id, "archived")}
+                          className="text-danger"
+                          isPending={busyId === pkg.id}
+                          onPress={() => runAction(pkg.id, deletePackageAction)}
                         >
-                          {t("admin.packages.actions.archive")}
+                          {t("admin.packages.actions.confirmDelete")}
                         </Button>
-                      ) : (
+                        <Button variant="tertiary" size="sm" onPress={() => setConfirmingId(null)}>
+                          <CloseCircle size={16} color="currentColor" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        {status === "published" ? (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            isPending={busyId === pkg.id}
+                            onPress={() => runAction(pkg.id, archivePackageAction)}
+                          >
+                            {t("admin.packages.actions.archive")}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            isPending={busyId === pkg.id}
+                            onPress={() => runAction(pkg.id, publishPackageAction)}
+                          >
+                            {t("admin.packages.actions.publish")}
+                          </Button>
+                        )}
                         <Button
-                          variant="secondary"
+                          variant="tertiary"
                           size="sm"
-                          onPress={() => setPackageStatus(role, pkg.id, "published")}
+                          className="text-danger"
+                          onPress={() => setConfirmingId(pkg.id)}
                         >
-                          {t("admin.packages.actions.publish")}
+                          <Trash size={16} color="currentColor" />
+                          {t("admin.packages.actions.delete")}
                         </Button>
-                      )}
-                      <Button
-                        variant="tertiary"
-                        size="sm"
-                        className="text-danger"
-                        onPress={() => setConfirmingId(pkg.id)}
-                      >
-                        <Trash size={16} color="currentColor" />
-                        {t("admin.packages.actions.delete")}
-                      </Button>
-                    </div>
-                  )
-                ) : null}
-              </div>
-            </li>
-          ))}
+                      </div>
+                    )
+                  ) : null}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
