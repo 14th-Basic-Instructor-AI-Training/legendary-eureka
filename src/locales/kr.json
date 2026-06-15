@@ -409,7 +409,8 @@
       "phonePlaceholder": "+855 …",
       "avatar": "아바타 URL",
       "bio": "소개",
-      "save": "변경사항 저장"
+      "save": "변경사항 저장",
+      "upload": "이미지 업로드"
     },
     "password": {
       "title": "비밀번호",
@@ -504,6 +505,7 @@
       "invalidTitle": "유효하지 않은 재설정 링크",
       "invalidToken": "이 비밀번호 재설정이 유효하지 않거나 만료되었습니다. 다시 시도해 주세요.",
       "serverError": "문제가 발생했습니다. 다시 시도해 주세요.",
+      "failed": "비밀번호를 재설정할 수 없습니다. 다시 시도해 주세요.",
       "requestNew": "새 링크 요청"
     }
   },
@@ -1588,10 +1590,6 @@
       "error": "대시보드를 불러오지 못했습니다.",
       "empty": "표시할 분석 데이터가 없습니다.",
       "kpi": {
-        "pendingRequests": "대기 중인 여행사 요청",
-        "openReports": "미해결 신고",
-        "activities": "전체 활동",
-        "users": "전체 사용자",
         "comparison": {
           "vsYesterday": "어제 대비",
           "vsLastWeek": "지난주 대비",
@@ -1888,6 +1886,10 @@
     }
   },
   "bookings": {
+    "nav": {
+      "title": "내 예약"
+    },
+    "subtitle": "투어 예약을 확인하고 관리하세요",
     "segments": {
       "upcoming": "예정",
       "completed": "완료",

@@ -397,10 +397,12 @@ export const INITIAL_SYSTEM_SETTINGS: SystemSettings = SystemSettingsSchema.pars
 /** Mock analytics for the admin overview dashboard. Replaced by aggregation later. */
 export const ADMIN_DASHBOARD: AdminDashboard = AdminDashboardSchema.parse({
   kpis: [
-    { key: "pendingRequests", value: 12, deltaPct: 8.3, deltaDir: "up", deltaGood: false, comparison: "vsYesterday" },
-    { key: "openReports", value: 5, deltaPct: 12.5, deltaDir: "down", deltaGood: true, comparison: "vsLastWeek" },
-    { key: "activities", value: 248, deltaPct: 4.1, deltaDir: "up", deltaGood: true, comparison: "vsLastWeek" },
-    { key: "users", value: 1860, deltaPct: 2.4, deltaDir: "up", deltaGood: true, comparison: "vsPrior30d" },
+    { key: "totalUsers", value: 1860, deltaPct: 2.4, deltaDir: "up", deltaGood: true, comparison: "vs last month" },
+    { key: "totalDestinations", value: 248, deltaPct: 4.1, deltaDir: "up", deltaGood: true, comparison: "vs last month" },
+    { key: "totalTours", value: 42, deltaPct: 1.2, deltaDir: "up", deltaGood: true, comparison: "vs last month" },
+    { key: "totalTrips", value: 128, deltaPct: 0, deltaDir: "neutral", deltaGood: true, comparison: "vs last month" },
+    { key: "pendingAgencies", value: 12, deltaPct: 0, deltaDir: "neutral", deltaGood: true, comparison: "awaiting review" },
+    { key: "pendingReports", value: 5, deltaPct: 0, deltaDir: "neutral", deltaGood: false, comparison: "open issues" },
   ],
   // New activities published per day across the platform (last ~30 days, sampled).
   volume: [

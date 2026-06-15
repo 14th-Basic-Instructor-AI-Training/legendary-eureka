@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "unsplash.com" },
       // Avatar placeholders for landing testimonials.
       { protocol: "https", hostname: "i.pravatar.cc" },
+      // Legacy seed-data.sql placeholder host (@destination.dev dataset).
+      { protocol: "https", hostname: "img.dev" },
+      { protocol: "https", hostname: "ui-avatars.com" },
       // Generated avatar placeholders (e.g. agency/tour avatars).
       { protocol: "https", hostname: "api.dicebear.com" },
       // Fallback image when a destination/tour has no cover (see explore/data.ts).

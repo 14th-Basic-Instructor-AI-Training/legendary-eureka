@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useLocalizedRouter } from "@/lib/locale";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,33 +22,36 @@ export function ResetPasswordForm() {
   const clearPending = useAuthStore((s) => s.clearPending);
   const [done, setDone] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ResetPasswordInput>({
     resolver: zodResolver(ResetPasswordSchema),
     defaultValues: { password: "", confirmPassword: "" },
   });
 
-  const onSubmit = async (values: ResetPasswordInput) => {
+  const onSubmit = (values: ResetPasswordInput) => {
     if (!pendingEmail || !resetOtp) {
       setFormError(t("auth.reset.invalidToken"));
       return;
     }
     setFormError(null);
-    const result = await resetPasswordAction(pendingEmail, resetOtp, values.password);
-    if (!result.ok) {
-      setFormError(
-        result.error === "invalid_otp"
-          ? t("auth.reset.invalidToken")
-          : t("auth.reset.serverError"),
-      );
-      return;
-    }
-    clearPending();
-    setDone(true);
+    startTransition(async () => {
+      const result = await resetPasswordAction(pendingEmail, resetOtp, values.password);
+      if (!result.ok) {
+        setFormError(
+          result.error === "invalid_otp"
+            ? t("auth.reset.invalidToken")
+            : t("auth.reset.serverError"),
+        );
+        return;
+      }
+      clearPending();
+      setDone(true);
+    });
   };
 
   // Reached without a verified reset OTP (e.g. direct navigation / refresh).
@@ -136,8 +139,8 @@ export function ResetPasswordForm() {
           </div>
         ) : null}
 
-        <Button type="submit" fullWidth size="lg" isPending={isSubmitting}>
-          {isSubmitting ? t("auth.reset.submitting") : t("auth.reset.submit")}
+        <Button type="submit" fullWidth size="lg" isPending={isPending}>
+          {isPending ? t("auth.reset.submitting") : t("auth.reset.submit")}
         </Button>
       </Form>
     </AuthShell>

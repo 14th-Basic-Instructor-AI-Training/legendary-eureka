@@ -31,8 +31,6 @@ const EMPTY_DASHBOARD: AdminDashboard = {
 export async function getAdminDashboard(): Promise<Result<AdminDashboard>> {
   try {
     const raw = await clientApiFetch<AdminDashboardResponse>("/admin/dashboard");
-    // The API returns generic Record<string, unknown>[] arrays — cast to the
-    // feature schema's typed arrays. The dashboard charts handle missing fields gracefully.
     const dashboard: AdminDashboard = {
       kpis: (raw.kpis ?? []) as unknown as AdminDashboard["kpis"],
       volume: (raw.volume ?? []) as unknown as AdminDashboard["volume"],

@@ -27,6 +27,7 @@ export interface TripResponse {
   packageTitle: string;
   // agency
   agencyId: string;
+  agencyName: string;
   // booking details
   status: TripStatus;
   numberOfPeople: number;
@@ -59,7 +60,7 @@ export interface TripRequest {
 
 /** Optional note sent when an agency approves, rejects, or completes a trip. */
 export interface TripDecisionRequest {
-  note?: string;
+  agencyNote?: string;
 }
 
 // ── Traveler: own bookings ────────────────────────────────────────────────────

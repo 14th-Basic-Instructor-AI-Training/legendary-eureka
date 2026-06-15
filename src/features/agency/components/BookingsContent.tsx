@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import {
   TickCircle,
@@ -14,8 +15,7 @@ import {
   MoneyRecive,
   CloseSquare,
 } from "iconsax-reactjs";
-import { useSession } from "@/lib/auth";
-import { useAgencyStore } from "@/features/agency/store";
+import { approveBookingAction, rejectBookingAction } from "@/features/agency/bookingActions";
 import type { BookingRequest } from "@/features/agency/schema";
 import { cn } from "@/lib/utils";
 
@@ -670,14 +670,9 @@ function DetailModal({
 // Page
 // ---------------------------------------------------------------------------
 
-export function BookingsContent() {
+export function BookingsContent({ bookings }: { bookings: BookingRequest[] }) {
   const { t } = useTranslation();
-  const { role } = useSession();
-
-  const bookings = useAgencyStore((s) => s.bookings);
-  const approveBooking = useAgencyStore((s) => s.approveBooking);
-  const rejectBooking = useAgencyStore((s) => s.rejectBooking);
-  const cancelBooking = useAgencyStore((s) => s.cancelBooking);
+  const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabId>("all");
   const [search, setSearch] = useState("");
@@ -706,19 +701,25 @@ export function BookingsContent() {
     });
   }, [bookings, activeTab, search]);
 
-  function handleApprove(b: BookingRequest) {
-    approveBooking(role, b.id);
-    setDetailBooking((prev) => (prev?.id === b.id ? { ...prev, status: "approved" } : prev));
+  async function handleApprove(b: BookingRequest) {
+    const res = await approveBookingAction(b.id);
+    if (res.ok) {
+      setDetailBooking(null);
+      router.refresh();
+    }
   }
 
-  function handleReject(b: BookingRequest) {
-    rejectBooking(role, b.id);
-    setDetailBooking((prev) => (prev?.id === b.id ? { ...prev, status: "rejected" } : prev));
+  async function handleReject(b: BookingRequest) {
+    const res = await rejectBookingAction(b.id);
+    if (res.ok) {
+      setDetailBooking(null);
+      router.refresh();
+    }
   }
 
-  function handleCancel(b: BookingRequest) {
-    cancelBooking(role, b.id);
-    setDetailBooking((prev) => (prev?.id === b.id ? { ...prev, status: "cancelled" } : prev));
+  function handleCancel(_b: BookingRequest) {
+    // The agency cannot cancel a booking (cancel is traveler-only); just close.
+    setDetailBooking(null);
   }
 
   return (

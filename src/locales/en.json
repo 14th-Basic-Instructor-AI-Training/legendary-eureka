@@ -409,7 +409,8 @@
       "phonePlaceholder": "+855 …",
       "avatar": "Avatar URL",
       "bio": "Bio",
-      "save": "Save changes"
+      "save": "Save changes",
+      "upload": "Upload image"
     },
     "password": {
       "title": "Password",
@@ -504,6 +505,7 @@
       "invalidTitle": "Invalid reset link",
       "invalidToken": "This password reset is invalid or has expired. Please start again.",
       "serverError": "Something went wrong. Please try again.",
+      "failed": "Could not reset your password. Please try again.",
       "requestNew": "Request a new link"
     }
   },
@@ -1588,10 +1590,6 @@
       "error": "Couldn't load the dashboard.",
       "empty": "No analytics to show yet.",
       "kpi": {
-        "pendingRequests": "Pending agency requests",
-        "openReports": "Open reports",
-        "activities": "Total activities",
-        "users": "Total users",
         "comparison": {
           "vsYesterday": "vs yesterday",
           "vsLastWeek": "vs last week",
@@ -1888,6 +1886,10 @@
     }
   },
   "bookings": {
+    "nav": {
+      "title": "My Bookings"
+    },
+    "subtitle": "Track and manage your tour bookings",
     "segments": {
       "upcoming": "Upcoming",
       "completed": "Completed",

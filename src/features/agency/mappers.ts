@@ -1,5 +1,39 @@
 import type { AgencyProfileResponse, AgencyReviewResponse } from "@/lib/api/profile";
-import type { AgencyProfile, ProfileReview, RatingsBreakdown } from "./schema";
+import type { TripResponse } from "@/lib/api/bookings";
+import type {
+  AgencyProfile,
+  BookingRequest,
+  BookingStatus,
+  PaymentStatus,
+  ProfileReview,
+  RatingsBreakdown,
+} from "./schema";
+
+const PAYMENT_STATUSES = new Set<PaymentStatus>(["paid", "unpaid", "partial"]);
+
+/** Map a backend trip (incoming booking) onto the agency's BookingRequest shape. */
+export function tripToBookingRequest(t: TripResponse): BookingRequest {
+  const payment = t.paymentStatus?.toLowerCase();
+  return {
+    id: t.id,
+    travelerName: t.travelerDisplayName || t.travelerName,
+    travelerInitials: t.travelerInitials || undefined,
+    travelerEmail: t.travelerEmail || undefined,
+    travelerPhone: t.travelerPhone || undefined,
+    packageTitle: t.packageTitle || t.tourPackageTitle,
+    datesLabel: t.datesLabel || t.requestedDate,
+    guests: t.guests || t.numberOfPeople,
+    total: t.total,
+    currency: t.currency || "USD",
+    status: t.status.toLowerCase() as BookingStatus,
+    paymentStatus:
+      payment && PAYMENT_STATUSES.has(payment as PaymentStatus)
+        ? (payment as PaymentStatus)
+        : undefined,
+    requestedAtLabel: t.requestedAtLabel || "",
+    specialRequests: t.specialRequests || t.note || undefined,
+  };
+}
 
 function formatDate(isoString: string): string {
   return new Intl.DateTimeFormat("en-US", {

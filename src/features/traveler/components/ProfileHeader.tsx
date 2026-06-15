@@ -6,7 +6,7 @@ import { Camera, Edit2 } from "iconsax-reactjs";
 import { Avatar, Button, Chip } from "@/ui";
 import { useLocalizedRouter } from "@/lib/locale";
 import { formatNumber } from "@/lib/format";
-import { useTravelerStore } from "../store";
+import { useTravelerProfileData } from "../context";
 
 function initialsOf(name: string) {
   return name
@@ -39,7 +39,7 @@ export function ProfileHeader() {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
   const router = useLocalizedRouter();
-  const profile = useTravelerStore((s) => s.profile);
+  const profile = useTravelerProfileData().profile;
 
   const goToSettings = () => router.push("/traveler/profile?tab=settings");
 

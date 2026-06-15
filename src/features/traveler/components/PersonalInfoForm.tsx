@@ -1,12 +1,15 @@
 "use client";
 
+import { useRef, useState, useTransition, type ChangeEvent } from "react";
+import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { TickCircle } from "iconsax-reactjs";
 import { Button, Form, Input, Label, TextArea } from "@/ui";
 import { useSession } from "@/lib/auth";
-import { useTravelerStore } from "../store";
+import { saveTravelerProfileAction, uploadTravelerAvatarAction } from "../profileActions";
+import { useTravelerProfileData } from "../context";
 import { PersonalInfoSchema, type PersonalInfoFormValues } from "../schema";
 
 function FieldError({ message }: { message?: string }) {
@@ -21,29 +24,63 @@ function FieldError({ message }: { message?: string }) {
 /** Settings → personal info (name, email, phone, bio, avatar URL). RHF + Zod. */
 export function PersonalInfoForm() {
   const { t } = useTranslation();
-  const { role, user } = useSession();
-  const profile = useTravelerStore((s) => s.profile);
-  const updateProfile = useTravelerStore((s) => s.updateProfile);
+  const router = useRouter();
+  const { user } = useSession();
+  const { profile, phone: initialPhone } = useTravelerProfileData();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const {
     control,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting, isDirty, isSubmitSuccessful },
+    formState: { errors, isDirty, isSubmitSuccessful },
   } = useForm<PersonalInfoFormValues>({
     resolver: zodResolver(PersonalInfoSchema),
     defaultValues: {
       name: profile.name,
       email: user?.email ?? "",
-      phone: "",
+      phone: initialPhone,
       bio: profile.bio,
       avatar: profile.avatar,
     },
   });
 
   const onSubmit = (values: PersonalInfoFormValues) => {
-    updateProfile(role, PersonalInfoSchema.parse(values));
-    reset(values, { keepIsSubmitSuccessful: true });
+    const parsed = PersonalInfoSchema.parse(values);
+    setSaveError(null);
+    startTransition(async () => {
+      const result = await saveTravelerProfileAction({
+        name: parsed.name,
+        phone: parsed.phone,
+        bio: parsed.bio,
+        avatarUrl: parsed.avatar || undefined,
+      });
+      if (result.ok) {
+        reset(values, { keepIsSubmitSuccessful: true });
+        router.refresh();
+      } else {
+        setSaveError(result.error);
+      }
+    });
+  };
+
+  const onAvatarSelected = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.set("file", file);
+    setSaveError(null);
+    startTransition(async () => {
+      const result = await uploadTravelerAvatarAction(formData);
+      if (result.ok) {
+        router.refresh();
+      } else {
+        setSaveError(result.error);
+      }
+    });
+    e.target.value = "";
   };
 
   return (
@@ -52,6 +89,14 @@ export function PersonalInfoForm() {
       validationBehavior="aria"
       onSubmit={handleSubmit(onSubmit)}
     >
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={onAvatarSelected}
+      />
+
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="pi-name">{t("settings.personalInfo.name")}</Label>
         <Controller
@@ -79,6 +124,7 @@ export function PersonalInfoForm() {
             <Input
               id="pi-email"
               type="email"
+              readOnly
               aria-invalid={Boolean(errors.email)}
               value={field.value}
               onChange={field.onChange}
@@ -111,21 +157,33 @@ export function PersonalInfoForm() {
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="pi-avatar">{t("settings.personalInfo.avatar")}</Label>
-        <Controller
-          control={control}
-          name="avatar"
-          render={({ field }) => (
-            <Input
-              id="pi-avatar"
-              type="url"
-              placeholder="https://…"
-              aria-invalid={Boolean(errors.avatar)}
-              value={field.value}
-              onChange={field.onChange}
-              onBlur={field.onBlur}
-            />
-          )}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Controller
+            control={control}
+            name="avatar"
+            render={({ field }) => (
+              <Input
+                id="pi-avatar"
+                type="url"
+                placeholder="https://…"
+                className="min-w-0 flex-1"
+                aria-invalid={Boolean(errors.avatar)}
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+              />
+            )}
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onPress={() => fileInputRef.current?.click()}
+            isPending={isPending}
+          >
+            {t("settings.personalInfo.upload")}
+          </Button>
+        </div>
         <FieldError message={errors.avatar?.message} />
       </div>
 
@@ -148,8 +206,10 @@ export function PersonalInfoForm() {
         <FieldError message={errors.bio?.message} />
       </div>
 
+      {saveError ? <FieldError message={saveError} /> : null}
+
       <div className="flex items-center gap-3">
-        <Button type="submit" variant="primary" isDisabled={!isDirty} isPending={isSubmitting}>
+        <Button type="submit" variant="primary" isDisabled={!isDirty} isPending={isPending}>
           {t("settings.personalInfo.save")}
         </Button>
         {isSubmitSuccessful && !isDirty ? (

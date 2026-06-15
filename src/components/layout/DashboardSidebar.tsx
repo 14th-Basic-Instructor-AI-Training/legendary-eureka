@@ -76,10 +76,11 @@ export function DashboardSidebar({ role }: { role: Role }) {
                 {t(group.labelKey)}
               </li>
             ) : null}
-            {group.items.map(({ labelKey, Icon, href: route, tab }) => {
+            {group.items.map(({ labelKey, Icon, href: route, tab, match }) => {
               const href = route ?? (tab ? `${base}?tab=${tab}` : base);
               const active = route
-                ? pathname.endsWith(route)
+                ? pathname.endsWith(route) ||
+                  (match?.some((m) => pathname.includes(m)) ?? false)
                 : onBase && (tab ? activeTab === tab : true);
               return (
                 <SidebarMenuItem

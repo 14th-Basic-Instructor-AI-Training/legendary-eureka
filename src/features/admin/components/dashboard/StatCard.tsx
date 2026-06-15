@@ -44,7 +44,7 @@ export function StatCard({ metric }: { metric: AdminKpiMetric }) {
   const { t, i18n } = useTranslation();
   const { Icon, colorVar, tintVar } = KPI_META[metric.key] ?? FALLBACK_META;
 
-  const showDelta = metric.deltaPct !== 0;
+  const showDelta = metric.deltaDir !== "neutral" && metric.deltaPct !== 0;
   const Arrow = metric.deltaDir === "up" ? ArrowUp3 : ArrowDown2;
   const deltaColorVar = metric.deltaGood ? "--green" : "--red";
 

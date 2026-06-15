@@ -5,15 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/ui";
 import { useResource } from "@/lib/useResource";
-import { useSession } from "@/lib/auth";
 import { useLocalizedRouter } from "@/lib/locale";
-import { useTravelerStore } from "@/features/traveler/store";
-import { BookingHistorySchema } from "@/features/traveler/schema";
-import {
-  getBookingForCheckout,
-  computePricing,
-  makeBookingReference,
-} from "../data";
+import { getBookingForCheckout, computePricing } from "../data";
+import { createBookingAction } from "../actions";
 import {
   CheckoutStepSchema,
   PaymentMethodSchema,
@@ -37,10 +31,8 @@ function todayISO(): string {
  */
 export function BookingCheckoutScreen({ tourId }: { tourId: string }) {
   const { t } = useTranslation();
-  const { role } = useSession();
   const router = useLocalizedRouter();
   const params = useSearchParams();
-  const addBooking = useTravelerStore((s) => s.addBooking);
 
   const fetcher = useCallback(() => getBookingForCheckout(tourId), [tourId]);
   const { status, data: tour } = useResource(fetcher);
@@ -57,6 +49,7 @@ export function BookingCheckoutScreen({ tourId }: { tourId: string }) {
   );
   const [reference, setReference] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const date = params.get("date") ?? "";
 
@@ -87,24 +80,22 @@ export function BookingCheckoutScreen({ tourId }: { tourId: string }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSubmitting(true);
-    const ref = makeBookingReference();
-    const booking = BookingHistorySchema.parse({
-      id: ref,
-      tour: { slug: tour.slug, name: tour.title, thumbnail: tour.heroImage },
-      agencyName: tour.agency.name,
-      startDate: date || todayISO(),
-      travelers,
-      total: pricing.total,
-      currency: tour.currency,
-      status: "pending",
-      hasReview: false,
+    setSubmitError(null);
+    // POST /trips with the real package id — the backend routes the request to
+    // the agency that owns the package, where it lands in their incoming list.
+    const result = await createBookingAction({
+      tourPackageId: tour.id,
+      numberOfPeople: travelers,
+      requestedDate: date || todayISO(),
     });
-    const ok = addBooking(role, booking);
     setSubmitting(false);
-    if (!ok) return;
-    setReference(ref);
+    if (!result.ok) {
+      setSubmitError(result.error);
+      return;
+    }
+    setReference(result.trip.id);
     goTo(CheckoutStepSchema.enum.confirmation);
   };
 
@@ -124,16 +115,23 @@ export function BookingCheckoutScreen({ tourId }: { tourId: string }) {
       ) : null}
 
       {step === "payment" ? (
-        <PaymentStep
-          tour={tour}
-          travelers={travelers}
-          pricing={pricing}
-          method={method}
-          onMethodChange={setMethod}
-          onBack={() => goTo(CheckoutStepSchema.enum.review)}
-          onSubmit={handleSubmit}
-          isSubmitting={submitting}
-        />
+        <div className="flex flex-col gap-3">
+          {submitError ? (
+            <div className="bg-danger/10 text-danger rounded-lg px-3 py-2 text-sm" role="alert">
+              {submitError}
+            </div>
+          ) : null}
+          <PaymentStep
+            tour={tour}
+            travelers={travelers}
+            pricing={pricing}
+            method={method}
+            onMethodChange={setMethod}
+            onBack={() => goTo(CheckoutStepSchema.enum.review)}
+            onSubmit={handleSubmit}
+            isSubmitting={submitting}
+          />
+        </div>
       ) : null}
 
       {step === "confirmation" ? (

@@ -92,15 +92,9 @@ export async function requestPasswordReset(
 
 export type ResetPasswordResult = { ok: true } | { ok: false; error: "expired_token" };
 
-/**
- * The reset-password form only carries password + confirmPassword; email and
- * token come from the URL link. Until the page extracts and forwards those
- * params, this stays a stub — the real call goes to POST /auth/reset-password
- * with { email, token, newPassword }.
- */
+/** @deprecated Use resetPasswordAction from features/auth/actions instead. */
 export async function resetPassword(
   _input: ResetPasswordInput,
 ): Promise<ResetPasswordResult> {
-  await delay();
-  return { ok: true };
+  return { ok: false, error: "expired_token" };
 }

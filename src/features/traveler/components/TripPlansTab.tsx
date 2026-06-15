@@ -1,20 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Add, Map1 } from "iconsax-reactjs";
 import { Button, Reveal } from "@/ui";
 import { useLocalizedRouter } from "@/lib/locale";
-import { useResource } from "../hooks";
-import { getTripPlans } from "../data";
+import { useTravelerProfileData } from "../context";
 import { PlanCard } from "./PlanCard";
 import { EmptyState } from "./EmptyState";
-import { GridSkeleton, ErrorState } from "./states";
 
 /** Trip Plans tab: the traveler's itineraries + a create-new CTA. */
 export function TripPlansTab() {
   const { t } = useTranslation();
   const router = useLocalizedRouter();
-  const plans = useResource(getTripPlans);
+  const { tripPlans } = useTravelerProfileData();
 
   const createCta = (
     <Button variant="primary" size="sm" onPress={() => router.push("/traveler/trips/new")}>
@@ -25,15 +24,9 @@ export function TripPlansTab() {
 
   return (
     <section className="flex flex-col gap-5">
-      {plans.status === "success" && plans.data && plans.data.length > 0 ? (
-        <div className="flex justify-end">{createCta}</div>
-      ) : null}
+      {tripPlans.length > 0 ? <div className="flex justify-end">{createCta}</div> : null}
 
-      {plans.status === "loading" ? (
-        <GridSkeleton />
-      ) : plans.status === "error" ? (
-        <ErrorState onRetry={plans.reload} />
-      ) : !plans.data || plans.data.length === 0 ? (
+      {tripPlans.length === 0 ? (
         <EmptyState
           Icon={Map1}
           message={t("tripPlans.empty")}
@@ -42,7 +35,7 @@ export function TripPlansTab() {
         />
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {plans.data.map((plan, i) => (
+          {tripPlans.map((plan, i) => (
             <Reveal key={plan.id} delay={Math.min(i, 3) * 0.05}>
               <PlanCard plan={plan} />
             </Reveal>

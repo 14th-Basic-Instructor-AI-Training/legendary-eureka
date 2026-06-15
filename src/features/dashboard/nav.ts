@@ -29,6 +29,12 @@ export interface NavItem {
   href?: string;
   /** Deep-links into the role page's `?tab=` query param. */
   tab?: string;
+  /**
+   * Extra pathname fragments that also mark this item active — for section
+   * sub-pages/flows that live outside the item's own `href` (e.g. the booking
+   * checkout under `/traveler/booking/[tourId]`).
+   */
+  match?: string[];
 }
 
 /**
@@ -83,6 +89,13 @@ export const SIDEBAR_NAV: Record<Role, NavGroup[]> = {
     {
       items: [
         { labelKey: "nav.dashboard", Icon: Star1, href: "/traveler" },
+        {
+          labelKey: "bookings.nav.title",
+          Icon: Receipt21,
+          href: "/traveler/bookings",
+          // Also highlight on the booking checkout flow (/traveler/booking/[tourId]).
+          match: ["/traveler/booking"],
+        },
         {
           labelKey: "profile.nav.profile",
           Icon: Profile2User,
