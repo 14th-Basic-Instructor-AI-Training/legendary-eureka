@@ -4,36 +4,37 @@ import { apiFetch, type PagedData, type PageParams, type Province, type TravelTy
 
 export type TourPackageStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
-/** What a tour agenda stop points at in the content directory. */
-export type AgendaRefType = "DESTINATION" | "ACTIVITY";
-
 // ── Response types ────────────────────────────────────────────────────────────
 
 export interface TourAgendaItemResponse {
   id: string;
   dayNumber: number;
-  sortOrder: number;
-  refType: AgendaRefType;
-  refId: string;
   title: string;
-  note: string;
+  description: string;
+  activities: string[];
 }
 
 export interface TourPackageResponse {
   id: string;
+  slug?: string;
   ownerId: string;
+  agencyId?: string;
   agencyName: string;
   title: string;
   description: string;
   province: Province;
   travelType: TravelType;
   price: number;
+  priceFrom?: number;
   currency: string;
   durationDays: number;
+  days?: number;
   coverImageUrl: string;
   image: string;
   status: TourPackageStatus;
   agenda: TourAgendaItemResponse[];
+  activityCount?: number;
+  bookingsCount?: number;
   rating: number;
   reviewCount: number;
   createdAt: string;
@@ -55,12 +56,9 @@ export interface TourPackageRequest {
 
 export interface TourAgendaItemRequest {
   dayNumber: number;
-  sortOrder: number;
-  refType: AgendaRefType;
-  /** UUID of the referenced destination or activity. */
-  refId: string;
   title?: string;
-  note?: string;
+  description?: string;
+  activities?: string[];
 }
 
 // ── Tour packages ─────────────────────────────────────────────────────────────

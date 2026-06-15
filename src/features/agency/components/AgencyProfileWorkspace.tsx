@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import {
   ShieldTick,
@@ -14,10 +15,10 @@ import {
   GalleryAdd,
   Edit2,
   Map1,
+  TickCircle,
 } from "iconsax-reactjs";
-import { Button, Card, Input, TextArea, Skeleton } from "@/ui";
-import { useResource } from "@/lib/useResource";
-import { getAgencyProfile, getProfileReviews } from "../data";
+import { Button, Card, Input, TextArea } from "@/ui";
+import { saveProfileAction, uploadAvatarAction } from "../profileActions";
 import type { AgencyProfile, ProfileReview } from "../schema";
 
 const CAMBODIA_PROVINCES = [
@@ -137,19 +138,28 @@ function Field({
 
 // ── Tab 1 — Profile Info ──────────────────────────────────────────────────────
 
-function ProfileInfoTab({ profile }: { profile: AgencyProfile }) {
-  const { t } = useTranslation();
-  const [form, setForm] = useState({
-    name: profile.name,
-    tagline: profile.tagline ?? "",
-    description: profile.description ?? "",
-    email: profile.email,
-    phone: profile.phone ?? "",
-    website: profile.website ?? "",
-    province: profile.province ?? "",
-  });
+type ProfileForm = {
+  name: string;
+  tagline: string;
+  description: string;
+  email: string;
+  phone: string;
+  website: string;
+  province: string;
+};
 
-  const initials = profile.name
+function ProfileInfoTab({
+  form,
+  setForm,
+  profile,
+}: {
+  form: ProfileForm;
+  setForm: React.Dispatch<React.SetStateAction<ProfileForm>>;
+  profile: AgencyProfile;
+}) {
+  const { t } = useTranslation();
+
+  const initials = form.name
     .split(" ")
     .slice(0, 2)
     .map((w) => w[0])
@@ -197,9 +207,8 @@ function ProfileInfoTab({ profile }: { profile: AgencyProfile }) {
           <Input
             type="email"
             value={form.email}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, email: e.target.value }))
-            }
+            readOnly
+            className="cursor-default opacity-70"
             aria-label={t("agency.profile.info.email")}
           />
         </Field>
@@ -322,9 +331,16 @@ function ProfileInfoTab({ profile }: { profile: AgencyProfile }) {
 
 // ── Tab 2 — Location ──────────────────────────────────────────────────────────
 
-function LocationTab({ profile }: { profile: AgencyProfile }) {
+function LocationTab({
+  profile,
+  onSaveAddress,
+}: {
+  profile: AgencyProfile;
+  onSaveAddress: (address: string) => Promise<void>;
+}) {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     streetAddress: profile.streetAddress ?? "",
     city: profile.city ?? "",
@@ -332,8 +348,16 @@ function LocationTab({ profile }: { profile: AgencyProfile }) {
   });
 
   const currentAddressLine = profile.streetAddress
-    ? `${profile.streetAddress}, ${profile.city}, ${profile.province}, Cambodia`
+    ? `${profile.streetAddress}${profile.city ? `, ${profile.city}` : ""}${profile.province ? `, ${profile.province}` : ""}, Cambodia`
     : t("agency.profile.location.noAddress");
+
+  async function handleSaveLocation() {
+    setSaving(true);
+    const combined = [form.streetAddress, form.city, form.province].filter(Boolean).join(", ");
+    await onSaveAddress(combined);
+    setSaving(false);
+    setIsEditing(false);
+  }
 
   return (
     <div className="space-y-6">
@@ -430,10 +454,11 @@ function LocationTab({ profile }: { profile: AgencyProfile }) {
 
           <div className="flex items-center gap-3 border-t border-border pt-4">
             <Button
-              onPress={() => setIsEditing(false)}
+              onPress={handleSaveLocation}
+              isDisabled={saving}
               className="bg-[#185FA5] text-white"
             >
-              {t("agency.profile.location.saveLocation")}
+              {saving ? t("common.saving") : t("agency.profile.location.saveLocation")}
             </Button>
             <Button variant="ghost" onPress={() => setIsEditing(false)}>
               {t("common.cancel")}
@@ -525,61 +550,74 @@ function ReviewsTab({
   );
 }
 
-// ── Loading skeleton ──────────────────────────────────────────────────────────
-
-function ProfileSkeleton() {
-  return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <Skeleton className="h-52 w-full rounded-2xl" />
-      <div className="flex items-center justify-between pl-28">
-        <div className="space-y-2">
-          <Skeleton className="h-7 w-56 rounded-lg" />
-          <Skeleton className="h-4 w-80 rounded-lg" />
-        </div>
-        <Skeleton className="h-10 w-32 rounded-xl" />
-      </div>
-      <div className="flex gap-6 border-b border-border">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-10 w-28 rounded-lg" />
-        ))}
-      </div>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
-        <div className="space-y-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} className="h-12 w-full rounded-xl" />
-          ))}
-        </div>
-        <Skeleton className="h-64 w-full rounded-2xl" />
-      </div>
-    </div>
-  );
-}
-
-// ── Main exported component ───────────────────────────────────────────────────
-
 type ProfileTab = "info" | "location" | "reviews";
 
-export function AgencyProfileWorkspace() {
+type Props = {
+  initialProfile: AgencyProfile;
+  initialReviews: ProfileReview[];
+};
+
+export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props) {
   const { t } = useTranslation();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<ProfileTab>("info");
-  const profileState = useResource(getAgencyProfile);
-  const reviewsState = useResource(getProfileReviews);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  if (profileState.status === "loading") return <ProfileSkeleton />;
+  const [form, setForm] = useState<ProfileForm>({
+    name: initialProfile.name,
+    tagline: initialProfile.tagline ?? "",
+    description: initialProfile.description ?? "",
+    email: initialProfile.email,
+    phone: initialProfile.phone ?? "",
+    website: initialProfile.website ?? "",
+    province: initialProfile.province ?? "",
+  });
 
-  if (profileState.status === "error" || !profileState.data) {
-    return (
-      <div className="flex flex-col items-center gap-4 py-20 text-center">
-        <p className="text-muted text-sm">{t("agency.profile.error")}</p>
-        <Button onPress={profileState.reload}>{t("common.retry")}</Button>
-      </div>
-    );
+  function handleSave() {
+    setSaveError(null);
+    setSaved(false);
+    startTransition(async () => {
+      const result = await saveProfileAction({
+        agencyName: form.name,
+        tagline: form.tagline || undefined,
+        description: form.description || undefined,
+        contactPhone: form.phone || undefined,
+        website: form.website || undefined,
+      });
+      if (result.ok) {
+        setSaved(true);
+        router.refresh();
+      } else {
+        setSaveError(result.error);
+      }
+    });
   }
 
-  const profile = profileState.data;
-  const reviews = reviewsState.data ?? [];
+  async function handleSaveAddress(address: string) {
+    const result = await saveProfileAction({ address: address || undefined });
+    if (result.ok) {
+      router.refresh();
+    } else {
+      setSaveError(result.error);
+    }
+  }
 
-  const initials = profile.name
+  async function handleAvatarSelected(file: File) {
+    setSaveError(null);
+    const fd = new FormData();
+    fd.append("file", file);
+    const result = await uploadAvatarAction(fd);
+    if (result.ok) {
+      router.refresh();
+    } else {
+      setSaveError(result.error);
+    }
+  }
+
+  const initials = form.name
     .split(" ")
     .slice(0, 2)
     .map((w) => w[0])
@@ -618,24 +656,47 @@ export function AgencyProfileWorkspace() {
                 {initials}
               </span>
             </div>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void handleAvatarSelected(file);
+                e.target.value = "";
+              }}
+            />
             <button
               type="button"
               aria-label={t("agency.profile.uploadAvatar")}
               className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+              onClick={() => avatarInputRef.current?.click()}
             >
               <Camera size={18} variant="Linear" color="white" />
             </button>
           </div>
         </div>
 
-        {/* Save Changes button — bottom-right of header zone */}
-        <div className="absolute bottom-3 right-0">
-          <Button
-            onPress={() => {}}
-            className="bg-[#185FA5] font-medium text-white shadow-sm"
-          >
-            {t("agency.profile.saveChanges")}
-          </Button>
+        <div className="absolute bottom-3 right-0 flex items-center gap-3">
+          {saved && (
+            <span className="flex items-center gap-1.5 text-sm text-green-600">
+              <TickCircle size={16} variant="Bold" color="#16a34a" />
+              {t("common.saved")}
+            </span>
+          )}
+          {saveError && (
+            <span className="max-w-xs truncate text-sm text-red-500">{saveError}</span>
+          )}
+          {activeTab === "info" && (
+            <Button
+              onPress={handleSave}
+              isDisabled={isPending}
+              className="bg-[#185FA5] font-medium text-white shadow-sm"
+            >
+              {isPending ? t("common.saving") : t("agency.profile.saveChanges")}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -643,14 +704,14 @@ export function AgencyProfileWorkspace() {
       <div className="mb-6 pl-28">
         <div className="flex items-center gap-2">
           <h1 className="text-foreground text-2xl font-bold leading-none tracking-tight">
-            {profile.name}
+            {form.name}
           </h1>
-          {profile.isVerified && (
+          {initialProfile.isVerified && (
             <ShieldTick size={22} variant="Linear" color="#185FA5" />
           )}
         </div>
-        {profile.tagline && (
-          <p className="text-muted mt-1.5 text-sm">{profile.tagline}</p>
+        {form.tagline && (
+          <p className="text-muted mt-1.5 text-sm">{form.tagline}</p>
         )}
       </div>
 
@@ -661,7 +722,11 @@ export function AgencyProfileWorkspace() {
             <button
               key={key}
               type="button"
-              onClick={() => setActiveTab(key)}
+              onClick={() => {
+                setActiveTab(key);
+                setSaved(false);
+                setSaveError(null);
+              }}
               className={`border-b-2 px-5 py-3 text-sm font-medium transition-colors duration-150 ${
                 activeTab === key
                   ? "border-[#185FA5] text-[#185FA5]"
@@ -675,10 +740,14 @@ export function AgencyProfileWorkspace() {
       </div>
 
       {/* ─── Tab content ───────────────────────────────────────────────────── */}
-      {activeTab === "info" && <ProfileInfoTab profile={profile} />}
-      {activeTab === "location" && <LocationTab profile={profile} />}
+      {activeTab === "info" && (
+        <ProfileInfoTab form={form} setForm={setForm} profile={initialProfile} />
+      )}
+      {activeTab === "location" && (
+        <LocationTab profile={initialProfile} onSaveAddress={handleSaveAddress} />
+      )}
       {activeTab === "reviews" && (
-        <ReviewsTab profile={profile} reviews={reviews} />
+        <ReviewsTab profile={initialProfile} reviews={initialReviews} />
       )}
     </div>
   );
