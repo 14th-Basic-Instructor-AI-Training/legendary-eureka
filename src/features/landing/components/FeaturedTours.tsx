@@ -5,6 +5,8 @@ import { Button, Reveal, Skeleton } from "@/ui";
 import { TrendingTourCard } from "@/features/tours/components/TrendingTourCard";
 import { useResource } from "@/features/destinations/hooks";
 import { getFeaturedTours } from "@/features/destinations/data";
+import { TOURS_CHANGED } from "@/lib/realtime";
+import { useRealtimeReload } from "@/lib/useRealtimeReload";
 import { SectionHeading } from "./SectionHeading";
 
 function TourSkeleton() {
@@ -40,6 +42,10 @@ export function FeaturedTours({
 } = {}) {
   const { t } = useTranslation();
   const { status, data, reload } = useResource(getFeaturedTours);
+
+  // Refetch when the admin publishes/archives/deletes a tour package (realtime),
+  // and when this tab regains focus.
+  useRealtimeReload(TOURS_CHANGED, reload);
 
   return (
     <section id="tours" className="bg-surface/40 py-12 md:py-16">

@@ -1560,7 +1560,14 @@
       "publishedCount": "published",
       "totalBookings": "total bookings",
       "searchPlaceholder": "Search by title or agency…",
-      "deleteConfirm": "Delete this package?",
+      "deleteConfirm": {
+        "title": "Delete this package?",
+        "description": "This permanently removes the package and its agenda. This can't be undone."
+      },
+      "archiveConfirm": {
+        "title": "Archive this package?",
+        "description": "Archived packages are hidden from travelers but can be republished later."
+      },
       "actions": {
         "publish": "Publish",
         "archive": "Archive",
@@ -2128,9 +2135,9 @@
       "title": "Calendar"
     },
     "subtitle": {
-      "traveler": "Your booked trips and trip plans",
-      "agency": "Booking requests and tour availability",
-      "admin": "All bookings across the platform"
+      "traveler": "Your booked tours and personal events",
+      "agency": "Traveler bookings grouped by tour, plus your personal events",
+      "admin": "All platform bookings plus your personal events"
     },
     "states": {
       "empty": "No events to show yet",
@@ -2142,7 +2149,12 @@
     "types": {
       "booking": "Bookings",
       "tripPlan": "Trip plans",
-      "availability": "Availability"
+      "availability": "Availability",
+      "personal": "Personal Events"
+    },
+    "groups": {
+      "bookings": "Booked Tours",
+      "personal": "Personal Events"
     },
     "chrome": {
       "today": "Today",
@@ -2154,6 +2166,23 @@
       "more": "more",
       "noEvents": "No events",
       "allDay": "All day"
+    },
+    "personal": {
+      "title": "Personal Events",
+      "addEvent": "Add Event",
+      "empty": "No personal events yet — add one to get started.",
+      "modalTitle": "Add Personal Event",
+      "save": "Save Event",
+      "deleteTitle": "Delete event?",
+      "deleteDescription": "Remove \"{{title}}\" from your calendar? This can't be undone.",
+      "fields": {
+        "title": "Title",
+        "titlePlaceholder": "e.g. Team meeting, Birthday party…",
+        "description": "Notes (optional)",
+        "descriptionPlaceholder": "Any details about this event…",
+        "startDate": "Start date",
+        "endDate": "End date"
+      }
     }
   }
 }

@@ -1560,7 +1560,14 @@
       "publishedCount": "게시됨",
       "totalBookings": "전체 예약",
       "searchPlaceholder": "제목 또는 여행사로 검색…",
-      "deleteConfirm": "이 패키지를 삭제하시겠습니까?",
+      "deleteConfirm": {
+        "title": "이 패키지를 삭제하시겠습니까?",
+        "description": "패키지와 일정이 영구적으로 삭제됩니다. 되돌릴 수 없습니다."
+      },
+      "archiveConfirm": {
+        "title": "이 패키지를 보관하시겠습니까?",
+        "description": "보관된 패키지는 여행자에게 숨겨지지만 나중에 다시 게시할 수 있습니다."
+      },
       "actions": {
         "publish": "게시",
         "archive": "보관",
@@ -2128,9 +2135,9 @@
       "title": "캘린더"
     },
     "subtitle": {
-      "traveler": "내 예약 여행 및 여행 계획",
-      "agency": "예약 요청 및 투어 예약 가능 기간",
-      "admin": "플랫폼의 모든 예약"
+      "traveler": "예약된 투어와 개인 일정",
+      "agency": "투어별로 그룹화된 여행자 예약 및 개인 일정",
+      "admin": "플랫폼의 모든 예약 및 개인 일정"
     },
     "states": {
       "empty": "표시할 일정이 없습니다",
@@ -2142,7 +2149,12 @@
     "types": {
       "booking": "예약",
       "tripPlan": "여행 계획",
-      "availability": "예약 가능"
+      "availability": "예약 가능",
+      "personal": "개인 일정"
+    },
+    "groups": {
+      "bookings": "예약된 투어",
+      "personal": "개인 일정"
     },
     "chrome": {
       "today": "오늘",
@@ -2154,6 +2166,23 @@
       "more": "더보기",
       "noEvents": "일정 없음",
       "allDay": "종일"
+    },
+    "personal": {
+      "title": "개인 일정",
+      "addEvent": "일정 추가",
+      "empty": "아직 개인 일정이 없습니다 — 지금 추가해 보세요.",
+      "modalTitle": "개인 일정 추가",
+      "save": "일정 저장",
+      "deleteTitle": "일정을 삭제할까요?",
+      "deleteDescription": "\"{{title}}\"을(를) 캘린더에서 제거하시겠습니까? 이 작업은 취소할 수 없습니다.",
+      "fields": {
+        "title": "제목",
+        "titlePlaceholder": "예: 팀 회의, 생일 파티…",
+        "description": "메모 (선택사항)",
+        "descriptionPlaceholder": "이 일정에 대한 세부 정보…",
+        "startDate": "시작일",
+        "endDate": "종료일"
+      }
     }
   }
 }

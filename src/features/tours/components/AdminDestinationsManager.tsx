@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Add, Location, More, Edit2, Trash } from "iconsax-reactjs";
 import { Button, Chip, Dropdown, Tabs, useConfirm } from "@/ui";
+import { CardImage } from "@/ui/CardImage";
 import { formatPrice } from "@/lib/format";
+import { sendRealtime, DESTINATIONS_CHANGED } from "@/lib/realtime";
 import { DestinationForm } from "./DestinationForm";
 import { deleteDestinationAction } from "../actions";
 import type { DestinationResponse } from "@/lib/api/destinations";
@@ -51,6 +53,7 @@ export function AdminDestinationsManager({
       confirmLabel: t("common.delete"),
       onConfirm: async () => {
         await deleteDestinationAction(d.id);
+        sendRealtime({ event: DESTINATIONS_CHANGED, data: { id: d.id } });
         router.refresh();
       },
     });
@@ -98,6 +101,7 @@ export function AdminDestinationsManager({
         destination={editing ?? undefined}
         onClose={() => setEditing(null)}
         onSaved={() => {
+          if (editing) sendRealtime({ event: DESTINATIONS_CHANGED, data: { id: editing.id } });
           setEditing(null);
           router.refresh();
         }}
@@ -109,6 +113,13 @@ export function AdminDestinationsManager({
         <ul className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
           {shown.map((d) => (
             <li key={d.id} className="bg-surface flex flex-col gap-3 rounded-2xl p-4 shadow-primary">
+              <div className="relative -mx-4 -mt-4 mb-1 aspect-[16/9] overflow-hidden rounded-t-2xl">
+                <CardImage
+                  src={d.coverImageUrl || d.heroImage}
+                  alt={d.name}
+                  sizes="(max-width: 768px) 100vw, 280px"
+                />
+              </div>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate font-semibold">{d.name}</p>

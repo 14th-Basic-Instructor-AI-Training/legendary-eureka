@@ -1,72 +1,84 @@
 "use client";
 
 /**
- * Minimal browser WebSocket transport. Kept deliberately separate from the
- * feature state machines (see CLAUDE.md: "Keep the transport concerns separate
- * from the booking state machine") — this module only moves frames; the stores
+ * Browser realtime transport over Server-Sent Events, relayed by the Next.js
+ * server (`/api/realtime`). Kept deliberately separate from the feature state
+ * machines (see CLAUDE.md: "Keep the transport concerns separate from the
+ * booking state machine") — this module only moves frames; the stores/consumers
  * decide what a frame means.
  *
- * Real-time is still being brought up, so the socket is opt-in via
- * `NEXT_PUBLIC_WS_URL` and no-ops when that is unset, which lets the static-UI
- * build run without a server. A single shared connection is fanned out to all
- * subscribers; it reconnects with a fixed backoff after a drop.
+ * Why SSE through our own server (not a same-browser BroadcastChannel): events
+ * must reach clients in *other browsers/devices* (e.g. admin in Chrome → explore
+ * + landing in Brave). The shared server fans every emitted frame out to all
+ * subscribed streams. Receiving uses `EventSource` (auto-reconnects on drop);
+ * emitting POSTs the frame to the relay.
  */
 
 export interface RealtimeMessage<T = unknown> {
-  /** Event tag, e.g. "agency-report-<uuid>". */
+  /** Event tag, e.g. "tours-changed" or "agency-report-<uuid>". */
   event: string;
   data: T;
 }
 
 type Handler = (msg: RealtimeMessage) => void;
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
-const RECONNECT_MS = 3000;
+/**
+ * Shared event tag for tour-catalog changes. Emitted by the admin when a package
+ * is published / archived / deleted; the public surfaces (explore Tours tab,
+ * landing Trending tours) subscribe and refetch on receipt.
+ */
+export const TOURS_CHANGED = "tours-changed";
 
-let socket: WebSocket | null = null;
-let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+/**
+ * Shared event tag for destination-catalog changes. Emitted by the admin when a
+ * destination is edited or deleted; the public surfaces (explore Destinations tab,
+ * landing destination sections) subscribe and refetch on receipt.
+ */
+export const DESTINATIONS_CHANGED = "destinations-changed";
+
+const ENDPOINT = "/api/realtime";
+
+let source: EventSource | null = null;
 const handlers = new Set<Handler>();
 
-function connect() {
-  // SSR, or realtime not configured yet — stay a no-op so the build is green.
-  if (typeof window === "undefined" || !WS_URL) return;
-  if (
-    socket &&
-    (socket.readyState === WebSocket.OPEN ||
-      socket.readyState === WebSocket.CONNECTING)
-  ) {
-    return;
-  }
-
-  socket = new WebSocket(WS_URL);
-
-  socket.addEventListener("message", (e) => {
+/** Open the shared SSE stream lazily on first subscribe. */
+function ensureStream() {
+  if (typeof window === "undefined" || source) return;
+  source = new EventSource(ENDPOINT);
+  source.addEventListener("message", (e) => {
     let msg: RealtimeMessage;
     try {
       msg = JSON.parse(e.data as string) as RealtimeMessage;
     } catch {
-      return; // ignore non-JSON frames
+      return; // ignore non-JSON / comment frames
     }
     if (!msg || typeof msg.event !== "string") return;
     handlers.forEach((h) => h(msg));
   });
+  // EventSource reconnects automatically after a drop — nothing to wire up.
+}
 
-  socket.addEventListener("close", () => {
-    socket = null;
-    if (handlers.size === 0) return; // nobody listening — don't reconnect
-    if (reconnectTimer) clearTimeout(reconnectTimer);
-    reconnectTimer = setTimeout(connect, RECONNECT_MS);
-  });
-
-  socket.addEventListener("error", () => {
-    socket?.close();
+/**
+ * Emit a realtime frame. POSTs to the server relay, which broadcasts it to every
+ * subscribed stream (across browsers/devices). Fire-and-forget; no-ops on the
+ * server. `keepalive` lets the request survive a navigation right after the call.
+ */
+export function sendRealtime<T = unknown>(message: RealtimeMessage<T>): void {
+  if (typeof window === "undefined") return;
+  void fetch(ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(message),
+    keepalive: true,
+  }).catch(() => {
+    // Transport errors are non-fatal — the UI still updates via its own refresh.
   });
 }
 
 /**
  * Subscribe to inbound realtime messages whose `event` tag matches. `match` is
  * either an exact tag or a predicate (e.g. a prefix test for the
- * `agency-report-<uuid>` family). Opens the shared socket lazily on first
+ * `agency-report-<uuid>` family). Opens the shared stream lazily on first
  * subscribe. Returns an unsubscribe function — call it on unmount.
  */
 export function onRealtime(
@@ -81,7 +93,7 @@ export function onRealtime(
   };
 
   handlers.add(wrapped);
-  connect();
+  ensureStream();
 
   return () => {
     handlers.delete(wrapped);

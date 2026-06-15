@@ -1,5 +1,5 @@
 import { getDestinations, type DestinationResponse } from "@/lib/api/activities";
-import { getPackages, type TourPackageResponse } from "@/lib/api/packages";
+import { getPackages, getArchivedPackages, type TourPackageResponse } from "@/lib/api/packages";
 import { ContentPage } from "@/features/admin/components/ContentPage";
 
 /**
@@ -14,12 +14,15 @@ export default async function AdminContentPage() {
   let loadError = false;
 
   try {
-    const [destinationsPage, packagesPage] = await Promise.all([
+    const [destinationsPage, packagesPage, archivedPage] = await Promise.all([
       getDestinations({ size: 100 }),
       getPackages({ size: 100 }),
+      getArchivedPackages({ size: 100 }),
     ]);
     destinations = destinationsPage.content;
-    packages = packagesPage.content;
+    // Published (GET /tours) + archived (GET /tours/archived) — disjoint statuses,
+    // so PackagesAdmin's Archive tab can filter to the archived ones.
+    packages = [...packagesPage.content, ...archivedPage.content];
   } catch {
     loadError = true;
   }

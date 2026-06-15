@@ -1,36 +1,24 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useRef } from "react";
 import {
   useCalendarApp,
   DayFlowCalendar,
   createMonthView,
   createWeekView,
   createDayView,
-  createAgendaView,
   createEventsPlugin,
-  createAllDayEvent,
-  type CalendarAppConfig,
+  createEvent,
+  ViewType,
   type CalendarType,
   type Event as DayFlowEvent,
-  type Locale,
 } from "@dayflow/react";
-// Use DayFlow's component-only stylesheet — NOT `styles.css`, which bundles a full
-// copy of Tailwind's global preflight reset (`*`, `html`, `h1-h6`, `a`, `button`…)
-// that would clobber the app's own styling wherever the calendar loads. This file
-// has all the `df-*` calendar styles (scoped via @layer) without that global reset.
-import "@dayflow/core/dist/styles.components.css";
-import type { CalendarEntry, UICalendarProps } from "./Calendar";
+import { createSidebarPlugin } from "@dayflow/plugin-sidebar";
+import { createDragPlugin } from "@dayflow/plugin-drag";
+import "@dayflow/core/dist/styles.css";
+import "@dayflow/plugin-sidebar/dist/styles.components.css";
+import type { CalendarEntry, CalendarCategory, UICalendarProps } from "./Calendar";
 
-/**
- * DayFlow integration (client-only — see `Calendar.tsx`). Converts Jalat's
- * domain-light entries/categories into DayFlow events + calendar colour types,
- * wires the month/week/day/agenda views, and applies the read-only + locale
- * config. Kept thin: all Jalat-facing API lives in `Calendar.tsx`.
- */
-
-/** Parse an ISO `YYYY-MM-DD` (or full ISO) into a LOCAL Date — avoids the UTC
- *  midnight day-shift that `new Date("2026-06-20")` causes in western zones. */
 function parseLocalDate(iso: string): Date {
   const [datePart] = iso.split("T");
   const [y, m, d] = datePart.split("-").map(Number);
@@ -40,32 +28,40 @@ function parseLocalDate(iso: string): Date {
 function toDayFlowEvent(entry: CalendarEntry): DayFlowEvent {
   const start = parseLocalDate(entry.start);
   const end = parseLocalDate(entry.end ?? entry.start);
-  return createAllDayEvent({
+  return createEvent({
     id: entry.id,
     title: entry.title,
     description: entry.description,
     start,
     end,
+    allDay: entry.allDay !== false,
     calendarId: entry.categoryId,
   });
 }
 
-function toCalendarType(category: {
-  id: string;
-  name: string;
-  color: string;
-}): CalendarType {
+function toCalendarType(cat: CalendarCategory): CalendarType {
+  const hex = cat.color;
   return {
-    id: category.id,
-    name: category.name,
+    id: cat.id,
+    name: cat.name,
+    source: cat.source,
+    isVisible: true,
     colors: {
-      eventColor: category.color,
-      eventSelectedColor: category.color,
-      lineColor: category.color,
-      textColor: "#ffffff",
+      eventColor: `${hex}28`,
+      eventSelectedColor: hex,
+      lineColor: hex,
+      textColor: hex,
+    },
+    darkColors: {
+      eventColor: `${hex}40`,
+      eventSelectedColor: hex,
+      lineColor: hex,
+      textColor: hex,
     },
   };
 }
+
+type CalendarHandle = ReturnType<typeof useCalendarApp>;
 
 export function CalendarInner({
   entries,
@@ -73,46 +69,47 @@ export function CalendarInner({
   defaultView = "month",
   localeCode = "en",
   messages,
-  readOnly = true,
+  readOnly = false,
 }: UICalendarProps) {
-  // Fingerprint the inputs so the calendar app rebuilds when data/locale change.
-  const version = useMemo(
-    () =>
-      [
-        localeCode,
-        defaultView,
-        readOnly ? "ro" : "rw",
-        entries.map((e) => `${e.id}:${e.start}:${e.end ?? e.start}`).join("|"),
-      ].join("#"),
-    [localeCode, defaultView, readOnly, entries],
+  const calendarRef = useRef<CalendarHandle | null>(null);
+
+  // Config built inline — no useMemo wrapping — to avoid Preact __H hook conflict.
+  const calendar = useCalendarApp({
+    views: [createDayView(), createWeekView(), createMonthView()],
+    plugins: [
+      createDragPlugin(),
+      createEventsPlugin(),
+      createSidebarPlugin({
+        showEventDots: true,
+        createCalendarMode: "modal",
+      }),
+    ],
+    calendars: categories.map(toCalendarType),
+    events: entries.map(toDayFlowEvent),
+    defaultCalendar: categories[0]?.id,
+    defaultView,
+    locale: { code: localeCode, messages: messages ?? {} },
+    readOnly: readOnly ? { draggable: false, viewable: true } : false,
+    useCalendarHeader: true,
+    useEventDetailDialog: true,
+    switcherMode: "buttons",
+    theme: { mode: "light" },
+    callbacks: {
+      onMoreEventsClick: (date: Date) => {
+        calendarRef.current?.selectDate(date);
+        calendarRef.current?.setCurrentDate(date);
+        calendarRef.current?.changeView(ViewType.DAY);
+      },
+    },
+  });
+
+  useEffect(() => {
+    calendarRef.current = calendar;
+  });
+
+  return (
+    <div className="h-full w-full">
+      <DayFlowCalendar calendar={calendar} />
+    </div>
   );
-
-  const config = useMemo<CalendarAppConfig>(() => {
-    const locale: Locale = { code: localeCode, messages: messages ?? {} };
-    return {
-      views: [
-        createMonthView(),
-        createWeekView(),
-        createDayView(),
-        createAgendaView(),
-      ],
-      plugins: [createEventsPlugin()],
-      events: entries.map(toDayFlowEvent),
-      calendars: categories.map(toCalendarType),
-      defaultCalendar: categories[0]?.id,
-      defaultView,
-      locale,
-      readOnly: readOnly ? { draggable: false, viewable: true } : false,
-      useCalendarHeader: true,
-      useEventDetailPanel: true,
-      switcherMode: "buttons",
-      theme: { mode: "light" },
-    };
-    // Inputs are captured via the `version` fingerprint above.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [version]);
-
-  const calendar = useCalendarApp(config, version);
-
-  return <DayFlowCalendar calendar={calendar} />;
 }

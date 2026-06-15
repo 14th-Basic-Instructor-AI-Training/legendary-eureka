@@ -7,6 +7,8 @@ import { PopularDestinationCard } from "@/features/destinations/components/Popul
 import { useResource } from "@/features/destinations/hooks";
 import type { Result } from "@/features/destinations/data";
 import type { Destination } from "@/features/destinations/schema";
+import { DESTINATIONS_CHANGED } from "@/lib/realtime";
+import { useRealtimeReload } from "@/lib/useRealtimeReload";
 import { SectionHeading } from "./SectionHeading";
 
 function CardSkeleton() {
@@ -48,6 +50,8 @@ export function DestinationSection({
 }) {
   const { t } = useTranslation();
   const { status, data, reload } = useResource(fetcher);
+
+  useRealtimeReload(DESTINATIONS_CHANGED, reload);
 
   return (
     <section id={id} className="mx-auto max-w-7xl px-4 py-12 md:px-8 md:py-16">

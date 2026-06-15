@@ -2,6 +2,8 @@
 
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { TOURS_CHANGED, DESTINATIONS_CHANGED } from "@/lib/realtime";
+import { useRealtimeReload } from "@/lib/useRealtimeReload";
 import { MarketingHeader } from "@/features/landing/components/MarketingHeader";
 import { Footer } from "@/features/landing/components/Footer";
 import { LoginPromptModal } from "@/features/landing/components/LoginPromptModal";
@@ -46,6 +48,11 @@ export function ExploreScreen() {
 
   const { status, data, reload } = useResource(fetcher);
   const count = data?.items.length ?? 0;
+
+  // Refetch when the admin publishes/archives/deletes a tour package (realtime),
+  // and when this tab regains focus.
+  useRealtimeReload(TOURS_CHANGED, reload);
+  useRealtimeReload(DESTINATIONS_CHANGED, reload);
 
   return (
     <div className="min-h-dvh">

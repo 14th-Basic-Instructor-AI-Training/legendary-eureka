@@ -127,7 +127,14 @@ export function DestinationForm({
     };
 
     if (destination) {
-      await updateDestinationAction(destination.id, body);
+      // The backend PUT body maps to a record with primitive `featured`/`trending`
+      // booleans — omitting them fails JSON deserialization ("Malformed request
+      // body"). Carry the destination's current values so an edit preserves them.
+      await updateDestinationAction(destination.id, {
+        ...body,
+        featured: destination.featured,
+        trending: destination.trending,
+      });
       onSaved?.();
       onClose();
       return;

@@ -22,6 +22,11 @@ export type CalendarCategory = {
   name: string;
   /** Base colour (any CSS colour) used for the event chip + legend dot. */
   color: string;
+  /**
+   * Optional sidebar group heading (e.g. "Booked Tours", "Personal Events").
+   * Calendars with the same `source` value are grouped together in the sidebar.
+   */
+  source?: string;
 };
 
 /** A single all-day calendar entry (date strings are ISO `YYYY-MM-DD`). */
@@ -67,6 +72,12 @@ export type UICalendarProps = {
   readOnly?: boolean;
   /** Extra classes for the sized container (defaults to a tall panel). */
   className?: string;
+  /**
+   * Opaque version string — when this changes, CalendarInner is remounted so
+   * DayFlow reinitialises with the new events/categories. Pass a fingerprint
+   * derived from entries + categories from the feature component.
+   */
+  version?: string;
 };
 
 const CalendarInner = dynamic(
@@ -77,10 +88,10 @@ const CalendarInner = dynamic(
   },
 );
 
-export function Calendar({ className, ...props }: UICalendarProps) {
+export function Calendar({ className, version, ...props }: UICalendarProps) {
   return (
-    <div className={cn("border-border bg-surface w-full rounded-xl border", className)}>
-      <CalendarInner {...props} />
+    <div className={cn("border-border bg-surface h-[76vh] min-h-[520px] w-full overflow-hidden rounded-xl border", className)}>
+      <CalendarInner key={version} {...props} />
     </div>
   );
 }

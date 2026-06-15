@@ -12,8 +12,10 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
-    "@dayflow/core": "^3.6.5",
-    "@dayflow/react": "^3.6.5",
+    "@dayflow/core": "3.5.0",
+    "@dayflow/plugin-drag": "1.4.0",
+    "@dayflow/plugin-sidebar": "1.4.0",
+    "@dayflow/react": "3.5.0",
     "@heroui/react": "^3.1.0",
     "@heroui/styles": "^3.1.0",
     "@hookform/resolvers": "^5.4.0",

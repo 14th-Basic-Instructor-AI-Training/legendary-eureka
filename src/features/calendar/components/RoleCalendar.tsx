@@ -1,27 +1,27 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Calendar, type CalendarCategory, type CalendarEntry } from "@/ui";
 import { useResource } from "@/lib/useResource";
 import type { Role } from "@/features/auth/schema";
+import type { PersonalEventResponse } from "@/lib/api/calendar";
 import { eventsGetterFor } from "../data";
-import type { CalendarEvent, CalendarEventType } from "../schema";
+import type { CalendarEvent } from "../schema";
+import { PersonalEventsPanel } from "./PersonalEventsPanel";
 
 /**
- * Shared per-role calendar screen. Loads role-scoped events via the `data.ts`
- * seam, renders loading / error / empty / success explicitly, and feeds the
- * `@/ui` Calendar (DayFlow) with colour-coded, localized entries + legend.
+ * Shared per-role calendar screen.
+ *
+ * - Traveler: "Booked Tours" group (blue) + "Personal Events" group (green)
+ * - Agency/Admin: one colour group per tour package + "Personal Events" group
+ *
+ * Personal events are included in the combined data returned by the role getter.
+ * The `PersonalEventsPanel` below the calendar derives its list from that data
+ * and fires `onChanged` (increments `refreshKey`) when a personal event is
+ * added/deleted, which causes the getter to re-run via a new function reference.
  */
 
-/** Base colour per event type — drives the chip colour and legend dot. */
-const TYPE_COLOR: Record<CalendarEventType, string> = {
-  booking: "#2F6FED",
-  tripPlan: "#10B981",
-  availability: "#F59E0B",
-};
-
-/** DayFlow ships only an `en` locale; map ours to its nearest base code. */
 function dayflowLocaleCode(lng: string): string {
   return lng === "kr" ? "ko" : "en";
 }
@@ -29,33 +29,84 @@ function dayflowLocaleCode(lng: string): string {
 export function RoleCalendar({ role }: { role: Role }) {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
-  const getter = eventsGetterFor(role);
+
+  // Increment to force a full data reload after a personal event mutation.
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // A new function reference per (role, refreshKey) pair causes useResource to re-fetch.
+  const getter = useCallback(
+    () => eventsGetterFor(role)(),
+    // refreshKey intentionally included to re-trigger the fetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [role, refreshKey],
+  );
+
   const { status, data, reload } = useResource(getter);
 
+  // ── DayFlow entries ───────────────────────────────────────────────────────────
   const entries = useMemo<CalendarEntry[]>(
-    () => (data ?? []).map((e: CalendarEvent) => ({
-      id: e.id,
-      title: e.title,
-      description: [e.subtitle, e.status ? t(`status.${e.status}`) : null]
-        .filter(Boolean)
-        .join(" · "),
-      start: e.start,
-      end: e.end,
-      allDay: e.allDay,
-      categoryId: e.type,
-    })),
+    () =>
+      (data ?? []).map((e: CalendarEvent) => ({
+        id: e.id,
+        title: e.title,
+        description: [e.subtitle, e.status ? t(`status.${e.status}`) : null]
+          .filter(Boolean)
+          .join(" · "),
+        start: e.start,
+        end: e.end,
+        allDay: e.allDay,
+        categoryId: e.group ?? e.type,
+      })),
     [data, t],
   );
 
-  // Legend reflects only the event types actually present for this role.
+  // ── Categories for DayFlow sidebar groups ────────────────────────────────────
+  // Each unique `group` in the data becomes a CalendarType in the sidebar.
+  // The `source` field groups related calendars under a heading in the sidebar.
   const categories = useMemo<CalendarCategory[]>(() => {
-    const present = new Set((data ?? []).map((e) => e.type));
-    return [...present].map((type) => ({
-      id: type,
-      name: t(`calendar.types.${type}`),
-      color: TYPE_COLOR[type],
+    const groupMap = new Map<
+      string,
+      { name: string; color: string; source: string }
+    >();
+
+    const bookedLabel = t("calendar.groups.bookings");
+    const personalLabel = t("calendar.groups.personal");
+
+    for (const e of data ?? []) {
+      const gid = e.group ?? e.type;
+      if (!groupMap.has(gid)) {
+        const isPersonalGroup = gid === "personal";
+        const name = isPersonalGroup
+          ? personalLabel
+          : gid === "bookings"
+            ? bookedLabel
+            : (e.groupLabel ?? t(`calendar.types.${e.type}`));
+        const source = isPersonalGroup ? personalLabel : bookedLabel;
+        groupMap.set(gid, {
+          name,
+          color: e.groupColor ?? "#888888",
+          source,
+        });
+      }
+    }
+
+    return [...groupMap.entries()].map(([id, { name, color, source }]) => ({
+      id,
+      name,
+      color,
+      source,
     }));
   }, [data, t]);
+
+  // Fingerprint used as React key on CalendarInner — forces a clean remount
+  // when events or categories change so DayFlow reinitialises with fresh data.
+  const calendarVersion = useMemo(
+    () =>
+      entries.map((e) => `${e.id}:${e.start}`).join("|") +
+      "#" +
+      categories.map((c) => c.id).join(","),
+    [entries, categories],
+  );
 
   const messages = useMemo(
     () => ({
@@ -72,6 +123,27 @@ export function RoleCalendar({ role }: { role: Role }) {
     [t],
   );
 
+  // ── Personal events for the side panel ───────────────────────────────────────
+  const panelPersonalEvents = useMemo<PersonalEventResponse[]>(
+    () =>
+      (data ?? [])
+        .filter((e) => e.isPersonal)
+        .map((e) => ({
+          id: e.id,
+          title: e.title,
+          description: e.subtitle,
+          startDate: e.start,
+          endDate: e.end,
+          allDay: e.allDay,
+          createdAt: "",
+        })),
+    [data],
+  );
+
+  const handlePersonalEventChanged = useCallback(() => {
+    setRefreshKey((k) => k + 1);
+  }, []);
+
   return (
     <div className="mx-auto flex h-full max-w-full flex-col gap-6">
       <header className="flex flex-col gap-1">
@@ -80,7 +152,7 @@ export function RoleCalendar({ role }: { role: Role }) {
       </header>
 
       {status === "loading" ? (
-        <div className="border-border bg-surface h-[72vh] w-full animate-pulse rounded-xl border" />
+        <div className="border-border bg-surface h-[76vh] min-h-[520px] w-full animate-pulse rounded-xl border" />
       ) : status === "error" ? (
         <div className="border-border flex flex-col items-center gap-3 rounded-2xl border border-dashed py-16 text-center">
           <p className="text-muted text-sm">{t("calendar.states.error")}</p>
@@ -88,34 +160,22 @@ export function RoleCalendar({ role }: { role: Role }) {
             {t("common.retry")}
           </Button>
         </div>
-      ) : !data || data.length === 0 ? (
-        <div className="border-border rounded-2xl border border-dashed py-16 text-center">
-          <p className="text-muted text-sm">{t("calendar.states.empty")}</p>
-        </div>
       ) : (
         <>
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="text-muted text-xs font-semibold tracking-wider uppercase">
-              {t("calendar.legend.title")}
-            </span>
-            {categories.map((c) => (
-              <span key={c.id} className="flex items-center gap-1.5 text-sm">
-                <span
-                  className="inline-block h-3 w-3 rounded-full"
-                  style={{ backgroundColor: c.color }}
-                  aria-hidden
-                />
-                {c.name}
-              </span>
-            ))}
-          </div>
-
+          {/* DayFlow calendar — sidebar shows the legend + mini-calendar natively */}
           <Calendar
             entries={entries}
             categories={categories}
             defaultView="month"
             localeCode={dayflowLocaleCode(lng)}
             messages={messages}
+            version={calendarVersion}
+          />
+
+          {/* Personal events panel — add / delete personal events */}
+          <PersonalEventsPanel
+            events={panelPersonalEvents}
+            onChanged={handlePersonalEventChanged}
           />
         </>
       )}

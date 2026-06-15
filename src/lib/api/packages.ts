@@ -75,6 +75,13 @@ export function getMyPackages(params?: PageParams): Promise<PagedData<TourPackag
   return apiFetch("/tours/mine", { params });
 }
 
+/** Every archived package across the platform (ADMIN only). */
+export function getArchivedPackages(
+  params?: PageParams,
+): Promise<PagedData<TourPackageResponse>> {
+  return apiFetch("/tours/archived", { params });
+}
+
 export function createPackage(body: TourPackageRequest): Promise<TourPackageResponse> {
   return apiFetch("/tours", { method: "POST", body });
 }

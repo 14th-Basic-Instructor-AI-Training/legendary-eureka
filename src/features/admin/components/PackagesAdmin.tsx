@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { Trash, CloseCircle, Box1, SearchNormal1, Filter } from "iconsax-reactjs";
-import { Button, Chip, ListBox, Select, StatusChip, Tabs } from "@/ui";
+import { Trash, Box1, SearchNormal1, Filter } from "iconsax-reactjs";
+import { Button, Chip, ListBox, Select, StatusChip, Tabs, useConfirm } from "@/ui";
 import { formatPrice } from "@/lib/format";
 import { useSession } from "@/lib/auth";
 import { can } from "@/lib/permissions";
+import { sendRealtime, TOURS_CHANGED } from "@/lib/realtime";
 import {
   archivePackageAction,
   deletePackageAction,
@@ -19,12 +20,11 @@ import type { TourPackageResponse } from "@/lib/api/packages";
 import type { PackageApprovalStatus } from "@/features/tours/schema";
 
 /** Lowercased catalog statuses + the package-approval queue ("approvals"). */
-type PackageFilter = "all" | "published" | "draft" | "archived" | "approvals";
+type PackageFilter = "all" | "published" | "archived" | "approvals";
 
 const STATUS_FILTERS: Array<{ value: PackageFilter; labelKey: string }> = [
   { value: "all", labelKey: "common.all" },
   { value: "published", labelKey: "status.published" },
-  { value: "draft", labelKey: "status.draft" },
   { value: "archived", labelKey: "status.archived" },
   { value: "approvals", labelKey: "tours.nav.approvals" },
 ];
@@ -42,9 +42,9 @@ export function PackagesAdmin({ packages }: { packages: TourPackageResponse[] })
   const { t, i18n } = useTranslation();
   const { role } = useSession();
   const router = useRouter();
+  const confirm = useConfirm();
   const canManage = can(role, "managePackages");
 
-  const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<PackageFilter>("all");
@@ -70,13 +70,40 @@ export function PackagesAdmin({ packages }: { packages: TourPackageResponse[] })
     (s) => s.packages.filter((p) => p.status === "pending").length,
   );
 
-  /** Run a mutation server action, then refresh the server-fetched list. */
+  /**
+   * Run a mutation server action (publish / archive / delete), refresh the
+   * server-fetched list, and — on success — emit a realtime `tours-changed`
+   * frame so the public surfaces (explore Tours tab, landing Trending tours)
+   * refetch their tours in real time.
+   */
   const runAction = async (id: string, action: (id: string) => Promise<{ ok: boolean }>) => {
     setBusyId(id);
-    await action(id);
+    const res = await action(id);
     setBusyId(null);
-    setConfirmingId(null);
+    if (res?.ok) sendRealtime({ event: TOURS_CHANGED, data: { id } });
     router.refresh();
+  };
+
+  /** Confirm, then archive the package. */
+  const handleArchive = async (id: string) => {
+    const ok = await confirm({
+      title: t("admin.packages.archiveConfirm.title"),
+      description: t("admin.packages.archiveConfirm.description"),
+      intent: "warning",
+      confirmLabel: t("admin.packages.actions.archive"),
+    });
+    if (ok) runAction(id, archivePackageAction);
+  };
+
+  /** Confirm, then permanently delete the package. */
+  const handleDelete = async (id: string) => {
+    const ok = await confirm({
+      title: t("admin.packages.deleteConfirm.title"),
+      description: t("admin.packages.deleteConfirm.description"),
+      intent: "danger",
+      confirmLabel: t("admin.packages.actions.confirmDelete"),
+    });
+    if (ok) runAction(id, deletePackageAction);
   };
 
   return (
@@ -200,56 +227,37 @@ export function PackagesAdmin({ packages }: { packages: TourPackageResponse[] })
                   </Chip>
 
                   {canManage ? (
-                    confirmingId === pkg.id ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-muted text-xs">
-                          {t("admin.packages.deleteConfirm")}
-                        </span>
+                    <div className="flex gap-2">
+                      {status === "published" ? (
                         <Button
-                          variant="primary"
+                          variant="secondary"
                           size="sm"
-                          className="text-danger"
                           isPending={busyId === pkg.id}
-                          onPress={() => runAction(pkg.id, deletePackageAction)}
+                          onPress={() => handleArchive(pkg.id)}
                         >
-                          {t("admin.packages.actions.confirmDelete")}
+                          {t("admin.packages.actions.archive")}
                         </Button>
-                        <Button variant="tertiary" size="sm" onPress={() => setConfirmingId(null)}>
-                          <CloseCircle size={16} color="currentColor" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-2">
-                        {status === "published" ? (
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            isPending={busyId === pkg.id}
-                            onPress={() => runAction(pkg.id, archivePackageAction)}
-                          >
-                            {t("admin.packages.actions.archive")}
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            isPending={busyId === pkg.id}
-                            onPress={() => runAction(pkg.id, publishPackageAction)}
-                          >
-                            {t("admin.packages.actions.publish")}
-                          </Button>
-                        )}
+                      ) : (
                         <Button
-                          variant="tertiary"
+                          variant="secondary"
                           size="sm"
-                          className="text-danger"
-                          onPress={() => setConfirmingId(pkg.id)}
+                          isPending={busyId === pkg.id}
+                          onPress={() => runAction(pkg.id, publishPackageAction)}
                         >
-                          <Trash size={16} color="currentColor" />
-                          {t("admin.packages.actions.delete")}
+                          {t("admin.packages.actions.publish")}
                         </Button>
-                      </div>
-                    )
+                      )}
+                      <Button
+                        variant="tertiary"
+                        size="sm"
+                        className="text-danger"
+                        isPending={busyId === pkg.id}
+                        onPress={() => handleDelete(pkg.id)}
+                      >
+                        <Trash size={16} color="currentColor" />
+                        {t("admin.packages.actions.delete")}
+                      </Button>
+                    </div>
                   ) : null}
                 </div>
               </li>
