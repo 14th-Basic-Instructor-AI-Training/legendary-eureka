@@ -1,6 +1,10 @@
 /* Tailwind CSS v4 — must come first */
 @import "tailwindcss";
 
+/* DayFlow calendar component styles (components-only — avoids the global reset in styles.css) */
+@import "@dayflow/core/dist/styles.components.css";
+@import "@dayflow/plugin-sidebar/dist/styles.components.css";
+
 /* HeroUI v3 styles — must come after Tailwind (provides theme tokens: background, foreground, surface, primary, muted, border…) */
 @import "@heroui/styles/css";
 

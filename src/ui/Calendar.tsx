@@ -1,19 +1,9 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import { useState, useEffect } from "react";
+import { CalendarInner } from "./CalendarInner";
 import { Skeleton } from "./Skeleton";
 import { cn } from "@/lib/utils";
-
-/**
- * Jalat Calendar — the single calendar seam for feature code, wrapping DayFlow
- * (`@dayflow/react`). Feature code passes a domain-light {@link CalendarEntry}
- * list plus colour {@link CalendarCategory categories}; the wrapper bakes in the
- * views, theme, read-only default, and locale messages.
- *
- * DayFlow constructs its (Preact-powered) app during render, so the actual
- * integration is loaded client-only via `next/dynamic({ ssr: false })` to keep
- * it out of the server render and avoid hydration mismatches.
- */
 
 /** A colour group (legend row) — events reference it by `categoryId`. */
 export type CalendarCategory = {
@@ -74,24 +64,30 @@ export type UICalendarProps = {
   className?: string;
   /**
    * Opaque version string — when this changes, CalendarInner is remounted so
-   * DayFlow reinitialises with the new events/categories. Pass a fingerprint
-   * derived from entries + categories from the feature component.
+   * DayFlow reinitialises with the new events/categories.
    */
   version?: string;
 };
 
-const CalendarInner = dynamic(
-  () => import("./CalendarInner").then((m) => m.CalendarInner),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="h-[72vh] w-full rounded-xl" />,
-  },
-);
-
 export function Calendar({ className, version, ...props }: UICalendarProps) {
+  // CalendarInner uses Preact internally; rendering it server-side or during
+  // React hydration corrupts Preact's currentComponent state and causes __H errors.
+  // Guard with a mounted flag so DayFlow only ever renders on the live client DOM.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
-    <div className={cn("border-border bg-surface h-[76vh] min-h-[520px] w-full overflow-hidden rounded-xl border", className)}>
-      <CalendarInner key={version} {...props} />
+    <div
+      className={cn(
+        "border-border bg-surface h-[76vh] min-h-[520px] w-full overflow-hidden rounded-xl border",
+        className,
+      )}
+    >
+      {mounted ? (
+        <CalendarInner key={version} {...props} />
+      ) : (
+        <Skeleton className="h-full w-full rounded-xl" />
+      )}
     </div>
   );
 }

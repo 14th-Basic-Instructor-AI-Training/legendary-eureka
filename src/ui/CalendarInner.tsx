@@ -15,8 +15,6 @@ import {
 } from "@dayflow/react";
 import { createSidebarPlugin } from "@dayflow/plugin-sidebar";
 import { createDragPlugin } from "@dayflow/plugin-drag";
-import "@dayflow/core/dist/styles.css";
-import "@dayflow/plugin-sidebar/dist/styles.components.css";
 import type { CalendarEntry, CalendarCategory, UICalendarProps } from "./Calendar";
 
 function parseLocalDate(iso: string): Date {
