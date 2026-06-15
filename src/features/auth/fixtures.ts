@@ -1,33 +1,32 @@
 import { UserSchema, type User } from "./schema";
 
 /**
- * Seeded mock accounts — one per role. Static/hardcoded for the no-auth-API phase.
- * Each is parsed through UserSchema so the fixtures can't drift from the schema.
+ * Seeded demo accounts — one per role. Matches destination-api DataSeeder / seed.sql.
  *
- *   admin@jalat.test     / Admin@123
- *   agency@jalat.test    / Agency@123
- *   traveler@jalat.test  / Traveler@123
+ *   admin@jalat.com           / Admin@1234
+ *   angkor.tours@jalat.com    / Agency@1234
+ *   sophea@jalat.com          / Traveler@1234
  */
 export const MOCK_USERS: User[] = [
   {
     id: "u-admin",
-    name: "Admin User",
-    email: "admin@jalat.test",
-    password: "Admin@123",
+    name: "Jalat Admin",
+    email: "admin@jalat.com",
+    password: "Admin@1234",
     role: "admin",
   },
   {
     id: "u-agency",
-    name: "Angkor Trails Agency",
-    email: "agency@jalat.test",
-    password: "Agency@123",
+    name: "Angkor Tours",
+    email: "angkor.tours@jalat.com",
+    password: "Agency@1234",
     role: "agency",
   },
   {
     id: "u-traveler",
-    name: "Dara Traveler",
-    email: "traveler@jalat.test",
-    password: "Traveler@123",
+    name: "Sophea Chan",
+    email: "sophea@jalat.com",
+    password: "Traveler@1234",
     role: "traveler",
   },
 ].map((u) => UserSchema.parse(u));

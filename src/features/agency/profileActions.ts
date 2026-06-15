@@ -57,3 +57,20 @@ export async function uploadAvatarAction(formData: FormData): Promise<ProfileAct
     return toError(e);
   }
 }
+
+export type UploadResult = { ok: true; url: string } | { ok: false; error: string };
+
+/** Generic upload — returns the MinIO URL without updating any profile. */
+export async function uploadFileAction(formData: FormData): Promise<UploadResult> {
+  try {
+    const file = formData.get("file");
+    if (!(file instanceof File) || file.size === 0) {
+      return { ok: false, error: "No file selected." };
+    }
+    const uploaded = await uploadFile(file);
+    return { ok: true, url: uploaded.url };
+  } catch (e) {
+    if (e instanceof ApiError) return { ok: false, error: e.message };
+    return { ok: false, error: "Upload failed. Please try again." };
+  }
+}

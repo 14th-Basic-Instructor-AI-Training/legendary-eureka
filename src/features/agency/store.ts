@@ -31,6 +31,8 @@ interface AgencyState {
   archivePackage: (actor: Actor | null, id: string) => boolean;
   /** Seed/replace the packages list (used to hydrate from the API on mount). */
   setPackages: (packages: Package[]) => void;
+  /** Seed/replace the activities list (used to hydrate from the API on mount). */
+  setActivities: (activities: Activity[]) => void;
 }
 
 export interface PackageInput {
@@ -189,4 +191,5 @@ export const useAgencyStore = create<AgencyState>((set, get) => ({
   },
 
   setPackages: (packages) => set({ packages }),
+  setActivities: (activities) => set({ activities }),
 }));
