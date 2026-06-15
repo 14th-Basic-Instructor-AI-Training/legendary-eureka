@@ -1,25 +1,35 @@
 "use client";
 
-import { useState } from "react";
-import { useLocalizedRouter, useLocale } from "@/lib/locale";
+import { useEffect, useState } from "react";
+import { useLocalizedRouter } from "@/lib/locale";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
-import { Button, Form, Input } from "@/ui";
+import { Button, Form, InputOTP, REGEXP_ONLY_DIGITS } from "@/ui";
 import { OtpSchema, type OtpInput } from "@/features/auth/schema";
-import { verifyOtpAndSignIn, resendOtpAction } from "@/features/auth/actions";
+import { verifyOtpAction, resendOtpAction } from "@/features/auth/actions";
 import { useAuthStore } from "@/features/auth/store";
 import { AuthShell } from "./AuthShell";
 import { Field } from "./Field";
 
+/** Seconds the user must wait before they can request a new OTP. */
+const RESEND_COOLDOWN = 60;
+
 export function VerifyOtpForm() {
   const { t } = useTranslation();
   const router = useLocalizedRouter();
-  const locale = useLocale();
   const pendingEmail = useAuthStore((s) => s.pendingEmail);
   const clearPending = useAuthStore((s) => s.clearPending);
   const [formError, setFormError] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(RESEND_COOLDOWN);
+
+  // Tick the resend cooldown down to zero, one second at a time.
+  useEffect(() => {
+    if (secondsLeft <= 0) return;
+    const timer = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [secondsLeft]);
 
   const {
     control,
@@ -37,24 +47,24 @@ export function VerifyOtpForm() {
       return;
     }
     setFormError(null);
-    // On success, the server action throws NEXT_REDIRECT (navigates to auth/callback).
-    // On failure, it returns { ok: false, error }.
-    const result = await verifyOtpAndSignIn(pendingEmail, values.code, locale);
+    const result = await verifyOtpAction(pendingEmail, values.code);
     if (!result.ok) {
       setFormError(
         result.error === "invalid_code" ? t("auth.otp.invalid") : t("auth.otp.serverError"),
       );
-    } else {
-      // Unreachable when signIn succeeds (NEXT_REDIRECT fires) — clear state for safety.
-      clearPending();
+      return;
     }
+    // Account verified — send the user to the login page to sign in.
+    clearPending();
+    router.replace("/login");
   };
 
   const handleResend = async () => {
-    if (!pendingEmail) return;
+    if (!pendingEmail || resending || secondsLeft > 0) return;
     setResending(true);
     await resendOtpAction(pendingEmail);
     setResending(false);
+    setSecondsLeft(RESEND_COOLDOWN);
   };
 
   return (
@@ -68,18 +78,27 @@ export function VerifyOtpForm() {
             control={control}
             name="code"
             render={({ field }) => (
-              <Input
-                id="code"
-                inputMode="numeric"
-                autoComplete="one-time-code"
+              <InputOTP
                 maxLength={6}
-                placeholder={t("auth.otp.codePlaceholder")}
-                aria-invalid={Boolean(errors.code)}
-                className="text-center text-lg tracking-[0.5em]"
+                pattern={REGEXP_ONLY_DIGITS}
+                autoFocus
+                isInvalid={Boolean(errors.code)}
                 value={field.value}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
-              />
+              >
+                <InputOTP.Group>
+                  <InputOTP.Slot index={0} />
+                  <InputOTP.Slot index={1} />
+                  <InputOTP.Slot index={2} />
+                </InputOTP.Group>
+                <InputOTP.Separator />
+                <InputOTP.Group>
+                  <InputOTP.Slot index={3} />
+                  <InputOTP.Slot index={4} />
+                  <InputOTP.Slot index={5} />
+                </InputOTP.Group>
+              </InputOTP>
             )}
           />
         </Field>
@@ -98,10 +117,14 @@ export function VerifyOtpForm() {
           <button
             type="button"
             onClick={handleResend}
-            disabled={resending}
+            disabled={resending || secondsLeft > 0}
             className="text-primary font-medium hover:underline disabled:opacity-60"
           >
-            {resending ? t("auth.otp.resending") : t("auth.otp.resend")}
+            {resending
+              ? t("auth.otp.resending")
+              : secondsLeft > 0
+                ? t("auth.otp.resendIn", { seconds: secondsLeft })
+                : t("auth.otp.resend")}
           </button>
           <span className="text-muted text-xs">{t("auth.otp.demoHint")}</span>
         </div>

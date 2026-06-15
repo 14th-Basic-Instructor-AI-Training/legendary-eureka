@@ -5,21 +5,12 @@ import { useTranslation } from "react-i18next";
 import { ArrowRight2 } from "iconsax-reactjs";
 import { Avatar, StatusChip } from "@/ui";
 import { formatPrice } from "@/lib/format";
-import type { AdminBooking } from "../../schema";
-
-function initialsOf(name: string) {
-  return name
-    .split(" ")
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
+import type { TripResponse } from "@/lib/api/bookings";
 
 const COLLAPSED = 6;
 
 /** Recent bookings, styled after the reference "API Usage" table. */
-export function RecentBookingsCard({ bookings }: { bookings: AdminBooking[] }) {
+export function RecentBookingsCard({ bookings }: { bookings: TripResponse[] }) {
   const { t, i18n } = useTranslation();
   const [showAll, setShowAll] = useState(false);
 
@@ -45,10 +36,9 @@ export function RecentBookingsCard({ bookings }: { bookings: AdminBooking[] }) {
       </header>
 
       {/* column headers */}
-      <div className="text-muted border-border grid grid-cols-[1.6fr_1fr_0.9fr_auto] items-center gap-3 border-b pb-2 text-xs font-medium">
+      <div className="text-muted border-border grid grid-cols-[1.6fr_1fr_auto] items-center gap-3 border-b pb-2 text-xs font-medium">
         <span>{t("admin.bookings.overview.cols.booking")}</span>
         <span>{t("admin.bookings.overview.cols.amount")}</span>
-        <span>{t("admin.bookings.overview.cols.agency")}</span>
         <span className="text-right">{t("admin.bookings.overview.cols.status")}</span>
       </div>
 
@@ -56,12 +46,12 @@ export function RecentBookingsCard({ bookings }: { bookings: AdminBooking[] }) {
         {rows.map((b) => (
           <li
             key={b.id}
-            className="border-border grid grid-cols-[1.6fr_1fr_0.9fr_auto] items-center gap-3 border-b py-3 last:border-0"
+            className="border-border grid grid-cols-[1.6fr_1fr_auto] items-center gap-3 border-b py-3 last:border-0"
           >
             {/* booking: avatar + traveler + package */}
             <div className="flex min-w-0 items-center gap-2.5">
               <Avatar size="sm">
-                <Avatar.Fallback>{initialsOf(b.travelerName)}</Avatar.Fallback>
+                <Avatar.Fallback>{b.travelerInitials}</Avatar.Fallback>
               </Avatar>
               <div className="min-w-0">
                 <p className="text-text-primary truncate text-sm font-semibold">{b.travelerName}</p>
@@ -82,9 +72,8 @@ export function RecentBookingsCard({ bookings }: { bookings: AdminBooking[] }) {
               </div>
             </div>
 
-            <span className="text-muted truncate text-sm">{b.agencyName}</span>
             <span className="justify-self-end">
-              <StatusChip status={b.status} />
+              <StatusChip status={b.status.toLowerCase()} />
             </span>
           </li>
         ))}

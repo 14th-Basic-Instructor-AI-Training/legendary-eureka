@@ -28,6 +28,14 @@ export { StatusChip } from "./StatusChip";
 export { Reveal } from "./Reveal";
 export { TextArea, type UITextAreaProps } from "./TextArea";
 export { DatePicker, type UIDatePickerProps } from "./DatePicker";
+export {
+  Calendar,
+  type UICalendarProps,
+  type CalendarEntry,
+  type CalendarCategory,
+  type CalendarView,
+  type CalendarMessages,
+} from "./Calendar";
 export { NumberStepper, type UINumberStepperProps } from "./NumberStepper";
 export { Switch, type UISwitchProps } from "./Switch";
 export { RangeSlider, type UIRangeSliderProps } from "./RangeSlider";
@@ -57,5 +65,7 @@ export {
   RadioGroup,
   Radio,
   EmptyState,
+  InputOTP,
+  REGEXP_ONLY_DIGITS,
   useFilter,
 } from "@heroui/react";

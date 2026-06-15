@@ -50,6 +50,7 @@ export const SIDEBAR_NAV: Record<Role, NavGroup[]> = {
       items: [
         { labelKey: "admin.nav.content", Icon: Category, href: "/admin/content" },
         { labelKey: "admin.nav.bookings", Icon: Receipt21, href: "/admin/bookings" },
+        { labelKey: "calendar.nav.title", Icon: Calendar, href: "/admin/calendar" },
       ],
     },
     {
@@ -72,6 +73,7 @@ export const SIDEBAR_NAV: Record<Role, NavGroup[]> = {
         { labelKey: "nav.dashboard", Icon: Element3, href: "/agency/dashboard" },
         { labelKey: "tours.nav.tours", Icon: Location, href: "/agency/tours" },
         { labelKey: "agency.tabs.bookings", Icon: ClipboardText, href: "/agency/bookings" },
+        { labelKey: "calendar.nav.title", Icon: Calendar, href: "/agency/calendar" },
         { labelKey: "agency.tabs.activities", Icon: Category, href: "/agency/activities" },
         { labelKey: "agency.tabs.packages", Icon: Calendar, href: "/agency/packages" },
       ],
@@ -85,6 +87,11 @@ export const SIDEBAR_NAV: Record<Role, NavGroup[]> = {
           labelKey: "profile.nav.profile",
           Icon: Profile2User,
           href: "/traveler/profile",
+        },
+        {
+          labelKey: "calendar.nav.title",
+          Icon: Calendar,
+          href: "/traveler/calendar",
         },
         {
           labelKey: "notifications.nav.title",

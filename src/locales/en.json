@@ -218,6 +218,7 @@
     "saved": "Saved",
     "saving": "Saving…",
     "delete": "Delete",
+    "edit": "Edit",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "all": "All",
@@ -229,7 +230,8 @@
       "deleteDescription": "This action can't be undone.",
       "bookingTitle": "Confirm this booking?",
       "bookingDescription": "The traveler will be notified once you confirm."
-    }
+    },
+    "moreActions": "More actions"
   },
   "status": {
     "draft": "Draft",
@@ -478,7 +480,10 @@
       "submit": "Verify",
       "submitting": "Verifying…",
       "invalid": "That code isn't right. Try again.",
+      "serverError": "Something went wrong. Please try again.",
       "resend": "Resend code",
+      "resending": "Sending…",
+      "resendIn": "Resend code in {{seconds}}s",
       "demoHint": "Demo code: 123456"
     },
     "forgot": {
@@ -497,9 +502,13 @@
       "submitting": "Updating…",
       "success": "Your password has been updated.",
       "goToLogin": "Continue to sign in",
+      "invalidTitle": "Invalid reset link",
+      "invalidToken": "This reset link is invalid or has expired.",
       "invalidLink": "This reset link is invalid or missing a token. Request a new password reset email.",
       "expiredToken": "This reset link has expired. Request a new password reset email.",
-      "failed": "Could not reset your password. Please try again."
+      "serverError": "Something went wrong. Please try again.",
+      "failed": "Could not reset your password. Please try again.",
+      "requestNew": "Request a new link"
     }
   },
   "landing": {
@@ -813,7 +822,8 @@
       "KOH_KONG": "Koh Kong",
       "MONDULKIRI": "Mondulkiri",
       "RATANAKIRI": "Ratanakiri",
-      "KRATIE": "Kratie"
+      "KRATIE": "Kratie",
+      "SIHANOUKVILLE": "Sihanoukville"
     },
     "travelTypes": {
       "ADVENTURE": "Adventure",
@@ -1040,8 +1050,18 @@
         "latitude": "Latitude",
         "longitude": "Longitude",
         "submit": "Create destination",
+        "editTitle": "Edit destination",
+        "editSubmit": "Save changes",
         "searchProvince": "Search province…",
-        "noProvince": "No province found"
+        "noProvince": "No province found",
+        "shortDescription": "Short description",
+        "shortDescriptionPlaceholder": "One-line summary",
+        "tags": "Tags",
+        "tagsPlaceholder": "Comma-separated, e.g. temple, sunrise, heritage",
+        "photos": "Photos",
+        "photosPlaceholder": "One image URL per line (or comma-separated)",
+        "featured": "Featured",
+        "trending": "Trending"
       }
     },
     "packages": {
@@ -1075,9 +1095,15 @@
         "new": "New destination",
         "empty": "No destinations yet.",
         "requestsEmpty": "No destination requests yet.",
+        "menuLabel": "Destination actions",
+        "deleteConfirm": {
+          "title": "Delete this destination?",
+          "description": "“{{name}}” will be permanently removed. This can't be undone."
+        },
         "tabs": {
           "all": "All destinations",
-          "requests": "Create requests"
+          "requests": "Create requests",
+          "featured": "Featured"
         }
       },
       "approvals": {
@@ -1454,7 +1480,11 @@
       "current": "Current",
       "proposed": "Proposed",
       "cardType": "Edit Request",
-      "activityLabel": "Activity"
+      "activityLabel": "Activity",
+      "targetTypes": {
+        "DESTINATION": "Destination",
+        "ACTIVITY": "Activity"
+      }
     },
     "reports": {
       "title": "Traveler reports",
@@ -1562,12 +1592,20 @@
       "error": "Couldn't load the dashboard.",
       "empty": "No analytics to show yet.",
       "kpi": {
+        "comparison": {
+          "vsYesterday": "vs yesterday",
+          "vsLastWeek": "vs last week",
+          "vsPrior30d": "vs prior 30 days",
+          "vsLastMonth": "vs last month",
+          "awaitingReview": "awaiting review",
+          "openIssues": "open issues"
+        },
         "totalUsers": "Total users",
         "totalDestinations": "Total destinations",
-        "totalTours": "Total tours",
+        "totalTours": "Total tour packages",
         "totalTrips": "Total trips",
-        "pendingAgencies": "Pending agencies",
-        "pendingReports": "Pending reports"
+        "pendingAgencies": "Pending agency requests",
+        "pendingReports": "Open reports"
       },
       "range": {
         "last7d": "Last 7 days",
@@ -1635,7 +1673,9 @@
       "tabs": {
         "activities": "Activities",
         "packages": "Packages"
-      }
+      },
+      "error": "Couldn't load content. Is the backend running?",
+      "empty": "No content yet."
     },
     "bookings": {
       "title": "Bookings & revenue",
@@ -1679,7 +1719,8 @@
           "title": "Bookings Overview",
           "week": "Week",
           "month": "Month",
-          "year": "Year"
+          "year": "Year",
+          "empty": "No bookings yet."
         },
         "revenue": {
           "title": "Revenue Overview",
@@ -2077,6 +2118,40 @@
       "body": "Thank you for helping keep Jalat safe. Our trust & safety team will review your report within 3–5 business days and follow up if we need more details.",
       "explore": "Explore Tours",
       "home": "Go Home"
+    }
+  },
+  "calendar": {
+    "title": "Calendar",
+    "nav": {
+      "title": "Calendar"
+    },
+    "subtitle": {
+      "traveler": "Your booked trips and trip plans",
+      "agency": "Booking requests and tour availability",
+      "admin": "All bookings across the platform"
+    },
+    "states": {
+      "empty": "No events to show yet",
+      "error": "We couldn't load your calendar"
+    },
+    "legend": {
+      "title": "Legend"
+    },
+    "types": {
+      "booking": "Bookings",
+      "tripPlan": "Trip plans",
+      "availability": "Availability"
+    },
+    "chrome": {
+      "today": "Today",
+      "day": "Day",
+      "week": "Week",
+      "month": "Month",
+      "year": "Year",
+      "agenda": "Agenda",
+      "more": "more",
+      "noEvents": "No events",
+      "allDay": "All day"
     }
   }
 }

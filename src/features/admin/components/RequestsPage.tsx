@@ -6,10 +6,10 @@ import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Chip, Tabs } from "@/ui";
 import { useLocalizedRouter } from "@/lib/locale";
-import { useAdminStore } from "../store";
 import { AgencyRequestsQueue } from "./AgencyRequestsQueue";
 import { EditRequestsQueue } from "./EditRequestsQueue";
 import { cn } from "@/lib/utils";
+import type { AdminAgencyProfile, AdminEditRequest } from "@/lib/api/admin";
 
 const RequestFlowPanel = dynamic(
   () =>
@@ -19,18 +19,20 @@ const RequestFlowPanel = dynamic(
 
 type View = "card" | "table";
 
-export function RequestsPage() {
+type Props = {
+  agencies: AdminAgencyProfile[];
+  editRequests: AdminEditRequest[];
+};
+
+export function RequestsPage({ agencies, editRequests }: Props) {
   const { t } = useTranslation();
   const params = useSearchParams();
   const tab = (params.get("tab") ?? "agencies") as "agencies" | "editRequests";
   const router = useLocalizedRouter();
   const [view, setView] = useState<View>("card");
 
-  const agencyRequests = useAdminStore((s) => s.agencyRequests);
-  const editRequests = useAdminStore((s) => s.editRequests);
-
-  const pendingAgency = agencyRequests.filter((r) => r.status === "pending").length;
-  const pendingEdit = editRequests.filter((r) => r.status === "pending").length;
+  const pendingAgency = agencies.filter((r) => r.status === "PENDING").length;
+  const pendingEdit = editRequests.filter((r) => r.status === "PENDING").length;
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-[7fr_3fr] gap-6 items-start">
@@ -134,17 +136,17 @@ export function RequestsPage() {
                 )}
           </div>
           <Tabs.Panel id="agencies" className="pt-5">
-            <AgencyRequestsQueue view={view} />
+            <AgencyRequestsQueue view={view} requests={agencies} />
           </Tabs.Panel>
           <Tabs.Panel id="editRequests" className="pt-5">
-            <EditRequestsQueue view={view} />
+            <EditRequestsQueue view={view} requests={editRequests} />
           </Tabs.Panel>
         </Tabs>
       </div>
 
       {/* ── right column: React Flow panel ── */}
       <div className="hidden xl:block">
-        <RequestFlowPanel tab={tab} />
+        <RequestFlowPanel tab={tab} agencies={agencies} editRequests={editRequests} />
       </div>
     </div>
   );

@@ -3,31 +3,41 @@
 import { useTranslation } from "react-i18next";
 import { Receipt21, TickCircle, WalletMoney } from "iconsax-reactjs";
 import { formatNumber, formatPrice } from "@/lib/format";
-import { useAdminStore } from "../store";
 import { BookingStatCard } from "./bookings/BookingStatCard";
 import { RecentBookingsCard } from "./bookings/RecentBookingsCard";
 import { BookingsTrendCard } from "./bookings/BookingsTrendCard";
 import { BookingRevenueCard } from "./bookings/BookingRevenueCard";
+import type { TripResponse } from "@/lib/api/bookings";
+import type { MonthlyBookingResponse } from "@/lib/api/profile";
 
 /**
  * Admin bookings dashboard. Left column: KPI tiles + a bookings-volume bar
  * chart; right column: a recent-bookings table + a revenue-by-status donut.
- * Everything derives from the read-only `adminBookings` store (dummy data).
+ * Data is fetched server-side (see `admin/bookings/page.tsx`): `totalCount` is
+ * the platform-wide trip count; the per-status/revenue figures derive from the
+ * fetched page of trips.
  */
-export function BookingsAdmin() {
+export function BookingsAdmin({
+  bookings,
+  totalCount,
+  monthly,
+}: {
+  bookings: TripResponse[];
+  totalCount: number;
+  monthly: MonthlyBookingResponse[];
+}) {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
-  const bookings = useAdminStore((s) => s.adminBookings);
 
-  const total = bookings.length;
-  const completed = bookings.filter((b) => b.status === "completed").length;
+  const total = totalCount;
+  const completed = bookings.filter((b) => b.status === "COMPLETED").length;
   const processed = bookings.filter(
-    (b) => b.status === "completed" || b.status === "approved",
+    (b) => b.status === "COMPLETED" || b.status === "APPROVED",
   ).length;
 
   const totalRevenue = bookings.reduce((sum, b) => sum + b.total, 0);
   const completedRevenue = bookings
-    .filter((b) => b.status === "completed")
+    .filter((b) => b.status === "COMPLETED")
     .reduce((sum, b) => sum + b.total, 0);
 
   return (
@@ -64,7 +74,7 @@ export function BookingsAdmin() {
           />
         </div>
 
-        <BookingsTrendCard />
+        <BookingsTrendCard data={monthly} />
       </div>
 
       {/* right column: recent bookings + revenue donut */}

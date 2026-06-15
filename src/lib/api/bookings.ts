@@ -1,4 +1,5 @@
 import { apiFetch, type PagedData, type PageParams } from "./client";
+import type { MonthlyBookingResponse } from "./profile";
 
 // ── Enums ─────────────────────────────────────────────────────────────────────
 
@@ -96,4 +97,20 @@ export function rejectTrip(id: string, body?: TripDecisionRequest): Promise<Trip
 
 export function completeTrip(id: string, body?: TripDecisionRequest): Promise<TripResponse> {
   return apiFetch(`/trips/${id}/complete`, { method: "PUT", body });
+}
+
+// ── Admin: all platform bookings ──────────────────────────────────────────────
+
+export interface AdminTripParams extends PageParams {
+  status?: TripStatus;
+}
+
+/** Every trip on the platform (ADMIN only), optionally filtered by status. */
+export function getAllTrips(params?: AdminTripParams): Promise<PagedData<TripResponse>> {
+  return apiFetch("/admin/trips", { params });
+}
+
+/** Platform-wide monthly booking counts for the trend chart (ADMIN only). */
+export function getAdminMonthlyBookings(months = 12): Promise<MonthlyBookingResponse[]> {
+  return apiFetch("/admin/trips/stats", { params: { months } });
 }

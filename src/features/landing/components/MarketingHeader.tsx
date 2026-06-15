@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LogoutCurve } from "iconsax-reactjs";
-import { Avatar, Button } from "@/ui";
+import { Avatar, Button, useConfirm } from "@/ui";
 import { LocaleLink } from "@/components/LocaleLink";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useSession } from "@/lib/auth";
@@ -42,6 +42,7 @@ export function MarketingHeader() {
   const { t } = useTranslation();
   const router = useLocalizedRouter();
   const { user } = useSession();
+  const confirm = useConfirm();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -52,6 +53,14 @@ export function MarketingHeader() {
   }, []);
 
   const handleLogout = async () => {
+    const ok = await confirm({
+      intent: "danger",
+      icon: <LogoutCurve size={20} color="currentColor" />,
+      title: t("common.confirmDialog.logoutTitle"),
+      description: t("common.confirmDialog.logoutDescription"),
+      confirmLabel: t("common.logout"),
+    });
+    if (!ok) return;
     await signOut({ redirect: false });
     router.replace("/");
   };

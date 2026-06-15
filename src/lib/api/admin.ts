@@ -15,13 +15,13 @@ export type ReportStatus = "PENDING" | "RESOLVED" | "DISMISSED";
 // ── Response types ────────────────────────────────────────────────────────────
 
 export interface AdminDashboardResponse {
-  kpis: Record<string, unknown>[];
-  volume: Record<string, unknown>[];
-  distribution: Record<string, unknown>[];
-  approvals: Record<string, unknown>[];
-  newUsers: Record<string, unknown>[];
-  recentRequests: Record<string, unknown>[];
-  feed: Record<string, unknown>[];
+  kpis: AdminKpiMetric[];
+  volume: AdminTrendPoint[];
+  distribution: AdminDistributionSlice[];
+  approvals: AdminApprovalPoint[];
+  newUsers: AdminTrendPoint[];
+  recentRequests: AdminAgencyRequestSummary[];
+  feed: AdminPlatformActivity[];
 }
 
 export interface UserSummaryResponse {
@@ -236,4 +236,102 @@ export function getAdminTours(
   params?: PageParams,
 ): Promise<PagedData<TourPackageResponse>> {
   return apiFetch("/tours", { params });
+}
+
+// ── Dashboard analytics display types ─────────────────────────────────────────
+// Consumed by the `/admin` overview chart cards (Recharts). The dashboard data
+// getter (`features/admin/data.ts`) reads `AdminDashboardResponse`'s generic
+// arrays and casts each into these typed shapes for the cards.
+
+/** A KPI tile. `key` is one of the backend metric ids (see KPI_META in StatCard). */
+export interface AdminKpiMetric {
+  key: string;
+  value: number;
+  deltaPct: number;
+  /** "up" | "down" | "neutral". */
+  deltaDir: string;
+  deltaGood: boolean;
+  /** Free-text caption from the backend (mapped to i18n in the UI). */
+  comparison: string;
+}
+
+/** One point on a trend chart. The backend reuses this record for several charts;
+ *  only the relevant numeric field is populated (the UI reads `count` first). */
+export interface AdminTrendPoint {
+  label: string;
+  bookings?: number | null;
+  packages?: number | null;
+  count?: number | null;
+}
+
+/** A donut slice. `fill` is a ready-to-use CSS color (hex). */
+export interface AdminDistributionSlice {
+  name: string;
+  value: number;
+  fill: string;
+}
+
+/** One bar group — approved vs rejected agency requests in a period. */
+export interface AdminApprovalPoint {
+  label: string;
+  approved: number;
+  rejected: number;
+}
+
+/** A row in the "recent agency requests" table. */
+export interface AdminAgencyRequestSummary {
+  id: string;
+  agencyName: string;
+  applicantEmail: string | null;
+  logoUrl: string | null;
+  adminNote: string | null;
+  /** Backend enum name: "PENDING" | "APPROVED" | "REJECTED". */
+  status: string;
+  /** ISO-8601 timestamp. */
+  createdAt: string;
+}
+
+/** A moderation-feed entry. `label`/`detail` are backend-formed display strings. */
+export interface AdminPlatformActivity {
+  /** "booking" | "approval" | "registration". */
+  type: string;
+  label: string;
+  detail: string;
+  /** ISO-8601 timestamp. */
+  occurredAt: string;
+}
+
+// ── Agency onboarding requests / activity edit requests (display types) ───────
+// Used by the admin requests queues + the React Flow lifecycle panel.
+
+/** Backend enum name. */
+export type AgencyStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+/** A become-an-agency request / agency profile awaiting moderation. */
+export interface AdminAgencyProfile {
+  id: string;
+  userId: string;
+  agencyName: string;
+  description: string | null;
+  logoUrl: string | null;
+  status: AgencyStatus;
+  adminNote: string | null;
+  /** ISO-8601 timestamp. */
+  createdAt: string;
+}
+
+/** What the agency wants edited. */
+export type EditRequestTargetType = "DESTINATION" | "ACTIVITY";
+
+export interface AdminEditRequest {
+  id: string;
+  requesterId: string;
+  targetType: EditRequestTargetType;
+  targetId: string;
+  message: string;
+  status: EditRequestStatus;
+  adminNote: string | null;
+  /** ISO-8601 timestamps. */
+  createdAt: string;
+  updatedAt: string;
 }

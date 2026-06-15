@@ -15,9 +15,8 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 import { useTranslation } from "react-i18next";
-import { useAdminStore } from "../store";
 import { StatusChip } from "@/ui";
-import type { AgencyRequest, EditRequest } from "../schema";
+import type { AdminAgencyProfile, AdminEditRequest } from "@/lib/api/admin";
 
 // ─── node data shape ────────────────────────────────────────────────────────
 
@@ -85,7 +84,10 @@ const RIGHT_X = 210;
 const ROW_H = 100;
 const START_Y = 20;
 
-function buildAgencyGraph(requests: AgencyRequest[]): {
+/** Lowercased backend status, used for edge color + StatusChip. */
+const lower = (s: string) => s.toLowerCase();
+
+function buildAgencyGraph(requests: AdminAgencyProfile[]): {
   nodes: Node[];
   edges: Edge[];
 } {
@@ -93,27 +95,28 @@ function buildAgencyGraph(requests: AgencyRequest[]): {
   const edges: Edge[] = [];
 
   requests.forEach((r, i) => {
+    const status = lower(r.status);
     const y = START_Y + i * ROW_H;
     nodes.push({
       id: `src-${r.id}`,
       type: "request",
       position: { x: LEFT_X, y },
-      data: { label: r.applicantName, sublabel: r.country, kind: "requester" },
+      data: { label: r.agencyName, sublabel: r.description ?? undefined, kind: "requester" },
     });
     nodes.push({
       id: `tgt-${r.id}`,
       type: "request",
       position: { x: RIGHT_X, y },
-      data: { label: r.agencyName, status: r.status, kind: "target" },
+      data: { label: r.agencyName, status, kind: "target" },
     });
     edges.push({
       id: `e-${r.id}`,
       source: `src-${r.id}`,
       target: `tgt-${r.id}`,
       type: "smoothstep",
-      animated: r.status === "pending",
+      animated: status === "pending",
       style: {
-        stroke: EDGE_COLOR[r.status] ?? "#94a3b8",
+        stroke: EDGE_COLOR[status] ?? "#94a3b8",
         strokeWidth: 2,
       },
     });
@@ -122,7 +125,7 @@ function buildAgencyGraph(requests: AgencyRequest[]): {
   return { nodes, edges };
 }
 
-function buildEditGraph(requests: EditRequest[]): {
+function buildEditGraph(requests: AdminEditRequest[]): {
   nodes: Node[];
   edges: Edge[];
 } {
@@ -130,27 +133,28 @@ function buildEditGraph(requests: EditRequest[]): {
   const edges: Edge[] = [];
 
   requests.forEach((r, i) => {
+    const status = lower(r.status);
     const y = START_Y + i * ROW_H;
     nodes.push({
       id: `esrc-${r.id}`,
       type: "request",
       position: { x: LEFT_X, y },
-      data: { label: r.agencyName, sublabel: "Agency", kind: "requester" },
+      data: { label: r.targetType, sublabel: "Agency", kind: "requester" },
     });
     nodes.push({
       id: `etgt-${r.id}`,
       type: "request",
       position: { x: RIGHT_X, y },
-      data: { label: r.activityTitle, sublabel: r.submittedAtLabel, status: r.status, kind: "target" },
+      data: { label: r.message, status, kind: "target" },
     });
     edges.push({
       id: `ee-${r.id}`,
       source: `esrc-${r.id}`,
       target: `etgt-${r.id}`,
       type: "smoothstep",
-      animated: r.status === "pending",
+      animated: status === "pending",
       style: {
-        stroke: EDGE_COLOR[r.status] ?? "#94a3b8",
+        stroke: EDGE_COLOR[status] ?? "#94a3b8",
         strokeWidth: 2,
       },
     });
@@ -188,17 +192,23 @@ function Legend() {
 const PANEL_HEIGHT = 680;
 const HEADER_H = 61;
 
-export function RequestFlowPanel({ tab }: { tab: "agencies" | "editRequests" }) {
+export function RequestFlowPanel({
+  tab,
+  agencies,
+  editRequests,
+}: {
+  tab: "agencies" | "editRequests";
+  agencies: AdminAgencyProfile[];
+  editRequests: AdminEditRequest[];
+}) {
   const { t } = useTranslation();
-  const agencyRequests = useAdminStore((s) => s.agencyRequests);
-  const editRequests = useAdminStore((s) => s.editRequests);
 
   const { nodes, edges } = useMemo(
     () =>
       tab === "agencies"
-        ? buildAgencyGraph(agencyRequests)
+        ? buildAgencyGraph(agencies)
         : buildEditGraph(editRequests),
-    [tab, agencyRequests, editRequests],
+    [tab, agencies, editRequests],
   );
 
   const title =

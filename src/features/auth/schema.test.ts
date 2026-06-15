@@ -4,8 +4,8 @@ import { OtpSchema, RegisterSchema, ResetPasswordSchema } from "./schema";
 const validRegister = {
   name: "Dara",
   email: "dara@example.com",
-  password: "password123",
-  confirmPassword: "password123",
+  password: "Password123",
+  confirmPassword: "Password123",
   accountType: "traveler" as const,
   acceptTerms: true,
 };
@@ -38,6 +38,25 @@ describe("RegisterSchema", () => {
         .success,
     ).toBe(false);
   });
+
+  it("requires an uppercase letter and a number", () => {
+    // no uppercase
+    expect(
+      RegisterSchema.safeParse({
+        ...validRegister,
+        password: "password123",
+        confirmPassword: "password123",
+      }).success,
+    ).toBe(false);
+    // no digit
+    expect(
+      RegisterSchema.safeParse({
+        ...validRegister,
+        password: "PasswordOnly",
+        confirmPassword: "PasswordOnly",
+      }).success,
+    ).toBe(false);
+  });
 });
 
 describe("OtpSchema", () => {
@@ -54,11 +73,11 @@ describe("OtpSchema", () => {
 describe("ResetPasswordSchema", () => {
   it("requires matching passwords", () => {
     expect(
-      ResetPasswordSchema.safeParse({ password: "password123", confirmPassword: "password123" })
+      ResetPasswordSchema.safeParse({ password: "Password123", confirmPassword: "Password123" })
         .success,
     ).toBe(true);
     expect(
-      ResetPasswordSchema.safeParse({ password: "password123", confirmPassword: "nope12345" })
+      ResetPasswordSchema.safeParse({ password: "Password123", confirmPassword: "Nope12345" })
         .success,
     ).toBe(false);
   });

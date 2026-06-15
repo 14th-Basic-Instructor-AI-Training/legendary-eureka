@@ -1,5 +1,3 @@
-import { auth } from "@/auth";
-
 const API_BASE = process.env.NEXT_API_URL ?? "http://localhost:8080/api/v1";
 
 /** Browser-safe API base — uses NEXT_PUBLIC_ so it's bundled into the client. */
@@ -81,6 +79,10 @@ export class ApiError extends Error {
 // ── Token helper ─────────────────────────────────────────────────────────────
 
 async function getBearerToken(): Promise<string | null> {
+  // Dynamic import keeps `next-auth` (and its `next/server` dependency) out of
+  // module load — so importing this file in a non-server context (e.g. tests)
+  // doesn't eagerly pull in the auth runtime.
+  const { auth } = await import("@/auth");
   const session = await auth();
   return session?.accessToken ?? null;
 }

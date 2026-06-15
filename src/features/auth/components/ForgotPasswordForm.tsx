@@ -9,7 +9,7 @@ import { Button, Form, Input } from "@/ui";
 import { LocaleLink } from "@/components/LocaleLink";
 import { useLocalizedRouter } from "@/lib/locale";
 import { ForgotPasswordSchema, type ForgotPasswordInput } from "@/features/auth/schema";
-import { requestPasswordReset } from "@/features/auth/data";
+import { forgotPasswordAction } from "@/features/auth/actions";
 import { AuthShell } from "./AuthShell";
 import { Field } from "./Field";
 
@@ -28,7 +28,9 @@ export function ForgotPasswordForm() {
   });
 
   const onSubmit = async (values: ForgotPasswordInput) => {
-    await requestPasswordReset(values);
+    // Always advance to the "sent" screen — the backend never reveals whether
+    // the email is registered, and neither should we.
+    await forgotPasswordAction(values.email);
     setSent(true);
   };
 
@@ -46,13 +48,8 @@ export function ForgotPasswordForm() {
             <TickCircle size={26} color="currentColor" variant="Bold" />
           </span>
           <p className="text-muted text-sm">{t("auth.forgot.sent")}</p>
-          <Button
-            variant="primary"
-            size="lg"
-            fullWidth
-            onPress={() => router.push("/reset-password")}
-          >
-            {t("auth.reset.title")}
+          <Button variant="primary" size="lg" fullWidth onPress={() => router.push("/login")}>
+            {t("auth.forgot.backToLogin")}
           </Button>
         </div>
       </AuthShell>

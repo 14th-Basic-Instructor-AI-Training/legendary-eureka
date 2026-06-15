@@ -6,8 +6,6 @@ import type {
   AdminPackage,
   AgencyRequest,
   EditRequest,
-  KpiKey,
-  KpiMetric,
   PlatformActivity,
   Report,
   SystemSettings,
@@ -30,46 +28,17 @@ const EMPTY_DASHBOARD: AdminDashboard = {
 
 // ── Read-only dashboard getter ────────────────────────────────────────────────
 
-const KPI_KEYS = new Set<KpiKey>([
-  "totalUsers",
-  "totalDestinations",
-  "totalTours",
-  "totalTrips",
-  "pendingAgencies",
-  "pendingReports",
-]);
-
-function mapKpi(raw: Record<string, unknown>): KpiMetric | null {
-  const key = raw.key;
-  if (typeof key !== "string" || !KPI_KEYS.has(key as KpiKey)) return null;
-
-  const deltaDir = raw.deltaDir;
-  const normalizedDir =
-    deltaDir === "up" || deltaDir === "down" || deltaDir === "neutral" ? deltaDir : "neutral";
-
-  return {
-    key: key as KpiKey,
-    value: Number(raw.value ?? 0),
-    deltaPct: Number(raw.deltaPct ?? 0),
-    deltaDir: normalizedDir,
-    deltaGood: Boolean(raw.deltaGood),
-    comparison: typeof raw.comparison === "string" ? raw.comparison : "",
-  };
-}
-
 export async function getAdminDashboard(): Promise<Result<AdminDashboard>> {
   try {
     const raw = await clientApiFetch<AdminDashboardResponse>("/admin/dashboard");
     const dashboard: AdminDashboard = {
-      kpis: (raw.kpis ?? [])
-        .map((item) => mapKpi(item as Record<string, unknown>))
-        .filter((item): item is KpiMetric => item !== null),
-      volume: (raw.volume ?? []) as AdminDashboard["volume"],
-      distribution: (raw.distribution ?? []) as AdminDashboard["distribution"],
-      approvals: (raw.approvals ?? []) as AdminDashboard["approvals"],
-      newUsers: (raw.newUsers ?? []) as AdminDashboard["newUsers"],
-      recentRequests: (raw.recentRequests ?? []) as AdminDashboard["recentRequests"],
-      feed: (raw.feed ?? []) as AdminDashboard["feed"],
+      kpis: (raw.kpis ?? []) as unknown as AdminDashboard["kpis"],
+      volume: (raw.volume ?? []) as unknown as AdminDashboard["volume"],
+      distribution: (raw.distribution ?? []) as unknown as AdminDashboard["distribution"],
+      approvals: (raw.approvals ?? []) as unknown as AdminDashboard["approvals"],
+      newUsers: (raw.newUsers ?? []) as unknown as AdminDashboard["newUsers"],
+      recentRequests: (raw.recentRequests ?? []) as unknown as AdminDashboard["recentRequests"],
+      feed: (raw.feed ?? []) as unknown as AdminDashboard["feed"],
     };
     return { ok: true, data: dashboard };
   } catch {

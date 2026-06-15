@@ -92,7 +92,7 @@ export async function requestPasswordReset(
 
 export type ResetPasswordResult = { ok: true } | { ok: false; error: "expired_token" };
 
-/** @deprecated Use resetPasswordAction from authActions instead. */
+/** @deprecated Use resetPasswordAction from features/auth/actions instead. */
 export async function resetPassword(
   _input: ResetPasswordInput,
 ): Promise<ResetPasswordResult> {

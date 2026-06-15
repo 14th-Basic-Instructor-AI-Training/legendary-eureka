@@ -1,25 +1,28 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useSearchParams } from "next/navigation";
 import { useLocalizedRouter } from "@/lib/locale";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
-import { TickCircle } from "iconsax-reactjs";
+import { TickCircle, Warning2 } from "iconsax-reactjs";
 import { Button, Form, PasswordInput } from "@/ui";
+import { LocaleLink } from "@/components/LocaleLink";
 import { ResetPasswordSchema, type ResetPasswordInput } from "@/features/auth/schema";
-import { resetPasswordAction } from "@/features/auth/authActions";
+import { resetPasswordAction } from "@/features/auth/actions";
 import { AuthShell } from "./AuthShell";
 import { Field } from "./Field";
 
-export function ResetPasswordForm() {
+type Props = {
+  /** The reset token from the email link (`/reset-password?token=…`). */
+  token: string | null;
+};
+
+export function ResetPasswordForm({ token }: Props) {
   const { t } = useTranslation();
   const router = useLocalizedRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
   const [done, setDone] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -31,30 +34,44 @@ export function ResetPasswordForm() {
     defaultValues: { password: "", confirmPassword: "" },
   });
 
+  const onSubmit = (values: ResetPasswordInput) => {
+    if (!token) {
+      setFormError(t("auth.reset.invalidToken"));
+      return;
+    }
+    setFormError(null);
+    startTransition(async () => {
+      const result = await resetPasswordAction(token, values.password);
+      if (!result.ok) {
+        setFormError(
+          result.error === "invalid_token"
+            ? t("auth.reset.invalidToken")
+            : t("auth.reset.serverError"),
+        );
+        return;
+      }
+      setDone(true);
+    });
+  };
+
   if (!token) {
     return (
-      <AuthShell title={t("auth.reset.title")}>
-        <p className="text-muted text-center text-sm">{t("auth.reset.invalidLink")}</p>
+      <AuthShell title={t("auth.reset.invalidTitle")}>
+        <div className="flex flex-col items-center gap-3 py-2 text-center">
+          <span className="bg-danger/10 text-danger inline-flex h-12 w-12 items-center justify-center rounded-full">
+            <Warning2 size={26} color="currentColor" variant="Bold" />
+          </span>
+          <p className="text-muted text-sm">{t("auth.reset.invalidToken")}</p>
+          <Button variant="primary" size="lg" fullWidth onPress={() => router.push("/forgot-password")}>
+            {t("auth.reset.requestNew")}
+          </Button>
+          <LocaleLink href="/login" className="text-primary text-sm font-medium hover:underline">
+            {t("auth.forgot.backToLogin")}
+          </LocaleLink>
+        </div>
       </AuthShell>
     );
   }
-
-  const onSubmit = (values: ResetPasswordInput) => {
-    setError(null);
-    startTransition(async () => {
-      const result = await resetPasswordAction({
-        token,
-        newPassword: values.password,
-      });
-      if (result.ok) {
-        setDone(true);
-      } else if (result.error === "expired_token") {
-        setError(t("auth.reset.expiredToken"));
-      } else {
-        setError(result.message ?? t("auth.reset.failed"));
-      }
-    });
-  };
 
   if (done) {
     return (
@@ -115,10 +132,10 @@ export function ResetPasswordForm() {
           />
         </Field>
 
-        {error ? (
-          <p className="text-danger text-sm" role="alert">
-            {error}
-          </p>
+        {formError ? (
+          <div className="bg-danger/10 text-danger rounded-lg px-3 py-2 text-sm" role="alert">
+            {formError}
+          </div>
         ) : null}
 
         <Button type="submit" fullWidth size="lg" isPending={isPending}>
