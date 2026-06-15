@@ -407,7 +407,8 @@
       "phonePlaceholder": "+855 …",
       "avatar": "Avatar URL",
       "bio": "Bio",
-      "save": "Save changes"
+      "save": "Save changes",
+      "upload": "Upload image"
     },
     "password": {
       "title": "Password",
@@ -495,7 +496,10 @@
       "submit": "Update password",
       "submitting": "Updating…",
       "success": "Your password has been updated.",
-      "goToLogin": "Continue to sign in"
+      "goToLogin": "Continue to sign in",
+      "invalidLink": "This reset link is invalid or missing a token. Request a new password reset email.",
+      "expiredToken": "This reset link has expired. Request a new password reset email.",
+      "failed": "Could not reset your password. Please try again."
     }
   },
   "landing": {

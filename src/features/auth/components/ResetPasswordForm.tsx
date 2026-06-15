@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLocalizedRouter } from "@/lib/locale";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,27 +9,51 @@ import { useTranslation } from "react-i18next";
 import { TickCircle } from "iconsax-reactjs";
 import { Button, Form, PasswordInput } from "@/ui";
 import { ResetPasswordSchema, type ResetPasswordInput } from "@/features/auth/schema";
-import { resetPassword } from "@/features/auth/data";
+import { resetPasswordAction } from "@/features/auth/authActions";
 import { AuthShell } from "./AuthShell";
 import { Field } from "./Field";
 
 export function ResetPasswordForm() {
   const { t } = useTranslation();
   const router = useLocalizedRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
   const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ResetPasswordInput>({
     resolver: zodResolver(ResetPasswordSchema),
     defaultValues: { password: "", confirmPassword: "" },
   });
 
-  const onSubmit = async (values: ResetPasswordInput) => {
-    await resetPassword(values);
-    setDone(true);
+  if (!token) {
+    return (
+      <AuthShell title={t("auth.reset.title")}>
+        <p className="text-muted text-center text-sm">{t("auth.reset.invalidLink")}</p>
+      </AuthShell>
+    );
+  }
+
+  const onSubmit = (values: ResetPasswordInput) => {
+    setError(null);
+    startTransition(async () => {
+      const result = await resetPasswordAction({
+        token,
+        newPassword: values.password,
+      });
+      if (result.ok) {
+        setDone(true);
+      } else if (result.error === "expired_token") {
+        setError(t("auth.reset.expiredToken"));
+      } else {
+        setError(result.message ?? t("auth.reset.failed"));
+      }
+    });
   };
 
   if (done) {
@@ -90,8 +115,14 @@ export function ResetPasswordForm() {
           />
         </Field>
 
-        <Button type="submit" fullWidth size="lg" isPending={isSubmitting}>
-          {isSubmitting ? t("auth.reset.submitting") : t("auth.reset.submit")}
+        {error ? (
+          <p className="text-danger text-sm" role="alert">
+            {error}
+          </p>
+        ) : null}
+
+        <Button type="submit" fullWidth size="lg" isPending={isPending}>
+          {isPending ? t("auth.reset.submitting") : t("auth.reset.submit")}
         </Button>
       </Form>
     </AuthShell>

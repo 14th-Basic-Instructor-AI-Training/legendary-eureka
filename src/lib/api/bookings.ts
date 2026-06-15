@@ -26,6 +26,7 @@ export interface TripResponse {
   packageTitle: string;
   // agency
   agencyId: string;
+  agencyName: string;
   // booking details
   status: TripStatus;
   numberOfPeople: number;

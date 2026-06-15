@@ -1,12 +1,12 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { TickCircle } from "iconsax-reactjs";
 import { Button, Form, Label, PasswordInput } from "@/ui";
-import { useSession } from "@/lib/auth";
-import { useTravelerStore } from "../store";
+import { changePasswordAction } from "../profileActions";
 import { PasswordChangeSchema, type PasswordChangeInput } from "../schema";
 
 function FieldError({ message }: { message?: string }) {
@@ -18,28 +18,38 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
-/** Settings → change password. Mock in the static phase (guarded, no persistence). */
+/** Settings → change password (logged-in). */
 export function PasswordChangeForm() {
   const { t } = useTranslation();
-  const { role } = useSession();
-  const changePassword = useTravelerStore((s) => s.changePassword);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const {
     control,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting, isDirty, isSubmitSuccessful },
+    formState: { errors, isDirty, isSubmitSuccessful },
   } = useForm<PasswordChangeInput>({
     resolver: zodResolver(PasswordChangeSchema),
     defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
   });
 
-  const onSubmit = () => {
-    changePassword(role);
-    reset(
-      { currentPassword: "", newPassword: "", confirmPassword: "" },
-      { keepIsSubmitSuccessful: true },
-    );
+  const onSubmit = (values: PasswordChangeInput) => {
+    setSaveError(null);
+    startTransition(async () => {
+      const result = await changePasswordAction({
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+      });
+      if (result.ok) {
+        reset(
+          { currentPassword: "", newPassword: "", confirmPassword: "" },
+          { keepIsSubmitSuccessful: true },
+        );
+      } else {
+        setSaveError(result.error);
+      }
+    });
   };
 
   const fields: { name: keyof PasswordChangeInput; label: string }[] = [
@@ -74,8 +84,10 @@ export function PasswordChangeForm() {
         </div>
       ))}
 
+      {saveError ? <FieldError message={saveError} /> : null}
+
       <div className="flex items-center gap-3">
-        <Button type="submit" variant="primary" isDisabled={!isDirty} isPending={isSubmitting}>
+        <Button type="submit" variant="primary" isDisabled={!isDirty} isPending={isPending}>
           {t("settings.password.save")}
         </Button>
         {isSubmitSuccessful && !isDirty ? (

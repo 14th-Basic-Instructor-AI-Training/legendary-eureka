@@ -24,15 +24,24 @@ export function forgotPassword(email: string): Promise<void> {
   });
 }
 
-export function resetPassword(
-  email: string,
-  token: string,
-  newPassword: string,
-): Promise<void> {
+export function resetPassword(body: {
+  token: string;
+  newPassword: string;
+}): Promise<void> {
   return apiFetch("/auth/reset-password", {
     method: "POST",
-    body: { email, token, newPassword },
+    body,
     auth: false,
+  });
+}
+
+export function changePassword(body: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<void> {
+  return apiFetch("/auth/change-password", {
+    method: "POST",
+    body,
   });
 }
 

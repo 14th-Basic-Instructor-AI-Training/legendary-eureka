@@ -63,6 +63,7 @@ export interface TravelerProfileResponse {
   displayName: string;
   bio: string;
   avatarUrl: string;
+  phone?: string | null;
   createdAt: string;
 }
 
@@ -82,6 +83,7 @@ export interface UpdateTravelerProfileRequest {
   displayName?: string;
   bio?: string;
   avatarUrl?: string;
+  phone?: string;
 }
 
 // ── Agency profile ────────────────────────────────────────────────────────────

@@ -4,12 +4,10 @@ import type { ComponentType } from "react";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { Calendar, Heart, Star1, TickCircle, Airplane } from "iconsax-reactjs";
-import { Card, Skeleton, StatusChip } from "@/ui";
+import { Card, StatusChip } from "@/ui";
 import { useLocalizedRouter } from "@/lib/locale";
 import { formatDate } from "@/lib/format";
-import { useTravelerStore } from "../store";
-import { useResource } from "../hooks";
-import { getRecentActivity } from "../data";
+import { useTravelerProfileData } from "../context";
 import type { ActivityKind } from "../schema";
 import { EmptyState } from "./EmptyState";
 
@@ -27,8 +25,7 @@ export function OverviewTab() {
   const lng = i18n.language;
   const router = useLocalizedRouter();
 
-  const bookings = useTravelerStore((s) => s.bookings);
-  const activity = useResource(getRecentActivity);
+  const { bookings, activity } = useTravelerProfileData();
 
   const upcoming = bookings
     .filter((b) => b.status === "pending" || b.status === "approved")
@@ -79,17 +76,11 @@ export function OverviewTab() {
         <h2 className="text-lg font-semibold tracking-tight">
           {t("profile.overview.recentActivity")}
         </h2>
-        {activity.status === "loading" ? (
-          <div className="flex flex-col gap-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-xl" />
-            ))}
-          </div>
-        ) : activity.status === "error" || !activity.data || activity.data.length === 0 ? (
+        {activity.length === 0 ? (
           <EmptyState message={t("profile.overview.noActivity")} />
         ) : (
           <Card className="bg-background border-border divide-border divide-y rounded-2xl border shadow-sm">
-            {activity.data.map((item) => {
+            {activity.map((item) => {
               const Icon = ACTIVITY_ICON[item.kind];
               return (
                 <button

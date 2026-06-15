@@ -57,3 +57,21 @@ export function postTripReview(
 ): Promise<ReviewResponse> {
   return apiFetch(`/trips/${tripId}/reviews`, { method: "POST", body });
 }
+
+export interface MyTripReviewResponse {
+  id: string;
+  tripId: string;
+  reviewerId: string;
+  targetType: ReviewTargetType;
+  targetId: string;
+  targetName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+export function getMyReviews(
+  params?: PageParams,
+): Promise<PagedData<MyTripReviewResponse>> {
+  return apiFetch("/reviews/mine", { params });
+}
