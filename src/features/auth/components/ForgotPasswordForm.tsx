@@ -7,7 +7,7 @@ import { Button, Form, Input } from "@/ui";
 import { LocaleLink } from "@/components/LocaleLink";
 import { useLocalizedRouter } from "@/lib/locale";
 import { ForgotPasswordSchema, type ForgotPasswordInput } from "@/features/auth/schema";
-import { forgotPasswordAction } from "@/features/auth/actions";
+import { forgotPasswordAction } from "@/actions/auth";
 import { useAuthStore } from "@/features/auth/store";
 import { AuthShell } from "./AuthShell";
 import { Field } from "./Field";

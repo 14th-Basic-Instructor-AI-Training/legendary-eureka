@@ -18,7 +18,7 @@ import {
   TickCircle,
 } from "iconsax-reactjs";
 import { Button, Card, Input, TextArea, Select, ListBox } from "@/ui";
-import { saveProfileAction, uploadAvatarAction, uploadFileAction } from "../profileActions";
+import { saveProfileAction, uploadAvatarAction, uploadFileAction } from "@/actions/agencyProfile";
 import type { AgencyProfile, ProfileReview } from "../schema";
 
 const CAMBODIA_PROVINCES = [

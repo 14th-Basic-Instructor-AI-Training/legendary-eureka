@@ -7,11 +7,8 @@ import { useTranslation } from "react-i18next";
 import { Add, Trash, CalendarAdd } from "iconsax-reactjs";
 import { Button, Form, Input, Label, Modal, TextArea } from "@/ui";
 import { useConfirm } from "@/ui";
-import {
-  createPersonalEvent,
-  deletePersonalEvent,
-  type PersonalEventResponse,
-} from "@/lib/api/calendar";
+import { createPersonalEvent, deletePersonalEvent } from "@/services/calendar.service";
+import type { PersonalEventResponse } from "@/lib/api/calendar";
 import { PersonalEventFormSchema, type PersonalEventFormValues } from "../schema";
 
 interface PersonalEventsPanelProps {

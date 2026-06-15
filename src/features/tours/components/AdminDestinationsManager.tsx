@@ -9,7 +9,7 @@ import { CardImage } from "@/ui/CardImage";
 import { formatPrice } from "@/lib/format";
 import { sendRealtime, DESTINATIONS_CHANGED } from "@/lib/realtime";
 import { DestinationForm } from "./DestinationForm";
-import { deleteDestinationAction } from "../actions";
+import { deleteDestinationAction } from "@/actions/tours";
 import type { DestinationResponse } from "@/lib/api/destinations";
 
 type DestinationTab = "all" | "mine";

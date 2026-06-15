@@ -1,5 +1,5 @@
 import { AdminControlPanel } from "@/features/admin/components/AdminControlPanel";
-import { getAdminDashboard } from "@/lib/api/admin";
+import { getAdminDashboard } from "@/services/admin.service";
 
 export default async function AdminControlPanelPage() {
   const dashboard = await getAdminDashboard();

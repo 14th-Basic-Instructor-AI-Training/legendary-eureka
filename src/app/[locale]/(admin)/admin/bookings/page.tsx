@@ -1,6 +1,6 @@
 import { AdminQueuePage } from "@/features/admin/components/AdminQueuePage";
 import { BookingsAdmin } from "@/features/admin/components/BookingsAdmin";
-import { getAllTrips, getAdminMonthlyBookings } from "@/lib/api/bookings";
+import { getAllTrips, getAdminMonthlyBookings } from "@/services/bookings.service";
 
 export default async function AdminBookingsPage() {
   const [trips, monthly] = await Promise.all([

@@ -1,8 +1,8 @@
 import { clientApiFetch, type PagedData, type Province } from "@/lib/api/client";
 import type { TourPackageResponse } from "@/lib/api/packages";
 import type { AgencyProfileResponse, AgencyReviewResponse, AgencyStatsResponse } from "@/lib/api/profile";
+import type { DestinationResponse } from "@/lib/api/destinations";
 import type {
-  DestinationResponse,
   ActivityResponse,
   RestaurantResponse,
   AccommodationResponse,

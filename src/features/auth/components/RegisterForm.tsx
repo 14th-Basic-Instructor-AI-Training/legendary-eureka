@@ -10,7 +10,7 @@ import { LocaleLink } from "@/components/LocaleLink";
 import { useLocalizedRouter } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 import { RegisterSchema, type AccountType, type RegisterInput } from "@/features/auth/schema";
-import { registerAction } from "@/features/auth/actions";
+import { registerAction } from "@/actions/auth";
 import { useAuthStore } from "@/features/auth/store";
 import { AuthShell } from "./AuthShell";
 import { Field } from "./Field";

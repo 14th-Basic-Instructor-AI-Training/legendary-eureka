@@ -7,7 +7,7 @@ import { Skeleton } from "@/ui";
 import { useResource } from "@/lib/useResource";
 import { useLocalizedRouter } from "@/lib/locale";
 import { getBookingForCheckout, computePricing } from "../data";
-import { createBookingAction } from "../actions";
+import { createBookingAction } from "@/actions/booking";
 import {
   CheckoutStepSchema,
   PaymentMethodSchema,

@@ -1,4 +1,4 @@
-import { apiFetch, type PagedData, type PageParams, type Province, type TravelType } from "./client";
+import type { Province, TravelType } from "./client";
 
 // ── Enums ─────────────────────────────────────────────────────────────────────
 
@@ -59,66 +59,4 @@ export interface TourAgendaItemRequest {
   title?: string;
   description?: string;
   activities?: string[];
-}
-
-// ── Tour packages ─────────────────────────────────────────────────────────────
-
-export function getPackages(params?: PageParams): Promise<PagedData<TourPackageResponse>> {
-  return apiFetch("/tours", { auth: false, params });
-}
-
-export function getPackage(id: string): Promise<TourPackageResponse> {
-  return apiFetch(`/tours/${id}`, { auth: false });
-}
-
-export function getMyPackages(params?: PageParams): Promise<PagedData<TourPackageResponse>> {
-  return apiFetch("/tours/mine", { params });
-}
-
-/** Every archived package across the platform (ADMIN only). */
-export function getArchivedPackages(
-  params?: PageParams,
-): Promise<PagedData<TourPackageResponse>> {
-  return apiFetch("/tours/archived", { params });
-}
-
-export function createPackage(body: TourPackageRequest): Promise<TourPackageResponse> {
-  return apiFetch("/tours", { method: "POST", body });
-}
-
-export function updatePackage(id: string, body: TourPackageRequest): Promise<TourPackageResponse> {
-  return apiFetch(`/tours/${id}`, { method: "PUT", body });
-}
-
-export function publishPackage(id: string): Promise<TourPackageResponse> {
-  return apiFetch(`/tours/${id}/publish`, { method: "PUT" });
-}
-
-export function archivePackage(id: string): Promise<TourPackageResponse> {
-  return apiFetch(`/tours/${id}/archive`, { method: "PUT" });
-}
-
-export function deletePackage(id: string): Promise<void> {
-  return apiFetch(`/tours/${id}`, { method: "DELETE" });
-}
-
-// ── Tour agenda items ─────────────────────────────────────────────────────────
-
-export function addAgendaItem(
-  tourId: string,
-  body: TourAgendaItemRequest,
-): Promise<TourPackageResponse> {
-  return apiFetch(`/tours/${tourId}/agenda`, { method: "POST", body });
-}
-
-export function updateAgendaItem(
-  tourId: string,
-  itemId: string,
-  body: TourAgendaItemRequest,
-): Promise<TourPackageResponse> {
-  return apiFetch(`/tours/${tourId}/agenda/${itemId}`, { method: "PUT", body });
-}
-
-export function removeAgendaItem(tourId: string, itemId: string): Promise<TourPackageResponse> {
-  return apiFetch(`/tours/${tourId}/agenda/${itemId}`, { method: "DELETE" });
 }

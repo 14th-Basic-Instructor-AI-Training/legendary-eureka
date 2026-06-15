@@ -1,5 +1,4 @@
-import { apiFetch, type PagedData, type PageParams } from "./client";
-import type { MonthlyBookingResponse } from "./profile";
+import type { PageParams } from "./client";
 
 // ── Enums ─────────────────────────────────────────────────────────────────────
 
@@ -63,54 +62,8 @@ export interface TripDecisionRequest {
   agencyNote?: string;
 }
 
-// ── Traveler: own bookings ────────────────────────────────────────────────────
-
-export function bookTrip(body: TripRequest): Promise<TripResponse> {
-  return apiFetch("/trips", { method: "POST", body });
-}
-
-export function getMyTrips(params?: PageParams): Promise<PagedData<TripResponse>> {
-  return apiFetch("/trips/mine", { params });
-}
-
-export function getTrip(id: string): Promise<TripResponse> {
-  return apiFetch(`/trips/${id}`);
-}
-
-export function cancelTrip(id: string): Promise<TripResponse> {
-  return apiFetch(`/trips/${id}/cancel`, { method: "PUT" });
-}
-
-// ── Agency: incoming bookings ─────────────────────────────────────────────────
-
-export function getIncomingTrips(params?: PageParams): Promise<PagedData<TripResponse>> {
-  return apiFetch("/trips/incoming", { params });
-}
-
-export function approveTrip(id: string, body?: TripDecisionRequest): Promise<TripResponse> {
-  return apiFetch(`/trips/${id}/approve`, { method: "PUT", body });
-}
-
-export function rejectTrip(id: string, body?: TripDecisionRequest): Promise<TripResponse> {
-  return apiFetch(`/trips/${id}/reject`, { method: "PUT", body });
-}
-
-export function completeTrip(id: string, body?: TripDecisionRequest): Promise<TripResponse> {
-  return apiFetch(`/trips/${id}/complete`, { method: "PUT", body });
-}
-
 // ── Admin: all platform bookings ──────────────────────────────────────────────
 
 export interface AdminTripParams extends PageParams {
   status?: TripStatus;
-}
-
-/** Every trip on the platform (ADMIN only), optionally filtered by status. */
-export function getAllTrips(params?: AdminTripParams): Promise<PagedData<TripResponse>> {
-  return apiFetch("/admin/trips", { params });
-}
-
-/** Platform-wide monthly booking counts for the trend chart (ADMIN only). */
-export function getAdminMonthlyBookings(months = 12): Promise<MonthlyBookingResponse[]> {
-  return apiFetch("/admin/trips/stats", { params: { months } });
 }

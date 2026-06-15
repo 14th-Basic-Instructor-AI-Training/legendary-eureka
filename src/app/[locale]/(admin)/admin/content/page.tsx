@@ -1,5 +1,7 @@
-import { getDestinations, type DestinationResponse } from "@/lib/api/activities";
-import { getPackages, getArchivedPackages, type TourPackageResponse } from "@/lib/api/packages";
+import { getAdminDestinations } from "@/services/admin.service";
+import type { DestinationResponse } from "@/lib/api/admin";
+import { getPackages, getArchivedPackages } from "@/services/packages.service";
+import type { TourPackageResponse } from "@/lib/api/packages";
 import { ContentPage } from "@/features/admin/components/ContentPage";
 
 /**
@@ -15,7 +17,7 @@ export default async function AdminContentPage() {
 
   try {
     const [destinationsPage, packagesPage, archivedPage] = await Promise.all([
-      getDestinations({ size: 100 }),
+      getAdminDestinations({ size: 100 }),
       getPackages({ size: 100 }),
       getArchivedPackages({ size: 100 }),
     ]);

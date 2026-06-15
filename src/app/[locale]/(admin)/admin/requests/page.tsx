@@ -1,11 +1,6 @@
 import { RequestsPage } from "@/features/admin/components/RequestsPage";
-import {
-  getAdminAgencies,
-  getAdminEditRequests,
-  type AdminAgencyProfile,
-  type AdminEditRequest,
-  type EditRequestTargetType,
-} from "@/lib/api/admin";
+import { getAdminAgencies, getAdminEditRequests } from "@/services/admin.service";
+import type { AdminAgencyProfile, AdminEditRequest, EditRequestTargetType } from "@/lib/api/admin";
 
 export default async function AdminRequestsPage() {
   const [agencies, editRequests] = await Promise.all([

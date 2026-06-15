@@ -7,7 +7,7 @@ import { Button, Card, Form, Input, Label, ListBox, Select } from "@/ui";
 import { CAMBODIA_PROVINCE_CODES, TravelTypeSchema } from "@/features/destinations/schema";
 import type { TourPackageResponse } from "@/lib/api/packages";
 import type { Province, TravelType } from "@/lib/api/client";
-import { createPackageAction } from "../actions";
+import { createPackageAction } from "@/actions/tours";
 import type { DestinationResponse } from "@/lib/api/destinations";
 import {
   NewPackageSchema,

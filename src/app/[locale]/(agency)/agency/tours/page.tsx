@@ -1,5 +1,5 @@
-import { getMyPackages } from "@/lib/api/packages";
-import { getMyDestinations } from "@/lib/api/destinations";
+import { getMyPackages } from "@/services/packages.service";
+import { getMyDestinations } from "@/services/destinations.service";
 import { ToursWorkspace } from "@/features/tours/components/ToursWorkspace";
 
 export default async function AgencyToursPage() {

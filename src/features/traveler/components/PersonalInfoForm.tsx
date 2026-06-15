@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { TickCircle } from "iconsax-reactjs";
 import { Button, Form, Input, Label, TextArea } from "@/ui";
 import { useSession } from "@/lib/auth";
-import { saveTravelerProfileAction, uploadTravelerAvatarAction } from "../profileActions";
+import { saveTravelerProfileAction, uploadTravelerAvatarAction } from "@/actions/travelerProfile";
 import { useTravelerProfileData } from "../context";
 import { PersonalInfoSchema, type PersonalInfoFormValues } from "../schema";
 

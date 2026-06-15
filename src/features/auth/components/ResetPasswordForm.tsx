@@ -9,7 +9,7 @@ import { TickCircle, Warning2 } from "iconsax-reactjs";
 import { Button, Form, PasswordInput } from "@/ui";
 import { LocaleLink } from "@/components/LocaleLink";
 import { ResetPasswordSchema, type ResetPasswordInput } from "@/features/auth/schema";
-import { resetPasswordAction } from "@/features/auth/actions";
+import { resetPasswordAction } from "@/actions/auth";
 import { useAuthStore } from "@/features/auth/store";
 import { AuthShell } from "./AuthShell";
 import { Field } from "./Field";

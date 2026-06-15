@@ -1,8 +1,8 @@
-import { getMyTrips } from "@/lib/api/bookings";
-import { getBookmarks } from "@/lib/api/bookmarks";
-import { getMyTravelerProfile } from "@/lib/api/profile";
-import { getMyReviews } from "@/lib/api/reviews";
-import { getMyTripPlans } from "@/lib/api/tripPlans";
+import { getMyTrips } from "@/services/bookings.service";
+import { getBookmarks } from "@/services/bookmarks.service";
+import { getMyTravelerProfile } from "@/services/profile.service";
+import { getMyReviews } from "@/services/reviews.service";
+import { getMyTripPlans } from "@/services/tripPlans.service";
 import { TravelerProfileScreen } from "@/features/traveler/components/TravelerProfileScreen";
 import {
   apiBookmarkToBookmark,

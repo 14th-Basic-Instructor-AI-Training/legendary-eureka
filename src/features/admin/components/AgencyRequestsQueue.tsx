@@ -8,7 +8,7 @@ import { Button, Input, Pagination, StatusChip, Tabs, Table, useConfirm } from "
 import { useSession } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 import { formatDate } from "@/lib/format";
-import { approveAgencyAction, rejectAgencyAction } from "../actions";
+import { approveAgencyAction, rejectAgencyAction } from "@/actions/admin";
 import { cn } from "@/lib/utils";
 import type { AdminAgencyProfile, AgencyStatus } from "@/lib/api/admin";
 

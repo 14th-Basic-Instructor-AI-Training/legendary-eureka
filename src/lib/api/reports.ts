@@ -1,5 +1,3 @@
-import { apiFetch } from "./client";
-
 export type ReportTargetType = "AGENCY" | "TOUR";
 export type ReportReason = "FRAUD" | "MISLEADING" | "INAPPROPRIATE" | "OTHER";
 
@@ -19,8 +17,4 @@ export interface CreateReportRequest {
   targetId: string;
   reason: ReportReason;
   description?: string;
-}
-
-export function submitReport(body: CreateReportRequest): Promise<ReportResponse> {
-  return apiFetch("/reports", { method: "POST", body });
 }

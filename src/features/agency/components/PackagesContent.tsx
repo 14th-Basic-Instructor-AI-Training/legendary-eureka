@@ -34,7 +34,7 @@ import {
   publishPackageApi,
   archivePackageApi,
 } from "@/features/agency/data";
-import { uploadFileAction } from "@/features/agency/profileActions";
+import { uploadFileAction } from "@/actions/agencyProfile";
 import { useSession } from "@/lib/auth";
 import { useAgencyStore, type PackageInput } from "@/features/agency/store";
 import type { Activity, ItineraryDay, Package } from "@/features/agency/schema";

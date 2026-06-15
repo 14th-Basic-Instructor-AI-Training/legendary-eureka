@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { TickCircle } from "iconsax-reactjs";
 import { Button, Form, Label, PasswordInput } from "@/ui";
-import { changePasswordAction } from "../profileActions";
+import { changePasswordAction } from "@/actions/travelerProfile";
 import { PasswordChangeSchema, type PasswordChangeInput } from "../schema";
 
 function FieldError({ message }: { message?: string }) {

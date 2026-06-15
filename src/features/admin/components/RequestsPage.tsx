@@ -139,7 +139,7 @@ export function RequestsPage({ agencies, editRequests }: Props) {
             <AgencyRequestsQueue view={view} requests={agencies} />
           </Tabs.Panel>
           <Tabs.Panel id="editRequests" className="pt-5">
-            <EditRequestsQueue view={view} requests={editRequests} />
+            <EditRequestsQueue view={view} />
           </Tabs.Panel>
         </Tabs>
       </div>

@@ -1,4 +1,4 @@
-import { getMyAgencyProfile, getMyAgencyReviews } from "@/lib/api/profile";
+import { getMyAgencyProfile, getMyAgencyReviews } from "@/services/profile.service";
 import { apiProfileToAgencyProfile, apiReviewToProfileReview } from "@/features/agency/mappers";
 import { AgencyProfileWorkspace } from "@/features/agency/components/AgencyProfileWorkspace";
 

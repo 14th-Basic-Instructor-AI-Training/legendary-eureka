@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Receipt21 } from "iconsax-reactjs";
 import { Reveal } from "@/ui";
 import { useTravelerProfileData } from "../context";
-import { cancelBookingAction } from "../profileActions";
+import { cancelBookingAction } from "@/actions/travelerProfile";
 import type { BookingHistory, BookingSegment, BookingStatus } from "../schema";
 import { BookingHistoryCard } from "./BookingHistoryCard";
 import { ConfirmDialog } from "./ConfirmDialog";

@@ -7,7 +7,7 @@ import { Tabs } from "@/ui";
 import { useLocalizedRouter } from "@/lib/locale";
 import { PackagesAdmin } from "./PackagesAdmin";
 import { AdminDestinationsManager } from "@/features/tours/components/AdminDestinationsManager";
-import type { DestinationResponse } from "@/lib/api/activities";
+import type { DestinationResponse } from "@/lib/api/destinations";
 import type { TourPackageResponse } from "@/lib/api/packages";
 
 export function ContentPage({

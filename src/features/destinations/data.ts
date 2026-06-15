@@ -1,5 +1,5 @@
 import { publicApiFetch, type PagedData } from "@/lib/api/client";
-import type { DestinationResponse } from "@/lib/api/activities";
+import type { DestinationResponse } from "@/lib/api/destinations";
 import type { TourPackageResponse } from "@/lib/api/packages";
 import type { AgencyProfileResponse } from "@/lib/api/profile";
 import type { ReviewResponse } from "@/lib/api/reviews";

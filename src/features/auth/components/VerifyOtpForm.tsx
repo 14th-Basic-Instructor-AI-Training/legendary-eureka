@@ -12,7 +12,7 @@ import {
   verifyResetOtpAction,
   resendOtpAction,
   forgotPasswordAction,
-} from "@/features/auth/actions";
+} from "@/actions/auth";
 import { useAuthStore } from "@/features/auth/store";
 import { AuthShell } from "./AuthShell";
 import { Field } from "./Field";

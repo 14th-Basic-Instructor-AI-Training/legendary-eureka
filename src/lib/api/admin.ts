@@ -1,8 +1,8 @@
-import { apiFetch, type PagedData, type PageParams } from "./client";
-import type { AgencyProfileResponse } from "./profile";
-import type { TripResponse } from "./bookings";
+import type { PageParams } from "./client";
+import type { AgencyProfileResponse, AgencyStatus } from "./profile";
+import type { AdminTripParams } from "./bookings";
 import type { TourPackageResponse } from "./packages";
-import type { DestinationResponse } from "./activities";
+import type { DestinationResponse } from "./destinations";
 
 // ── Status types ──────────────────────────────────────────────────────────────
 
@@ -105,10 +105,6 @@ export interface AdminAgencyParams extends PageParams {
   status?: AdminAgencyStatus;
 }
 
-export interface AdminTripParams extends PageParams {
-  status?: string;
-}
-
 export interface AdminEditRequestParams extends PageParams {
   status?: EditRequestStatus;
 }
@@ -117,131 +113,15 @@ export interface AdminReportParams extends PageParams {
   status?: ReportStatus;
 }
 
-// ── Admin dashboard ───────────────────────────────────────────────────────────
+// ── Re-exports ────────────────────────────────────────────────────────────────
 
-export function getAdminDashboard(): Promise<AdminDashboardResponse> {
-  return apiFetch("/admin/dashboard");
-}
-
-// ── Agency management ─────────────────────────────────────────────────────────
-
-export function getAdminAgencies(
-  params?: AdminAgencyParams,
-): Promise<PagedData<AgencyProfileResponse>> {
-  return apiFetch("/admin/agencies", { params });
-}
-
-export function updateAdminAgency(
-  id: string,
-  body: AdminAgencyUpdateRequest,
-): Promise<AgencyProfileResponse> {
-  return apiFetch(`/admin/agencies/${id}`, { method: "PUT", body });
-}
-
-// ── Edit requests ─────────────────────────────────────────────────────────────
-
-export function getAdminEditRequests(
-  params?: AdminEditRequestParams,
-): Promise<PagedData<EditRequestResponse>> {
-  return apiFetch("/admin/edit-requests", { params });
-}
-
-export function approveEditRequest(
-  id: string,
-  body?: AdminEditRequestDecision,
-): Promise<EditRequestResponse> {
-  return apiFetch(`/admin/edit-requests/${id}/approve`, { method: "PUT", body });
-}
-
-export function rejectEditRequest(
-  id: string,
-  body?: AdminEditRequestDecision,
-): Promise<EditRequestResponse> {
-  return apiFetch(`/admin/edit-requests/${id}/reject`, { method: "PUT", body });
-}
-
-// ── Reports ───────────────────────────────────────────────────────────────────
-
-export function getAdminReports(
-  params?: AdminReportParams,
-): Promise<PagedData<ReportResponse>> {
-  return apiFetch("/admin/reports", { params });
-}
-
-export function resolveAdminReport(
-  id: string,
-  body: AdminReportDecision,
-): Promise<ReportResponse> {
-  return apiFetch(`/admin/reports/${id}/resolve`, { method: "PUT", body });
-}
-
-// ── User management ───────────────────────────────────────────────────────────
-
-export function getAdminUsers(
-  params?: AdminUserParams,
-): Promise<PagedData<UserSummaryResponse>> {
-  return apiFetch("/admin/users", { params });
-}
-
-export function suspendUser(id: string): Promise<UserSummaryResponse> {
-  return apiFetch(`/admin/users/${id}/suspend`, { method: "PUT" });
-}
-
-export function banUser(id: string): Promise<UserSummaryResponse> {
-  return apiFetch(`/admin/users/${id}/ban`, { method: "PUT" });
-}
-
-export function reactivateUser(id: string): Promise<UserSummaryResponse> {
-  return apiFetch(`/admin/users/${id}/reactivate`, { method: "PUT" });
-}
-
-export function changeUserRole(
-  id: string,
-  role: AdminUserRole,
-): Promise<UserSummaryResponse> {
-  return apiFetch(`/admin/users/${id}/role`, { method: "PUT", body: { role } });
-}
-
-// ── System settings ───────────────────────────────────────────────────────────
-
-export function getSystemSettings(): Promise<SystemSettingsResponse> {
-  return apiFetch("/admin/settings");
-}
-
-export function updateSystemSettings(
-  body: UpdateSystemSettingsRequest,
-): Promise<SystemSettingsResponse> {
-  return apiFetch("/admin/settings", { method: "PUT", body });
-}
-
-// ── Trips (admin read) ────────────────────────────────────────────────────────
-
-export function getAdminTrips(
-  params?: AdminTripParams,
-): Promise<PagedData<TripResponse>> {
-  return apiFetch("/trips", { params });
-}
-
-// ── Destinations (admin) — delegates to existing activities module ────────────
 export type { DestinationResponse };
-export function getAdminDestinations(
-  params?: PageParams,
-): Promise<PagedData<DestinationResponse>> {
-  return apiFetch("/destinations", { params });
-}
-
-// ── Tours (admin) — delegates to existing packages module ─────────────────────
+export type { AdminTripParams };
 export type { TourPackageResponse };
-export function getAdminTours(
-  params?: PageParams,
-): Promise<PagedData<TourPackageResponse>> {
-  return apiFetch("/tours", { params });
-}
+export type { AgencyStatus };
+export type { AgencyProfileResponse };
 
 // ── Dashboard analytics display types ─────────────────────────────────────────
-// Consumed by the `/admin` overview chart cards (Recharts). The dashboard data
-// getter (`features/admin/data.ts`) reads `AdminDashboardResponse`'s generic
-// arrays and casts each into these typed shapes for the cards.
 
 /** A KPI tile. `key` is one of the backend metric ids (see KPI_META in StatCard). */
 export interface AdminKpiMetric {
@@ -255,8 +135,7 @@ export interface AdminKpiMetric {
   comparison: string;
 }
 
-/** One point on a trend chart. The backend reuses this record for several charts;
- *  only the relevant numeric field is populated (the UI reads `count` first). */
+/** One point on a trend chart. */
 export interface AdminTrendPoint {
   label: string;
   bookings?: number | null;
@@ -301,11 +180,7 @@ export interface AdminPlatformActivity {
   occurredAt: string;
 }
 
-// ── Agency onboarding requests / activity edit requests (display types) ───────
-// Used by the admin requests queues + the React Flow lifecycle panel.
-
-/** Backend enum name. */
-export type AgencyStatus = "PENDING" | "APPROVED" | "REJECTED";
+// ── Agency onboarding requests / activity edit requests ───────────────────────
 
 /** A become-an-agency request / agency profile awaiting moderation. */
 export interface AdminAgencyProfile {

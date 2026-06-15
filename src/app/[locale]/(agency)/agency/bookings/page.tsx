@@ -1,4 +1,4 @@
-import { getIncomingTrips } from "@/lib/api/bookings";
+import { getIncomingTrips } from "@/services/bookings.service";
 import { tripToBookingRequest } from "@/features/agency/mappers";
 import { BookingsContent } from "@/features/agency/components/BookingsContent";
 

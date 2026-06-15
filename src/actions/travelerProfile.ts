@@ -1,11 +1,11 @@
 "use server";
 
-import { updateMyTravelerProfile } from "@/lib/api/profile";
-import { uploadFile } from "@/lib/api/files";
-import { changePassword } from "@/lib/api/authApi";
-import { cancelTrip } from "@/lib/api/bookings";
+import { updateMyTravelerProfile } from "@/services/profile.service";
+import { uploadFile } from "@/services/files.service";
+import { changePassword } from "@/services/auth.service";
+import { cancelTrip } from "@/services/bookings.service";
 import { ApiError } from "@/lib/api/client";
-import { personalInfoToUpdateBody } from "./mappers";
+import { personalInfoToUpdateBody } from "@/features/traveler/mappers";
 
 export interface SaveTravelerProfileInput {
   name: string;

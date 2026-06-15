@@ -4,17 +4,15 @@ import {
   createDestination,
   updateDestination,
   deleteDestination,
-  type CreateDestinationRequest,
-  type DestinationResponse,
-} from "@/lib/api/destinations";
+} from "@/services/destinations.service";
+import type { CreateDestinationRequest, DestinationResponse } from "@/lib/api/destinations";
 import {
   archivePackage,
   createPackage,
   deletePackage,
   publishPackage,
-  type TourPackageRequest,
-  type TourPackageResponse,
-} from "@/lib/api/packages";
+} from "@/services/packages.service";
+import type { TourPackageRequest, TourPackageResponse } from "@/lib/api/packages";
 import { ApiError } from "@/lib/api/client";
 
 /**

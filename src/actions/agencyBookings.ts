@@ -1,6 +1,6 @@
 "use server";
 
-import { approveTrip, rejectTrip, completeTrip } from "@/lib/api/bookings";
+import { approveTrip, rejectTrip, completeTrip } from "@/services/bookings.service";
 import { ApiError } from "@/lib/api/client";
 
 /**

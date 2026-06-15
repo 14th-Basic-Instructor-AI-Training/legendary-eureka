@@ -32,7 +32,7 @@ import {
 } from "../schema";
 import type { DestinationResponse } from "@/lib/api/destinations";
 import type { Province, TravelType } from "@/lib/api/client";
-import { createDestinationAction, updateDestinationAction } from "../actions";
+import { createDestinationAction, updateDestinationAction } from "@/actions/tours";
 import { useToursStore } from "../store";
 
 const PROVINCES = CAMBODIA_PROVINCE_CODES;

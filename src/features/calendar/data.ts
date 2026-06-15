@@ -1,12 +1,6 @@
 import type { Role } from "@/features/auth/schema";
-import {
-  getCalendarMyTrips,
-  getCalendarAgencyBookings,
-  getPersonalEvents,
-  type CalendarTripEntry,
-  type PersonalEventResponse,
-  type TripStatus as ApiTripStatus,
-} from "@/lib/api/calendar";
+import { getCalendarMyTrips, getCalendarAgencyBookings, getPersonalEvents } from "@/services/calendar.service";
+import type { CalendarTripEntry, PersonalEventResponse, TripStatus as ApiTripStatus } from "@/lib/api/calendar";
 import { CalendarEventSchema, type CalendarEvent, type CalendarEventStatus } from "./schema";
 
 /**

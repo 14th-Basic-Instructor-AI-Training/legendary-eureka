@@ -14,7 +14,7 @@ import {
   MoneyRecive,
   CloseSquare,
 } from "iconsax-reactjs";
-import { approveBookingAction, rejectBookingAction } from "@/features/agency/bookingActions";
+import { approveBookingAction, rejectBookingAction } from "@/actions/agencyBookings";
 import type { BookingRequest } from "@/features/agency/schema";
 import { cn } from "@/lib/utils";
 import { Button, SearchField, TextArea } from "@/ui";

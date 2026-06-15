@@ -4,8 +4,8 @@ import {
   getMyAgencyStats,
   getMonthlyBookings,
   getBookingStatusSummary,
-} from "@/lib/api/profile";
-import { getIncomingTrips } from "@/lib/api/bookings";
+} from "@/services/profile.service";
+import { getIncomingTrips } from "@/services/bookings.service";
 import AgencyDashboardView from "@/features/agency/components/AgencyDashboardView";
 
 export default async function DashboardPage() {

@@ -13,7 +13,7 @@ import {
   archivePackageAction,
   deletePackageAction,
   publishPackageAction,
-} from "@/features/tours/actions";
+} from "@/actions/tours";
 import { TourApprovalsQueue } from "@/features/tours/components/TourApprovalsQueue";
 import { useToursStore } from "@/features/tours/store";
 import type { TourPackageResponse } from "@/lib/api/packages";

@@ -1,6 +1,7 @@
 "use server";
 
-import { bookTrip, type TripRequest, type TripResponse } from "@/lib/api/bookings";
+import { bookTrip } from "@/services/bookings.service";
+import type { TripRequest, TripResponse } from "@/lib/api/bookings";
 import { ApiError } from "@/lib/api/client";
 
 /**

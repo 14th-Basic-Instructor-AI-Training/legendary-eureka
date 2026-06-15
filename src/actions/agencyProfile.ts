@@ -1,9 +1,9 @@
 "use server";
 
-import { updateMyAgencyProfile } from "@/lib/api/profile";
-import { uploadFile } from "@/lib/api/files";
+import { updateMyAgencyProfile } from "@/services/profile.service";
+import { uploadFile } from "@/services/files.service";
 import { ApiError } from "@/lib/api/client";
-import { formToBio } from "./mappers";
+import { formToBio } from "@/features/agency/mappers";
 
 export interface SaveProfileInput {
   agencyName?: string;

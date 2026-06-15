@@ -6,7 +6,7 @@ import { Add, Location } from "iconsax-reactjs";
 import { Button } from "@/ui";
 import { formatPrice } from "@/lib/format";
 import type { DestinationResponse } from "@/lib/api/destinations";
-import { deleteDestinationAction } from "../actions";
+import { deleteDestinationAction } from "@/actions/tours";
 import { DestinationForm } from "./DestinationForm";
 
 type Props = {

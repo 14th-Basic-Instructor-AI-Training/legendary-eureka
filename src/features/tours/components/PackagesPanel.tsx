@@ -10,7 +10,7 @@ import {
   publishPackageAction,
   archivePackageAction,
   deletePackageAction,
-} from "../actions";
+} from "@/actions/tours";
 import type { DestinationResponse } from "@/lib/api/destinations";
 import { PackageForm } from "./PackageForm";
 

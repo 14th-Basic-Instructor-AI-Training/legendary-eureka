@@ -4,7 +4,7 @@ import {
   approveEditRequest,
   rejectEditRequest,
   updateAdminAgency,
-} from "@/lib/api/admin";
+} from "@/services/admin.service";
 import { ApiError } from "@/lib/api/client";
 
 /**
