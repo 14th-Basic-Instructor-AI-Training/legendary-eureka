@@ -17,7 +17,7 @@ import {
   Map1,
   TickCircle,
 } from "iconsax-reactjs";
-import { Button, Card, Input, TextArea } from "@/ui";
+import { Button, Card, Input, TextArea, Select, ListBox } from "@/ui";
 import { saveProfileAction, uploadAvatarAction, uploadFileAction } from "../profileActions";
 import type { AgencyProfile, ProfileReview } from "../schema";
 
@@ -244,20 +244,27 @@ function ProfileInfoTab({
           icon={<Location size={15} variant="Linear" color="#6B7280" />}
           label={t("agency.profile.info.province")}
         >
-          <select
-            value={form.province}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, province: e.target.value }))
+          <Select
+            aria-label={t("agency.profile.info.province")}
+            selectedKey={form.province || null}
+            onSelectionChange={(key) =>
+              setForm((f) => ({ ...f, province: String(key) }))
             }
-            className="border-border bg-background text-foreground w-full rounded-xl border px-3 py-2.5 text-sm transition focus:outline-none focus:ring-2 focus:ring-[#185FA5]/30"
           >
-            <option value="">—</option>
-            {CAMBODIA_PROVINCES.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
+            <Select.Trigger>
+              <Select.Value />
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                {CAMBODIA_PROVINCES.map((p) => (
+                  <ListBox.Item key={p} id={p} textValue={p}>
+                    {p}
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
+          </Select>
         </Field>
       </div>
 
@@ -426,20 +433,27 @@ function LocationTab({
             icon={<Location size={15} variant="Linear" color="#6B7280" />}
             label={t("agency.profile.location.province")}
           >
-            <select
-              value={form.province}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, province: e.target.value }))
+            <Select
+              aria-label={t("agency.profile.location.province")}
+              selectedKey={form.province || null}
+              onSelectionChange={(key) =>
+                setForm((f) => ({ ...f, province: String(key) }))
               }
-              className="border-border bg-background text-foreground w-full rounded-xl border px-3 py-2.5 text-sm transition focus:outline-none focus:ring-2 focus:ring-[#185FA5]/30"
             >
-              <option value="">—</option>
-              {CAMBODIA_PROVINCES.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {CAMBODIA_PROVINCES.map((p) => (
+                    <ListBox.Item key={p} id={p} textValue={p}>
+                      {p}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
           </Field>
 
           <Button

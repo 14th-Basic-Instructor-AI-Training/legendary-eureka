@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import {
   TickCircle,
   CloseCircle,
-  SearchNormal1,
   Calendar,
   Profile2User,
   Ticket,
@@ -18,6 +17,7 @@ import {
 import { approveBookingAction, rejectBookingAction } from "@/features/agency/bookingActions";
 import type { BookingRequest } from "@/features/agency/schema";
 import { cn } from "@/lib/utils";
+import { Button, SearchField, TextArea } from "@/ui";
 
 // ---------------------------------------------------------------------------
 // Status config (matches design: amber/green/red/gray)
@@ -268,22 +268,16 @@ function BookingsTable({
           <StatusBadge status={b.status as keyof typeof STATUS_CFG} />
 
           {/* Action */}
-          <button
-            onClick={() => onView(b)}
+          <Button
+            onPress={() => onView(b)}
+            variant="secondary"
+            size="sm"
             className="flex items-center justify-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold transition-all"
             style={{ borderColor: "#E1E6EC", background: "#F7F9FB", color: "#185FA5" }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = "#EBF2FC";
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "#185FA5";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = "#F7F9FB";
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "#E1E6EC";
-            }}
           >
             <Eye size={12} color="currentColor" />
             {t("agency.bookings.view")}
-          </button>
+          </Button>
         </div>
       ))}
     </div>
@@ -363,13 +357,15 @@ function DetailModal({
               {t("agency.bookings.detailId", { id: booking.id })}
             </p>
           </div>
-          <button
-            onClick={onClose}
+          <Button
+            onPress={onClose}
+            variant="secondary"
+            size="sm"
             className="flex h-8 w-8 items-center justify-center rounded-[9px] border transition-all hover:bg-gray-50"
             style={{ borderColor: "#E1E6EC", color: "#9BA8B5", background: "#F7F9FB" }}
           >
             <CloseSquare size={15} color="currentColor" />
-          </button>
+          </Button>
         </div>
 
         {/* Scrollable body — 2-column */}
@@ -469,7 +465,7 @@ function DetailModal({
                     <p className="mb-1.5 text-[11.5px]" style={{ color: "#9BA8B5" }}>
                       {t("agency.bookings.specialRequests")}
                     </p>
-                    <textarea
+                    <TextArea
                       readOnly
                       value={booking.specialRequests}
                       rows={3}
@@ -628,38 +624,42 @@ function DetailModal({
         >
           {booking.status === "pending" && (
             <>
-              <button
-                onClick={() => onReject(booking)}
+              <Button
+                onPress={() => onReject(booking)}
+                variant="secondary"
                 className="rounded-full border-[1.5px] px-[18px] py-2 text-[13px] font-semibold transition-colors hover:bg-red-50"
                 style={{ borderColor: "#EF4444", color: "#EF4444", background: "#FFFFFF" }}
               >
                 {t("agency.bookings.reject")}
-              </button>
-              <button
-                onClick={() => onApprove(booking)}
+              </Button>
+              <Button
+                onPress={() => onApprove(booking)}
+                variant="primary"
                 className="rounded-full px-[18px] py-2 text-[13px] font-semibold text-white transition-colors hover:opacity-90"
                 style={{ background: "#10B981", boxShadow: "0 2px 8px rgba(16,185,129,0.28)" }}
               >
                 {t("agency.bookings.approve")}
-              </button>
+              </Button>
             </>
           )}
           {booking.status === "approved" && (
-            <button
-              onClick={() => onCancel(booking)}
+            <Button
+              onPress={() => onCancel(booking)}
+              variant="secondary"
               className="rounded-full border-[1.5px] px-[18px] py-2 text-[13px] font-semibold transition-colors hover:bg-red-50"
               style={{ borderColor: "#EF4444", color: "#EF4444", background: "#FFFFFF" }}
             >
               {t("agency.bookings.cancelBooking")}
-            </button>
+            </Button>
           )}
-          <button
-            onClick={onClose}
+          <Button
+            onPress={onClose}
+            variant="secondary"
             className="rounded-full border-[1.5px] px-[18px] py-2 text-[13px] font-semibold transition-colors hover:bg-gray-50"
             style={{ borderColor: "#E1E6EC", color: "#323D4D", background: "#FFFFFF" }}
           >
             {t("agency.bookings.close")}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -813,23 +813,18 @@ export function BookingsContent({ bookings }: { bookings: BookingRequest[] }) {
         </div>
 
         {/* Search */}
-        <div className="relative mt-3.5" style={{ maxWidth: 340 }}>
-          <SearchNormal1
-            size={15}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
-            style={{ color: "#9BA8B5" }}
-          />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("agency.bookings.search")}
-            className="w-full rounded-[10px] border py-2.5 pl-9 pr-3.5 text-[13px] outline-none transition-colors"
-            style={{ borderColor: "#E1E6EC", color: "#323D4D", background: "#FFFFFF" }}
-            onFocus={(e) => (e.target.style.borderColor = "#185FA5")}
-            onBlur={(e) => (e.target.style.borderColor = "#E1E6EC")}
-          />
-        </div>
+        <SearchField
+          value={search}
+          onChange={setSearch}
+          aria-label={t("agency.bookings.search")}
+          className="mt-3.5 max-w-[340px]"
+        >
+          <SearchField.Group>
+            <SearchField.SearchIcon />
+            <SearchField.Input placeholder={t("agency.bookings.search")} />
+            <SearchField.ClearButton />
+          </SearchField.Group>
+        </SearchField>
       </div>
 
       {/* Table */}

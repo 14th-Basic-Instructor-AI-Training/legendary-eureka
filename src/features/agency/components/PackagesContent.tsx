@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
   Add,
-  SearchNormal1,
   Edit2,
   Trash,
   CloseCircle,
@@ -18,10 +17,8 @@ import {
   ArrowRight2,
   ArrowLeft2,
   TickCircle,
-  Eye,
   Box,
   Archive,
-  Lock,
   Unlock,
   DocumentUpload,
   ArrowDown2,
@@ -41,7 +38,6 @@ import { uploadFileAction } from "@/features/agency/profileActions";
 import { useSession } from "@/lib/auth";
 import { useAgencyStore, type PackageInput } from "@/features/agency/store";
 import type { Activity, ItineraryDay, Package } from "@/features/agency/schema";
-import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -509,16 +505,21 @@ function ItineraryStep({
                 {/* Add activity picker */}
                 {pickerDay === day ? (
                   <div className="rounded-xl border border-agency-border bg-white shadow-sm">
-                    <div className="relative border-b border-agency-border px-3 py-2">
-                      <SearchNormal1 size={13} color="#9BA8B5" className="absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        autoFocus
-                        value={pickerSearch}
-                        onChange={(e) => setPickerSearch(e.target.value)}
-                        placeholder={t("agency.packages.searchActivities")}
-                        className="w-full bg-transparent pl-7 text-[12.5px] text-agency-dark outline-none placeholder:text-agency-muted"
-                      />
-                    </div>
+                    <SearchField
+                      autoFocus
+                      value={pickerSearch}
+                      onChange={setPickerSearch}
+                      aria-label={t("agency.packages.searchActivities")}
+                    >
+                      <SearchField.Group className="border-b border-agency-border px-3 py-2">
+                        <SearchField.SearchIcon />
+                        <SearchField.Input
+                          placeholder={t("agency.packages.searchActivities")}
+                          className="text-[12.5px] text-agency-dark placeholder:text-agency-muted"
+                        />
+                        <SearchField.ClearButton />
+                      </SearchField.Group>
+                    </SearchField>
                     <div className="max-h-[180px] overflow-y-auto">
                       {filteredActivities.length === 0 ? (
                         <p className="px-3 py-3 text-[12px] text-agency-muted">{t("agency.packages.noMatchingActivities")}</p>
@@ -560,12 +561,13 @@ function ItineraryStep({
                   <label className="mb-1 block text-[11.5px] font-semibold text-agency-muted">
                     {t("agency.packages.dayNotes")}
                   </label>
-                  <textarea
+                  <TextArea
                     rows={2}
                     value={d.notes ?? ""}
                     onChange={(e) => setDay(day, { notes: e.target.value })}
                     placeholder={t("agency.packages.dayNotesPlaceholder")}
-                    className="w-full resize-y rounded-[9px] border-[1.5px] border-agency-border bg-white px-3 py-2 text-[12.5px] text-agency-dark outline-none transition-colors placeholder:text-agency-muted focus:border-agency"
+                    variant="secondary"
+                    className="w-full resize-y rounded-[9px] text-[12.5px] text-agency-dark outline-none transition-colors placeholder:text-agency-muted focus:border-agency"
                   />
                 </div>
               </div>
@@ -1304,19 +1306,16 @@ export function PackagesContent() {
     });
   }, [packages, activeTab, search]);
 
-  const [actionError, setActionError] = useState<string | null>(null);
-
   async function handleSaveDraft(input: PackageInput): Promise<void> {
-    setActionError(null);
     if (editPkg) {
       const result = await updatePackageApi(editPkg.id, input);
-      if (!result.ok) { setActionError(t("common.saveError")); return; }
+      if (!result.ok) { return; }
       const list = await getPackages();
       if (list.ok) setPackages(list.data);
       setEditPkg(null);
     } else {
       const result = await createPackageApi(input);
-      if (!result.ok) { setActionError(t("common.saveError")); return; }
+      if (!result.ok) { return; }
       const list = await getPackages();
       if (list.ok) setPackages(list.data);
       setCreateOpen(false);
@@ -1324,17 +1323,16 @@ export function PackagesContent() {
   }
 
   async function handlePublishSave(input: PackageInput): Promise<void> {
-    setActionError(null);
     if (editPkg) {
       const updateResult = await updatePackageApi(editPkg.id, input);
-      if (!updateResult.ok) { setActionError(t("common.saveError")); return; }
+      if (!updateResult.ok) { return; }
       await publishPackageApi(editPkg.id);
       const list = await getPackages();
       if (list.ok) setPackages(list.data);
       setEditPkg(null);
     } else {
       const createResult = await createPackageApi(input);
-      if (!createResult.ok) { setActionError(t("common.saveError")); return; }
+      if (!createResult.ok) { return; }
       await publishPackageApi(createResult.data.id);
       const list = await getPackages();
       if (list.ok) setPackages(list.data);
@@ -1453,12 +1451,10 @@ export function PackagesContent() {
                 onPublish={async () => {
                   const result = await publishPackageApi(pkg.id);
                   if (result.ok) publishPackage(role, pkg.id);
-                  else setActionError(t("common.saveError"));
                 }}
                 onArchive={async () => {
                   const result = await archivePackageApi(pkg.id);
                   if (result.ok) archivePackage(role, pkg.id);
-                  else setActionError(t("common.saveError"));
                 }}
               />
             ))}
@@ -1499,12 +1495,10 @@ export function PackagesContent() {
           onPublish={async () => {
             const result = await publishPackageApi(viewPkg.id);
             if (result.ok) { publishPackage(role, viewPkg.id); setViewPkg(null); }
-            else setActionError(t("common.saveError"));
           }}
           onArchive={async () => {
             const result = await archivePackageApi(viewPkg.id);
             if (result.ok) { archivePackage(role, viewPkg.id); setViewPkg(null); }
-            else setActionError(t("common.saveError"));
           }}
         />
       )}
@@ -1516,7 +1510,6 @@ export function PackagesContent() {
           onConfirm={async () => {
             const result = await deletePackageApi(deletePkg.id);
             if (result.ok) { deletePackage(role, deletePkg.id); setDeletePkg(null); }
-            else setActionError(t("common.saveError"));
           }}
           onCancel={() => setDeletePkg(null)}
         />

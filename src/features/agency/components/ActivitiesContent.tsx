@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
   Add,
-  SearchNormal1,
   Lock1,
   Edit2,
   Trash,
@@ -23,7 +22,6 @@ import {
   DocumentUpload,
   TickCircle,
 } from "iconsax-reactjs";
-import { useSession } from "@/lib/auth";
 import { useAgencyStore } from "@/features/agency/store";
 import {
   getActivities,
@@ -44,9 +42,9 @@ import {
   Form,
   Modal,
   StatusChip,
-  Chip,
   Select,
   ListBox,
+  SearchField,
   Skeleton,
 } from "@/ui";
 
@@ -146,20 +144,6 @@ type ActivityFormValues = z.infer<typeof ActivityFormSchema>;
 // ---------------------------------------------------------------------------
 // Category icon
 // ---------------------------------------------------------------------------
-
-function CategoryIcon({ category, size = 18 }: { category: string; size?: number }) {
-  const cfg = CATEGORY_CONFIG[category as CategoryKey];
-  const props = { size, color: "currentColor" };
-  return (
-    <span className={`inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg ${cfg?.iconClass ?? "bg-gray-100 text-gray-400"}`}>
-      {category === "destination" && <Location {...props} variant="Bold" />}
-      {category === "thingToDo" && <Flash {...props} variant="Bold" />}
-      {category === "food" && <Cup {...props} variant="Bold" />}
-      {category === "stay" && <Buildings {...props} variant="Bold" />}
-      {!["destination", "thingToDo", "food", "stay"].includes(category) && <Category {...props} />}
-    </span>
-  );
-}
 
 function ActivityCover({ category }: { category: string }) {
   const cfg = CATEGORY_CONFIG[category as CategoryKey] ?? CATEGORY_CONFIG.destination;
@@ -803,7 +787,6 @@ function ActivityRow({
 
 export function ActivitiesContent() {
   const { t } = useTranslation();
-  const { role } = useSession();
 
   const activities     = useAgencyStore((s) => s.activities);
   const setActivities  = useAgencyStore((s) => s.setActivities);
@@ -981,17 +964,18 @@ export function ActivitiesContent() {
       </div>
 
       {/* Search */}
-      <div className="relative max-w-sm">
-        <span className="text-muted pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
-          <SearchNormal1 size={16} color="currentColor" />
-        </span>
-        <Input
-          placeholder={t("agency.activitiesPage.search")}
-          value={search}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className="max-w-sm pl-9"
-        />
-      </div>
+      <SearchField
+        value={search}
+        onChange={handleSearchChange}
+        aria-label={t("agency.activitiesPage.search")}
+        className="max-w-sm"
+      >
+        <SearchField.Group>
+          <SearchField.SearchIcon />
+          <SearchField.Input placeholder={t("agency.activitiesPage.search")} />
+          <SearchField.ClearButton />
+        </SearchField.Group>
+      </SearchField>
 
       {/* List */}
       {loading ? (
