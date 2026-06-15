@@ -80,7 +80,7 @@ function DetailContent({ tour }: { tour: TourDetail }) {
 
   return (
     <Shell>
-      <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 mt-10 md:px-8">
         <LocaleLink
           href="/#tours"
           className="text-muted hover:text-foreground mb-6 inline-flex items-center gap-2 text-sm font-medium transition-colors"

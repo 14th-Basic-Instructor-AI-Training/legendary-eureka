@@ -502,7 +502,7 @@
       "success": "Your password has been updated.",
       "goToLogin": "Continue to sign in",
       "invalidTitle": "Invalid reset link",
-      "invalidToken": "This reset link is invalid or has expired.",
+      "invalidToken": "This password reset is invalid or has expired. Please start again.",
       "serverError": "Something went wrong. Please try again.",
       "requestNew": "Request a new link"
     }

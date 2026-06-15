@@ -137,7 +137,7 @@ export function JalatCard({
     <div
       className={cn(
         "pointer-events-none absolute z-20",
-        isTopRight ? "right-[7%] top-[4%]" : "right-3 top-3",
+        isTopRight ? "right-2 top-2" : "right-3 top-3",
       )}
     >
       {priceTag}

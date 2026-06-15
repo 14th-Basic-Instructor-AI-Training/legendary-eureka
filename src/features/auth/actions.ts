@@ -107,13 +107,34 @@ export async function forgotPasswordAction(email: string): Promise<{ ok: boolean
   }
 }
 
+/** Verify a password-reset OTP before the set-new-password step (does not consume it). */
+export async function verifyResetOtpAction(email: string, otp: string): Promise<OtpVerifyResult> {
+  let res: Response;
+  try {
+    res = await fetch(`${API}/auth/verify-reset-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, otp }),
+    });
+  } catch {
+    return { ok: false, error: "server_error" };
+  }
+
+  if (!res.ok) {
+    return { ok: false, error: "invalid_code" };
+  }
+
+  return { ok: true };
+}
+
 export type ResetPasswordActionResult =
   | { ok: true }
-  | { ok: false; error: "invalid_token" | "server_error" };
+  | { ok: false; error: "invalid_otp" | "server_error" };
 
-/** Set a new password using the `token` from the reset email link. */
+/** Set a new password using the email + verified OTP from the reset flow. */
 export async function resetPasswordAction(
-  token: string,
+  email: string,
+  otp: string,
   newPassword: string,
 ): Promise<ResetPasswordActionResult> {
   let res: Response;
@@ -121,15 +142,15 @@ export async function resetPasswordAction(
     res = await fetch(`${API}/auth/reset-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, newPassword }),
+      body: JSON.stringify({ email, otp, newPassword }),
     });
   } catch {
     return { ok: false, error: "server_error" };
   }
 
   if (!res.ok) {
-    // 400 = invalid/expired token (or a password the backend rejected).
-    return { ok: false, error: res.status === 400 ? "invalid_token" : "server_error" };
+    // 400 = invalid/expired OTP (or a password the backend rejected).
+    return { ok: false, error: res.status === 400 ? "invalid_otp" : "server_error" };
   }
 
   return { ok: true };

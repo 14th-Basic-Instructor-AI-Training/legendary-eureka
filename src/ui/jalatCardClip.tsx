@@ -19,7 +19,7 @@ export const JALAT_CARD_CLIP_ID = "jalat-card-clip";
 
 /** Top-tab notch + all-corners-rounded path, in `objectBoundingBox` units. */
 const CLIP_PATH_D =
-  "M0.1,0H0.5A0.1,0.1,0,0,1,0.6,0.1V0.1A0.1,0.1,0,0,0,0.7,0.2H0.9A0.1,0.1,0,0,1,1,0.3V0.9A0.1,0.1,0,0,1,0.9,1H0.1A0.1,0.1,0,0,1,0,0.9V0.1A0.1,0.1,0,0,1,0.1,0Z";
+  "M0.1,0H0.625A0.075,0.075,0,0,1,0.7,0.075V0.075A0.075,0.075,0,0,0,0.775,0.15H0.925A0.075,0.075,0,0,1,1,0.225V0.9A0.1,0.1,0,0,1,0.9,1H0.1A0.1,0.1,0,0,1,0,0.9V0.1A0.1,0.1,0,0,1,0.1,0Z";
 
 /**
  * Hidden SVG holding the shared `<clipPath>`. Render once near the app root so

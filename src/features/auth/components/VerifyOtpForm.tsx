@@ -7,7 +7,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { Button, Form, InputOTP, REGEXP_ONLY_DIGITS } from "@/ui";
 import { OtpSchema, type OtpInput } from "@/features/auth/schema";
-import { verifyOtpAction, resendOtpAction } from "@/features/auth/actions";
+import {
+  verifyOtpAction,
+  verifyResetOtpAction,
+  resendOtpAction,
+  forgotPasswordAction,
+} from "@/features/auth/actions";
 import { useAuthStore } from "@/features/auth/store";
 import { AuthShell } from "./AuthShell";
 import { Field } from "./Field";
@@ -19,7 +24,10 @@ export function VerifyOtpForm() {
   const { t } = useTranslation();
   const router = useLocalizedRouter();
   const pendingEmail = useAuthStore((s) => s.pendingEmail);
+  const pendingPurpose = useAuthStore((s) => s.pendingPurpose);
+  const setResetOtp = useAuthStore((s) => s.setResetOtp);
   const clearPending = useAuthStore((s) => s.clearPending);
+  const isReset = pendingPurpose === "reset";
   const [formError, setFormError] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(RESEND_COOLDOWN);
@@ -47,11 +55,19 @@ export function VerifyOtpForm() {
       return;
     }
     setFormError(null);
-    const result = await verifyOtpAction(pendingEmail, values.code);
+    const result = isReset
+      ? await verifyResetOtpAction(pendingEmail, values.code)
+      : await verifyOtpAction(pendingEmail, values.code);
     if (!result.ok) {
       setFormError(
         result.error === "invalid_code" ? t("auth.otp.invalid") : t("auth.otp.serverError"),
       );
+      return;
+    }
+    if (isReset) {
+      // Reset code verified — carry it to the set-new-password step.
+      setResetOtp(values.code);
+      router.push("/reset-password");
       return;
     }
     // Account verified — send the user to the login page to sign in.
@@ -62,14 +78,15 @@ export function VerifyOtpForm() {
   const handleResend = async () => {
     if (!pendingEmail || resending || secondsLeft > 0) return;
     setResending(true);
-    await resendOtpAction(pendingEmail);
+    // Re-issuing a reset OTP goes through forgot-password; register uses resend-otp.
+    await (isReset ? forgotPasswordAction(pendingEmail) : resendOtpAction(pendingEmail));
     setResending(false);
     setSecondsLeft(RESEND_COOLDOWN);
   };
 
   return (
     <AuthShell
-      title={t("auth.otp.title")}
+      title={t(isReset ? "auth.forgot.title" : "auth.otp.title")}
       subtitle={t("auth.otp.subtitle", { email: pendingEmail ?? "" })}
     >
       <Form className="flex flex-col gap-5" validationBehavior="aria" onSubmit={handleSubmit(onSubmit)}>

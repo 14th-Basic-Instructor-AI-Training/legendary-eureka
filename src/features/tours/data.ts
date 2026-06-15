@@ -165,13 +165,34 @@ function mapToTeaser(t: TourPackageResponse): FeaturedTour {
 
 // ── Public tour detail / booking ─────────────────────────────────────────────
 
+/** Matches a backend tour UUID (the only value `/tours/{id}` accepts). */
+const TOUR_UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Resolve an id-or-slug to the backend tour UUID. The API's `/tours/{id}` only
+ * accepts the UUID (a slug 400s), and there is no slug-lookup endpoint, so a
+ * slug is resolved by scanning the tours list. Returns `undefined` when no tour
+ * matches. NOTE: bounded to the first 100 tours — revisit if the catalog grows.
+ */
+async function resolveTourId(idOrSlug: string): Promise<string | undefined> {
+  if (TOUR_UUID_RE.test(idOrSlug)) return idOrSlug;
+  const page = await publicApiFetch<PagedData<TourPackageResponse>>("/tours", {
+    params: { size: 100 },
+  });
+  return page.content.find((t) => (t.slug ?? t.id) === idOrSlug)?.id;
+}
+
 /** Load one tour by id OR slug, along with its agency profile and reviews. */
 export async function getTourById(id: string): Promise<Result<TourDetail>> {
   try {
+    const tourId = await resolveTourId(id);
+    if (!tourId) return { ok: false, error: "not_found" };
+
     const [tour, reviewPage] = await Promise.all([
-      publicApiFetch<TourPackageResponse>(`/tours/${id}`),
+      publicApiFetch<TourPackageResponse>(`/tours/${tourId}`),
       publicApiFetch<PagedData<ReviewResponse>>("/reviews", {
-        params: { targetType: "TOUR", targetId: id, size: 20 },
+        params: { targetType: "TOUR", targetId: tourId, size: 20 },
       }),
     ]);
 

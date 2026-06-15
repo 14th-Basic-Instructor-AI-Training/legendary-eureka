@@ -10,17 +10,16 @@ import { Button, Form, PasswordInput } from "@/ui";
 import { LocaleLink } from "@/components/LocaleLink";
 import { ResetPasswordSchema, type ResetPasswordInput } from "@/features/auth/schema";
 import { resetPasswordAction } from "@/features/auth/actions";
+import { useAuthStore } from "@/features/auth/store";
 import { AuthShell } from "./AuthShell";
 import { Field } from "./Field";
 
-type Props = {
-  /** The reset token from the email link (`/reset-password?token=…`). */
-  token: string | null;
-};
-
-export function ResetPasswordForm({ token }: Props) {
+export function ResetPasswordForm() {
   const { t } = useTranslation();
   const router = useLocalizedRouter();
+  const pendingEmail = useAuthStore((s) => s.pendingEmail);
+  const resetOtp = useAuthStore((s) => s.resetOtp);
+  const clearPending = useAuthStore((s) => s.clearPending);
   const [done, setDone] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -34,25 +33,26 @@ export function ResetPasswordForm({ token }: Props) {
   });
 
   const onSubmit = async (values: ResetPasswordInput) => {
-    if (!token) {
+    if (!pendingEmail || !resetOtp) {
       setFormError(t("auth.reset.invalidToken"));
       return;
     }
     setFormError(null);
-    const result = await resetPasswordAction(token, values.password);
+    const result = await resetPasswordAction(pendingEmail, resetOtp, values.password);
     if (!result.ok) {
       setFormError(
-        result.error === "invalid_token"
+        result.error === "invalid_otp"
           ? t("auth.reset.invalidToken")
           : t("auth.reset.serverError"),
       );
       return;
     }
+    clearPending();
     setDone(true);
   };
 
-  // No token in the URL — the link is missing or malformed. Don't show the form.
-  if (!token) {
+  // Reached without a verified reset OTP (e.g. direct navigation / refresh).
+  if (!pendingEmail || !resetOtp) {
     return (
       <AuthShell title={t("auth.reset.invalidTitle")}>
         <div className="flex flex-col items-center gap-3 py-2 text-center">
