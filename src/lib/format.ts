@@ -37,17 +37,6 @@ export function formatRating(value: number, lng: string): string {
   }).format(value);
 }
 
-<<<<<<< HEAD
-/** Locale-aware short date (e.g. "Jun 15, 2026") from an ISO timestamp. */
-export function formatDate(iso: string, lng: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  return new Intl.DateTimeFormat(intlLocale(lng), {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(date);
-=======
 export function formatDate(value: string | number | Date, lng: string): string {
   return new Intl.DateTimeFormat(intlLocale(lng), {
     dateStyle: "medium",
@@ -80,5 +69,4 @@ export function formatRelativeTime(
     if (abs >= secs) return rtf.format(Math.round(diffSec / secs), unit);
   }
   return rtf.format(diffSec, "second");
->>>>>>> 2d673ed7538579d7af67789c239619f46f219203
 }

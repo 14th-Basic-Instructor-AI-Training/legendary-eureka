@@ -62,7 +62,7 @@ export const CAMBODIA_PROVINCE_CODES = [
   "PHNOM_PENH",
   "SIEM_REAP",
   "BATTAMBANG",
-  "SIHANOUKVILLE",
+  "PREAH_SIHANOUK",
   "KAMPOT",
   "KEP",
   "KOH_KONG",
@@ -71,23 +71,9 @@ export const CAMBODIA_PROVINCE_CODES = [
   "KRATIE",
 ] as const;
 
-<<<<<<< HEAD
-/** Style of trip a destination suits — matches the API enum (UPPER_SNAKE). */
-export const TravelTypeSchema = z.enum([
-  "ADVENTURE",
-  "CULTURAL",
-  "NATURE",
-  "BEACH",
-  "HISTORICAL",
-  "RELAXATION",
-  "FOOD",
-]);
-export type TravelType = z.infer<typeof TravelTypeSchema>;
-=======
 /** Agency approval status — the backend `AgencyStatus` enum. */
 export const AgencyStatusSchema = z.enum(["PENDING", "APPROVED", "REJECTED"]);
 export type AgencyStatus = z.infer<typeof AgencyStatusSchema>;
->>>>>>> 2d673ed7538579d7af67789c239619f46f219203
 
 /**
  * The create/edit payload for a destination — mirrors the backend POST body

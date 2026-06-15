@@ -10,22 +10,13 @@ import { deleteDestinationAction } from "../actions";
 import { DestinationForm } from "./DestinationForm";
 
 type Props = {
-<<<<<<< HEAD
-  destinations: TourDestination[];
-  /** Switch to the packages tab with this destination pre-selected (Flow 1/2). */
-=======
   destinations: DestinationResponse[];
   agencyName: string;
->>>>>>> 2d673ed7538579d7af67789c239619f46f219203
   onBuildPackage: (destinationId: string) => void;
   onCreated: (dest: DestinationResponse) => void;
   onDeleted: (id: string) => void;
 };
 
-<<<<<<< HEAD
-/** Agency: browse admin + own destinations, create a new one, build a package. */
-export function DestinationsPanel({ destinations, onBuildPackage }: Props) {
-=======
 export function DestinationsPanel({
   destinations,
   agencyName,
@@ -33,7 +24,6 @@ export function DestinationsPanel({
   onCreated,
   onDeleted,
 }: Props) {
->>>>>>> 2d673ed7538579d7af67789c239619f46f219203
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
   const [showForm, setShowForm] = useState(false);
@@ -59,9 +49,6 @@ export function DestinationsPanel({
         </Button>
       </div>
 
-<<<<<<< HEAD
-      <DestinationForm isOpen={showForm} onClose={() => setShowForm(false)} />
-=======
       <DestinationForm
         isOpen={showForm}
         origin="agency"
@@ -72,7 +59,6 @@ export function DestinationsPanel({
           setShowForm(false);
         }}
       />
->>>>>>> 2d673ed7538579d7af67789c239619f46f219203
 
       {destinations.length === 0 ? (
         <p className="text-muted py-8 text-center text-sm">{t("tours.destinations.empty")}</p>

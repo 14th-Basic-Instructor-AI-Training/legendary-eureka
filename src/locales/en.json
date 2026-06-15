@@ -229,7 +229,8 @@
       "deleteDescription": "This action can't be undone.",
       "bookingTitle": "Confirm this booking?",
       "bookingDescription": "The traveler will be notified once you confirm."
-    }
+    },
+    "moreActions": "More actions"
   },
   "status": {
     "draft": "Draft",
@@ -239,7 +240,6 @@
     "approved": "Approved",
     "rejected": "Rejected",
     "completed": "Completed",
-    "cancelled": "Cancelled",
     "open": "Open",
     "resolved": "Resolved",
     "dismissed": "Dismissed",
@@ -478,7 +478,10 @@
       "submit": "Verify",
       "submitting": "Verifying…",
       "invalid": "That code isn't right. Try again.",
+      "serverError": "Something went wrong. Please try again.",
       "resend": "Resend code",
+      "resending": "Sending…",
+      "resendIn": "Resend code in {{seconds}}s",
       "demoHint": "Demo code: 123456"
     },
     "forgot": {
@@ -496,7 +499,11 @@
       "submit": "Update password",
       "submitting": "Updating…",
       "success": "Your password has been updated.",
-      "goToLogin": "Continue to sign in"
+      "goToLogin": "Continue to sign in",
+      "invalidTitle": "Invalid reset link",
+      "invalidToken": "This reset link is invalid or has expired.",
+      "serverError": "Something went wrong. Please try again.",
+      "requestNew": "Request a new link"
     }
   },
   "landing": {
@@ -804,13 +811,14 @@
       "PHNOM_PENH": "Phnom Penh",
       "SIEM_REAP": "Siem Reap",
       "BATTAMBANG": "Battambang",
-      "SIHANOUKVILLE": "Sihanoukville",
+      "PREAH_SIHANOUK": "Preah Sihanouk",
       "KAMPOT": "Kampot",
       "KEP": "Kep",
       "KOH_KONG": "Koh Kong",
       "MONDULKIRI": "Mondulkiri",
       "RATANAKIRI": "Ratanakiri",
-      "KRATIE": "Kratie"
+      "KRATIE": "Kratie",
+      "SIHANOUKVILLE": "Sihanoukville"
     },
     "travelTypes": {
       "ADVENTURE": "Adventure",
@@ -820,7 +828,7 @@
       "BEACH": "Beach",
       "HISTORICAL": "Historical",
       "RELAXATION": "Relaxation",
-      "FOOD": "Food"
+      "WILDLIFE": "Wildlife"
     },
     "states": {
       "empty": "No destinations to show yet.",
@@ -1038,7 +1046,15 @@
         "longitude": "Longitude",
         "submit": "Create destination",
         "searchProvince": "Search province…",
-        "noProvince": "No province found"
+        "noProvince": "No province found",
+        "shortDescription": "Short description",
+        "shortDescriptionPlaceholder": "One-line summary",
+        "tags": "Tags",
+        "tagsPlaceholder": "Comma-separated, e.g. temple, sunrise, heritage",
+        "photos": "Photos",
+        "photosPlaceholder": "One image URL per line (or comma-separated)",
+        "featured": "Featured",
+        "trending": "Trending"
       }
     },
     "packages": {
@@ -1074,7 +1090,8 @@
         "requestsEmpty": "No destination requests yet.",
         "tabs": {
           "all": "All destinations",
-          "requests": "Create requests"
+          "requests": "Create requests",
+          "featured": "Featured"
         }
       },
       "approvals": {
@@ -1451,7 +1468,11 @@
       "current": "Current",
       "proposed": "Proposed",
       "cardType": "Edit Request",
-      "activityLabel": "Activity"
+      "activityLabel": "Activity",
+      "targetTypes": {
+        "DESTINATION": "Destination",
+        "ACTIVITY": "Activity"
+      }
     },
     "reports": {
       "title": "Traveler reports",
@@ -1559,17 +1580,24 @@
       "error": "Couldn't load the dashboard.",
       "empty": "No analytics to show yet.",
       "kpi": {
+        "pendingRequests": "Pending agency requests",
+        "openReports": "Open reports",
+        "activities": "Total activities",
+        "users": "Total users",
+        "comparison": {
+          "vsYesterday": "vs yesterday",
+          "vsLastWeek": "vs last week",
+          "vsPrior30d": "vs prior 30 days",
+          "vsLastMonth": "vs last month",
+          "awaitingReview": "awaiting review",
+          "openIssues": "open issues"
+        },
         "totalUsers": "Total users",
         "totalDestinations": "Total destinations",
         "totalTours": "Total tour packages",
         "totalTrips": "Total trips",
         "pendingAgencies": "Pending agency requests",
-        "pendingReports": "Open reports",
-        "comparison": {
-          "vsLastMonth": "vs last month",
-          "awaitingReview": "awaiting review",
-          "openIssues": "open issues"
-        }
+        "pendingReports": "Open reports"
       },
       "range": {
         "last7d": "Last 7 days",
@@ -1582,8 +1610,8 @@
         "seriesLabel": "Activities"
       },
       "distribution": {
-        "title": "Packages by province",
-        "subtitle": "Share of tour packages.",
+        "title": "Activities by category",
+        "subtitle": "Share of published activities.",
         "total": "Total"
       },
       "approvals": {
@@ -1894,44 +1922,6 @@
       "rating": "Rating",
       "ratingValue": "{{count}}-star rating",
       "comment": "Your review"
-      "packages": "Packages"
-    },
-    "destinations": {
-      "title": "Available destinations",
-      "new": "New destination",
-      "empty": "No destinations yet. Create the first one.",
-      "buildPackage": "Build package",
-      "from": "From",
-      "origin": {
-        "admin": "Admin",
-        "agency": "Agency"
-      },
-      "form": {
-        "title": "Create destination",
-        "name": "Name",
-        "namePlaceholder": "e.g. Angkor Wat",
-        "province": "Province",
-        "travelType": "Travel type",
-        "description": "Description",
-        "descriptionPlaceholder": "Short description of the place",
-        "shortDescription": "Short description",
-        "shortDescriptionPlaceholder": "One-line summary",
-        "coverImageUrl": "Cover image URL",
-        "coverImageUrlPlaceholder": "https://…",
-        "price": "Price from (USD)",
-        "currency": "Currency",
-        "latitude": "Latitude",
-        "longitude": "Longitude",
-        "tags": "Tags",
-        "tagsPlaceholder": "Comma-separated, e.g. temple, sunrise, heritage",
-        "photos": "Photos",
-        "photosPlaceholder": "One image URL per line (or comma-separated)",
-        "featured": "Featured",
-        "trending": "Trending",
-        "submit": "Create destination",
-        "searchProvince": "Search province…",
-        "noProvince": "No province found"
-      }
     },
     "deleteConfirm": {
       "title": "Delete this review?",
@@ -2120,40 +2110,6 @@
       "body": "Thank you for helping keep Jalat safe. Our trust & safety team will review your report within 3–5 business days and follow up if we need more details.",
       "explore": "Explore Tours",
       "home": "Go Home"
-      "form": {
-        "name": "Package title",
-        "namePlaceholder": "e.g. 3-day Angkor explorer",
-        "destination": "Destination",
-        "selectDestination": "Select a destination",
-        "days": "Days",
-        "price": "Price from (USD)",
-        "submit": "Create package"
-      }
-    },
-    "admin": {
-      "destinations": {
-        "title": "Destinations",
-        "subtitle": "Create destinations agencies can build tour packages on.",
-        "new": "New destination",
-        "empty": "No destinations yet.",
-        "requestsEmpty": "No destination requests yet.",
-        "tabs": {
-          "all": "All destinations",
-          "requests": "Create requests",
-          "featured": "Featured"
-        }
-      },
-      "approvals": {
-        "title": "Package approvals",
-        "subtitle": "Review tour packages agencies submitted for approval.",
-        "empty": "No package approval requests.",
-        "pendingCount": "{{count}} awaiting approval",
-        "awaiting": "awaiting approval",
-        "statusFilter": "Filter by status",
-        "approve": "Approve",
-        "reject": "Reject",
-        "search": "Search packages…"
-      }
     }
   }
 }

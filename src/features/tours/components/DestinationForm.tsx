@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
@@ -8,7 +8,6 @@ import { Location } from "iconsax-reactjs";
 import {
   Autocomplete,
   Button,
-  Checkbox,
   EmptyState,
   Form,
   Input,
@@ -20,29 +19,21 @@ import {
   TextArea,
   useFilter,
 } from "@/ui";
-<<<<<<< HEAD
-import { ProvinceSchema, TravelTypeSchema } from "@/features/destinations/schema";
-=======
 import { useSession } from "@/lib/auth";
 import {
   CAMBODIA_PROVINCE_CODES,
   TravelTypeSchema,
 } from "@/features/destinations/schema";
->>>>>>> 2d673ed7538579d7af67789c239619f46f219203
 import {
   NewDestinationSchema,
+  type DestinationOrigin,
   type NewDestinationFormValues,
   type NewDestinationInput,
 } from "../schema";
-<<<<<<< HEAD
-import { createDestinationAction } from "../actions";
-import type { DestinationRequest } from "@/lib/api/activities";
-=======
 import type { DestinationResponse } from "@/lib/api/destinations";
 import type { Province, TravelType } from "@/lib/api/client";
 import { createDestinationAction } from "../actions";
 import { useToursStore } from "../store";
->>>>>>> 2d673ed7538579d7af67789c239619f46f219203
 
 const PROVINCES = CAMBODIA_PROVINCE_CODES;
 const TRAVEL_TYPES = TravelTypeSchema.options;
@@ -50,7 +41,6 @@ const TRAVEL_TYPES = TravelTypeSchema.options;
 const DEFAULTS: NewDestinationFormValues = {
   name: "",
   description: "",
-  shortDescription: "",
   province: "SIEM_REAP",
   travelType: "HISTORICAL",
   coverImageUrl: "",
@@ -58,38 +48,26 @@ const DEFAULTS: NewDestinationFormValues = {
   currency: "USD",
   latitude: 0,
   longitude: 0,
-  featured: false,
-  trending: false,
-  tags: "",
-  photos: "",
 };
 
 type Props = {
   /** Controls modal visibility. */
   isOpen: boolean;
+  /** Marks the created destination as admin- or agency-owned (Flow 1 vs Flow 2). */
+  origin?: DestinationOrigin;
+  /** Display name stored as the destination owner. */
+  ownerName?: string;
   onClose: () => void;
-<<<<<<< HEAD
-  /** Called after a successful create — e.g. to refresh the server-fetched list. */
-  onCreated?: () => void;
-};
-
-/**
- * Create-destination modal. Submits POST /destinations via a server action and
- * calls `onCreated` so the caller can refresh. Shared by the agency tours panel
- * and the admin content manager.
- */
-export function DestinationForm({ isOpen, onClose, onCreated }: Props) {
-=======
   /** When set, creates via API and calls back with the response. */
   onCreated?: (dest: DestinationResponse) => void;
 };
 
 /** Create-destination modal. Shared by the agency tours panel and admin manager. */
 export function DestinationForm({ isOpen, origin, ownerName, onClose, onCreated }: Props) {
->>>>>>> 2d673ed7538579d7af67789c239619f46f219203
   const { t } = useTranslation();
+  const { role } = useSession();
+  const addDestination = useToursStore((s) => s.addDestination);
   const { contains } = useFilter({ sensitivity: "base" });
-  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     control,
@@ -106,10 +84,6 @@ export function DestinationForm({ isOpen, origin, ownerName, onClose, onCreated 
     if (isOpen) reset(DEFAULTS);
   }, [isOpen, reset]);
 
-<<<<<<< HEAD
-  const handleClose = () => {
-    setSubmitError(null);
-=======
   const onSubmit = async (values: NewDestinationInput) => {
     if (onCreated) {
       const dest = await createDestinationAction({
@@ -128,40 +102,12 @@ export function DestinationForm({ isOpen, origin, ownerName, onClose, onCreated 
       return;
     }
 
-    addDestination(role, values, origin, ownerName);
->>>>>>> 2d673ed7538579d7af67789c239619f46f219203
+    addDestination(role, values, origin ?? "agency", ownerName ?? "");
     onClose();
   };
 
-  const onSubmit = async (values: NewDestinationInput) => {
-    setSubmitError(null);
-    const body: DestinationRequest = {
-      name: values.name,
-      description: values.description,
-      shortDescription: values.shortDescription,
-      province: values.province,
-      travelType: values.travelType,
-      coverImageUrl: values.coverImageUrl,
-      priceFrom: values.priceFrom,
-      currency: values.currency,
-      latitude: values.latitude,
-      longitude: values.longitude,
-      featured: values.featured,
-      trending: values.trending,
-      tags: values.tags,
-      photos: values.photos,
-    };
-    const result = await createDestinationAction(body);
-    if (!result.ok) {
-      setSubmitError(result.error);
-      return;
-    }
-    onCreated?.();
-    handleClose();
-  };
-
   return (
-    <Modal isOpen={isOpen} onOpenChange={(open) => !open && handleClose()}>
+    <Modal isOpen={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Modal.Backdrop>
         <Modal.Container size="lg" placement="center" className="w-full sm:max-w-3xl">
           <Modal.Dialog className="w-full sm:max-w-3xl">
@@ -316,29 +262,6 @@ export function DestinationForm({ isOpen, origin, ownerName, onClose, onCreated 
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="d-short">{t("tours.destinations.form.shortDescription")}</Label>
-                  <Controller
-                    control={control}
-                    name="shortDescription"
-                    render={({ field }) => (
-                      <Input
-                        id="d-short"
-                        placeholder={t("tours.destinations.form.shortDescriptionPlaceholder")}
-                        aria-invalid={Boolean(errors.shortDescription)}
-                        value={field.value}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                      />
-                    )}
-                  />
-                  {errors.shortDescription ? (
-                    <p className="text-danger text-sm" role="alert">
-                      {errors.shortDescription.message}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="flex flex-col gap-1.5">
                   <Label htmlFor="d-cover">{t("tours.destinations.form.coverImageUrl")}</Label>
                   <Controller
                     control={control}
@@ -460,100 +383,10 @@ export function DestinationForm({ isOpen, origin, ownerName, onClose, onCreated 
                     ) : null}
                   </div>
                 </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="d-tags">{t("tours.destinations.form.tags")}</Label>
-                  <Controller
-                    control={control}
-                    name="tags"
-                    render={({ field }) => (
-                      <Input
-                        id="d-tags"
-                        placeholder={t("tours.destinations.form.tagsPlaceholder")}
-                        aria-invalid={Boolean(errors.tags)}
-                        value={field.value}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                      />
-                    )}
-                  />
-                  {errors.tags ? (
-                    <p className="text-danger text-sm" role="alert">
-                      {errors.tags.message}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="d-photos">{t("tours.destinations.form.photos")}</Label>
-                  <Controller
-                    control={control}
-                    name="photos"
-                    render={({ field }) => (
-                      <TextArea
-                        id="d-photos"
-                        placeholder={t("tours.destinations.form.photosPlaceholder")}
-                        aria-invalid={Boolean(errors.photos)}
-                        value={field.value}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                      />
-                    )}
-                  />
-                  {errors.photos ? (
-                    <p className="text-danger text-sm" role="alert">
-                      {errors.photos.message}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:gap-8">
-                  <Controller
-                    control={control}
-                    name="featured"
-                    render={({ field }) => (
-                      <Checkbox
-                        isSelected={field.value}
-                        onChange={field.onChange}
-                        name={field.name}
-                      >
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                        <Checkbox.Content className="text-sm">
-                          {t("tours.destinations.form.featured")}
-                        </Checkbox.Content>
-                      </Checkbox>
-                    )}
-                  />
-                  <Controller
-                    control={control}
-                    name="trending"
-                    render={({ field }) => (
-                      <Checkbox
-                        isSelected={field.value}
-                        onChange={field.onChange}
-                        name={field.name}
-                      >
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                        <Checkbox.Content className="text-sm">
-                          {t("tours.destinations.form.trending")}
-                        </Checkbox.Content>
-                      </Checkbox>
-                    )}
-                  />
-                </div>
               </Modal.Body>
 
-              <Modal.Footer className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-                {submitError ? (
-                  <p className="text-danger mr-auto text-sm" role="alert">
-                    {submitError}
-                  </p>
-                ) : null}
-                <Button type="button" variant="tertiary" onPress={handleClose}>
+              <Modal.Footer className="flex justify-end gap-2">
+                <Button type="button" variant="tertiary" onPress={onClose}>
                   {t("common.cancel")}
                 </Button>
                 <Button type="submit" variant="primary" isPending={isSubmitting}>

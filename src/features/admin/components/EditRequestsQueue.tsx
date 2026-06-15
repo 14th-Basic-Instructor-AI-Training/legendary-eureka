@@ -1,15 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { TickCircle, CloseCircle, NoteText, SearchNormal1 } from "iconsax-reactjs";
-import { Button, Input, Pagination, StatusChip, Table, Tabs } from "@/ui";
+import { Button, Chip, Input, Pagination, StatusChip, Table, Tabs } from "@/ui";
 import { useSession } from "@/lib/auth";
-import { useAdminStore } from "../store";
+import { can } from "@/lib/permissions";
+import { formatDate } from "@/lib/format";
+import { approveEditRequestAction, rejectEditRequestAction } from "../actions";
 import { cn } from "@/lib/utils";
-import type { EditRequestStatus } from "../schema";
+import type { AdminEditRequest, EditRequestStatus } from "@/lib/api/admin";
 
-const STATUS_FILTERS: Array<{ value: "all" | EditRequestStatus; labelKey: string }> = [
+/** Lowercased status used for filters / theming (StatusChip expects lowercase). */
+type StatusLower = "pending" | "approved" | "rejected";
+const lower = (s: EditRequestStatus): StatusLower => s.toLowerCase() as StatusLower;
+
+const STATUS_FILTERS: Array<{ value: "all" | StatusLower; labelKey: string }> = [
   { value: "all", labelKey: "common.all" },
   { value: "pending", labelKey: "status.pending" },
   { value: "approved", labelKey: "status.approved" },
@@ -17,7 +24,7 @@ const STATUS_FILTERS: Array<{ value: "all" | EditRequestStatus; labelKey: string
 ];
 
 /** Arc gradient + accent colors per status (white-card theme). */
-const ARC: Record<EditRequestStatus, { from: string; to: string; dot: string; soft: string; text: string }> = {
+const ARC: Record<StatusLower, { from: string; to: string; dot: string; soft: string; text: string }> = {
   pending: { from: "#4FB5DB", to: "#84CDE9", dot: "#4FB5DB", soft: "bg-primary/10", text: "text-primary" },
   approved: { from: "#5FC381", to: "#9BE0E7", dot: "#5FC381", soft: "bg-green/10", text: "text-green" },
   rejected: { from: "#FF0C3C", to: "#F48D5D", dot: "#FF0C3C", soft: "bg-red/10", text: "text-red" },
@@ -26,25 +33,38 @@ const ARC: Record<EditRequestStatus, { from: string; to: string; dot: string; so
 /** Cards per page in the card view. */
 const PAGE_SIZE = 9;
 
-type Props = { view: "card" | "table" };
+type Props = { view: "card" | "table"; requests: AdminEditRequest[] };
 
-export function EditRequestsQueue({ view }: Props) {
-  const { t } = useTranslation();
+export function EditRequestsQueue({ view, requests }: Props) {
+  const { t, i18n } = useTranslation();
   const { role } = useSession();
-  const editRequests = useAdminStore((s) => s.editRequests);
-  const approveEditRequest = useAdminStore((s) => s.approveEditRequest);
-  const rejectEditRequest = useAdminStore((s) => s.rejectEditRequest);
+  const router = useRouter();
+  const canManage = can(role, "manageEditRequests");
+  const lng = i18n.language;
+
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  /** Run a mutation server action, then refresh the server-fetched list. */
+  const runAction = async (id: string, action: (id: string) => Promise<{ ok: boolean }>) => {
+    setBusyId(id);
+    await action(id);
+    setBusyId(null);
+    router.refresh();
+  };
+
+  const onApprove = (r: AdminEditRequest) => runAction(r.id, approveEditRequestAction);
+  const onReject = (r: AdminEditRequest) => runAction(r.id, rejectEditRequestAction);
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | EditRequestStatus>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | StatusLower>("all");
 
-  const filtered = editRequests.filter((r) => {
-    const matchesStatus = statusFilter === "all" || r.status === statusFilter;
+  const filtered = requests.filter((r) => {
+    const matchesStatus = statusFilter === "all" || lower(r.status) === statusFilter;
     const q = search.toLowerCase();
     const matchesSearch =
       !q ||
-      r.activityTitle.toLowerCase().includes(q) ||
-      r.agencyName.toLowerCase().includes(q);
+      r.message.toLowerCase().includes(q) ||
+      r.targetType.toLowerCase().includes(q);
     return matchesStatus && matchesSearch;
   });
 
@@ -54,6 +74,8 @@ export function EditRequestsQueue({ view }: Props) {
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
   const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const shared = { canManage, busyId, onApprove, onReject, t, lng };
 
   return (
     <div className="flex flex-col gap-4">
@@ -79,7 +101,7 @@ export function EditRequestsQueue({ view }: Props) {
         <Tabs
           selectedKey={statusFilter}
           onSelectionChange={(key) => {
-            setStatusFilter(key as "all" | EditRequestStatus);
+            setStatusFilter(key as "all" | StatusLower);
             setPage(1);
           }}
         >
@@ -110,21 +132,9 @@ export function EditRequestsQueue({ view }: Props) {
       ) : (
         <>
           {view === "table" ? (
-            <TableView
-              filtered={paged}
-              role={role}
-              approveEditRequest={approveEditRequest}
-              rejectEditRequest={rejectEditRequest}
-              t={t}
-            />
+            <TableView filtered={paged} {...shared} />
           ) : (
-            <CardView
-              filtered={paged}
-              role={role}
-              approveEditRequest={approveEditRequest}
-              rejectEditRequest={rejectEditRequest}
-              t={t}
-            />
+            <CardView filtered={paged} {...shared} />
           )}
           <Pagination
             page={currentPage}
@@ -140,21 +150,27 @@ export function EditRequestsQueue({ view }: Props) {
 
 // ─── shared prop type ────────────────────────────────────────────────────────
 
+type ActionFn = (r: AdminEditRequest) => void;
+type TFn = (key: string, opts?: Record<string, unknown>) => string;
+
 type QueueViewProps = {
-  filtered: ReturnType<typeof useAdminStore.getState>["editRequests"];
-  role: ReturnType<typeof useSession>["role"];
-  approveEditRequest: ReturnType<typeof useAdminStore.getState>["approveEditRequest"];
-  rejectEditRequest: ReturnType<typeof useAdminStore.getState>["rejectEditRequest"];
-  t: (key: string, opts?: Record<string, unknown>) => string;
+  filtered: AdminEditRequest[];
+  canManage: boolean;
+  busyId: string | null;
+  onApprove: ActionFn;
+  onReject: ActionFn;
+  t: TFn;
+  lng: string;
 };
 
 // ─── card view ───────────────────────────────────────────────────────────────
 
-function CardView({ filtered, role, approveEditRequest, rejectEditRequest, t }: QueueViewProps) {
+function CardView({ filtered, canManage, busyId, onApprove, onReject, t, lng }: QueueViewProps) {
   return (
     <ul className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
       {filtered.map((r) => {
-        const cfg = ARC[r.status];
+        const status = lower(r.status);
+        const cfg = ARC[status];
         return (
           <li
             key={r.id}
@@ -177,52 +193,57 @@ function CardView({ filtered, role, approveEditRequest, rejectEditRequest, t }: 
                     {t("admin.editRequests.cardType")}
                   </span>
                 </div>
-                <StatusChip status={r.status} />
+                <StatusChip status={status} />
               </div>
 
               {/* endpoints */}
               <div className="mt-5 flex items-start justify-between gap-3">
                 <div className="min-w-0 max-w-[46%]">
                   <p className="text-muted text-[10px] uppercase tracking-wide">
-                    {t("admin.requests.agencyLabel")}
+                    {t("admin.editRequests.activityLabel")}
                   </p>
-                  <p className="text-text-primary truncate text-sm font-semibold">{r.agencyName}</p>
+                  <Chip color="default" variant="soft" size="sm">
+                    {t(`admin.editRequests.targetTypes.${r.targetType}`)}
+                  </Chip>
                 </div>
                 <div className="min-w-0 max-w-[50%] text-right">
                   <p className="text-muted text-[10px] uppercase tracking-wide">
-                    {t("admin.editRequests.activityLabel")}
+                    {t("admin.requests.submitted")}
                   </p>
-                  <p className="text-text-primary truncate text-sm font-semibold">{r.activityTitle}</p>
+                  <p className="text-text-primary truncate text-sm font-semibold">
+                    {formatDate(r.createdAt, lng)}
+                  </p>
                 </div>
               </div>
 
-              {/* before / after diff */}
+              {/* proposed change */}
               <div className="mt-3 flex flex-col gap-2">
-                {r.currentValue ? (
-                  <div className="rounded-lg border-l-2 border-red py-2 pl-3 pr-2">
-                    <p className="text-muted text-[10px] font-semibold uppercase tracking-wide">
-                      {t("admin.editRequests.current")}
-                    </p>
-                    <p className="mt-0.5 text-sm text-red">{r.currentValue}</p>
-                  </div>
-                ) : null}
                 <div className="rounded-lg border-l-2 border-green py-2 pl-3 pr-2">
                   <p className="text-muted text-[10px] font-semibold uppercase tracking-wide">
                     {t("admin.editRequests.proposed")}
                   </p>
-                  <p className="mt-0.5 text-sm text-green">{r.requestedChanges}</p>
+                  <p className="mt-0.5 text-sm text-green">{r.message}</p>
                 </div>
+                {r.adminNote ? (
+                  <div className="rounded-lg border-l-2 border-border py-2 pl-3 pr-2">
+                    <p className="text-muted text-[10px] font-semibold uppercase tracking-wide">
+                      {t("admin.requests.applicationNote")}
+                    </p>
+                    <p className="text-text-secondary mt-0.5 text-sm">{r.adminNote}</p>
+                  </div>
+                ) : null}
               </div>
             </div>
 
             {/* action footer */}
-            {r.status === "pending" ? (
+            {canManage && status === "pending" ? (
               <div className="border-border bg-bg-ghostwhite mt-auto flex items-center justify-end gap-2 border-t px-4 py-2.5">
                 <Button
                   variant="tertiary"
                   size="sm"
                   className="text-danger"
-                  onPress={() => rejectEditRequest(role, r.id)}
+                  isPending={busyId === r.id}
+                  onPress={() => onReject(r)}
                 >
                   <CloseCircle size={15} color="currentColor" />
                   {t("admin.editRequests.reject")}
@@ -230,7 +251,8 @@ function CardView({ filtered, role, approveEditRequest, rejectEditRequest, t }: 
                 <Button
                   variant="primary"
                   size="sm"
-                  onPress={() => approveEditRequest(role, r.id)}
+                  isPending={busyId === r.id}
+                  onPress={() => onApprove(r)}
                 >
                   <TickCircle size={15} color="currentColor" />
                   {t("admin.editRequests.approve")}
@@ -246,57 +268,57 @@ function CardView({ filtered, role, approveEditRequest, rejectEditRequest, t }: 
 
 // ─── table view ──────────────────────────────────────────────────────────────
 
-function TableView({ filtered, role, approveEditRequest, rejectEditRequest, t }: QueueViewProps) {
+function TableView({ filtered, canManage, busyId, onApprove, onReject, t, lng }: QueueViewProps) {
   return (
     <Table>
       <Table.ScrollContainer>
         <Table.Content aria-label={t("admin.requests.tabs.editRequests")} className="min-w-[640px]">
           <Table.Header>
-            <Table.Column isRowHeader>Activity</Table.Column>
-            <Table.Column>Agency</Table.Column>
-            <Table.Column>Requested Change</Table.Column>
-            <Table.Column>Submitted</Table.Column>
-            <Table.Column>Status</Table.Column>
+            <Table.Column isRowHeader>{t("admin.editRequests.activityLabel")}</Table.Column>
+            <Table.Column>{t("admin.editRequests.proposed")}</Table.Column>
+            <Table.Column>{t("admin.requests.submitted")}</Table.Column>
+            <Table.Column>{t("status.pending")}</Table.Column>
             <Table.Column>{""}</Table.Column>
           </Table.Header>
           <Table.Body>
-            {filtered.map((r) => (
+            {filtered.map((r) => {
+              const status = lower(r.status);
+              return (
               <Table.Row key={r.id} id={r.id}>
                 <Table.Cell>
                   <div className="flex items-center gap-2">
                     <span
                       className={cn(
                         "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
-                        r.status === "pending" && "bg-primary/10 text-primary",
-                        r.status === "approved" && "bg-lightgreen text-green",
-                        r.status === "rejected" && "bg-lightred text-red",
+                        ARC[status].soft,
+                        ARC[status].text,
                       )}
                     >
                       <NoteText size={14} color="currentColor" variant="Bold" />
                     </span>
-                    <span className="font-medium text-text-primary max-w-[160px] truncate">
-                      {r.activityTitle}
+                    <span className="font-medium text-text-primary">
+                      {t(`admin.editRequests.targetTypes.${r.targetType}`)}
                     </span>
                   </div>
                 </Table.Cell>
-                <Table.Cell className="text-text-secondary">{r.agencyName}</Table.Cell>
-                <Table.Cell className="text-text-secondary max-w-[200px]">
-                  <p className="truncate">{r.requestedChanges}</p>
+                <Table.Cell className="text-text-secondary max-w-[240px]">
+                  <p className="truncate">{r.message}</p>
                 </Table.Cell>
                 <Table.Cell className="text-text-secondary whitespace-nowrap">
-                  {r.submittedAtLabel}
+                  {formatDate(r.createdAt, lng)}
                 </Table.Cell>
                 <Table.Cell>
-                  <StatusChip status={r.status} />
+                  <StatusChip status={status} />
                 </Table.Cell>
                 <Table.Cell>
-                  {r.status === "pending" ? (
+                  {canManage && status === "pending" ? (
                     <div className="flex items-center justify-end gap-1.5">
                       <Button
                         variant="tertiary"
                         size="sm"
                         className="text-danger"
-                        onPress={() => rejectEditRequest(role, r.id)}
+                        isPending={busyId === r.id}
+                        onPress={() => onReject(r)}
                       >
                         <CloseCircle size={14} color="currentColor" />
                         {t("admin.editRequests.reject")}
@@ -304,7 +326,8 @@ function TableView({ filtered, role, approveEditRequest, rejectEditRequest, t }:
                       <Button
                         variant="primary"
                         size="sm"
-                        onPress={() => approveEditRequest(role, r.id)}
+                        isPending={busyId === r.id}
+                        onPress={() => onApprove(r)}
                       >
                         <TickCircle size={14} color="currentColor" />
                         {t("admin.editRequests.approve")}
@@ -313,7 +336,8 @@ function TableView({ filtered, role, approveEditRequest, rejectEditRequest, t }:
                   ) : null}
                 </Table.Cell>
               </Table.Row>
-            ))}
+              );
+            })}
           </Table.Body>
         </Table.Content>
       </Table.ScrollContainer>

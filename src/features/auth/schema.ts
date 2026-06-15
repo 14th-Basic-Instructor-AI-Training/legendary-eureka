@@ -33,7 +33,12 @@ export type LoginInput = z.infer<typeof LoginSchema>;
 export const AccountTypeSchema = z.enum(["traveler", "agency"]);
 export type AccountType = z.infer<typeof AccountTypeSchema>;
 
-const password = z.string().min(8, "Use at least 8 characters");
+// Mirrors the backend rule: at least 8 chars, 1 uppercase letter, and 1 digit.
+const password = z
+  .string()
+  .min(8, "Use at least 8 characters")
+  .regex(/[A-Z]/, "Include at least 1 uppercase letter")
+  .regex(/\d/, "Include at least 1 number");
 
 /** Registration form. */
 export const RegisterSchema = z

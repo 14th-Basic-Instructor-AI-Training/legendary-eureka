@@ -5,17 +5,24 @@ import { useLocalizedRouter } from "@/lib/locale";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
-import { TickCircle } from "iconsax-reactjs";
+import { TickCircle, Warning2 } from "iconsax-reactjs";
 import { Button, Form, PasswordInput } from "@/ui";
+import { LocaleLink } from "@/components/LocaleLink";
 import { ResetPasswordSchema, type ResetPasswordInput } from "@/features/auth/schema";
-import { resetPassword } from "@/features/auth/data";
+import { resetPasswordAction } from "@/features/auth/actions";
 import { AuthShell } from "./AuthShell";
 import { Field } from "./Field";
 
-export function ResetPasswordForm() {
+type Props = {
+  /** The reset token from the email link (`/reset-password?token=…`). */
+  token: string | null;
+};
+
+export function ResetPasswordForm({ token }: Props) {
   const { t } = useTranslation();
   const router = useLocalizedRouter();
   const [done, setDone] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const {
     control,
@@ -27,9 +34,42 @@ export function ResetPasswordForm() {
   });
 
   const onSubmit = async (values: ResetPasswordInput) => {
-    await resetPassword(values);
+    if (!token) {
+      setFormError(t("auth.reset.invalidToken"));
+      return;
+    }
+    setFormError(null);
+    const result = await resetPasswordAction(token, values.password);
+    if (!result.ok) {
+      setFormError(
+        result.error === "invalid_token"
+          ? t("auth.reset.invalidToken")
+          : t("auth.reset.serverError"),
+      );
+      return;
+    }
     setDone(true);
   };
+
+  // No token in the URL — the link is missing or malformed. Don't show the form.
+  if (!token) {
+    return (
+      <AuthShell title={t("auth.reset.invalidTitle")}>
+        <div className="flex flex-col items-center gap-3 py-2 text-center">
+          <span className="bg-danger/10 text-danger inline-flex h-12 w-12 items-center justify-center rounded-full">
+            <Warning2 size={26} color="currentColor" variant="Bold" />
+          </span>
+          <p className="text-muted text-sm">{t("auth.reset.invalidToken")}</p>
+          <Button variant="primary" size="lg" fullWidth onPress={() => router.push("/forgot-password")}>
+            {t("auth.reset.requestNew")}
+          </Button>
+          <LocaleLink href="/login" className="text-primary text-sm font-medium hover:underline">
+            {t("auth.forgot.backToLogin")}
+          </LocaleLink>
+        </div>
+      </AuthShell>
+    );
+  }
 
   if (done) {
     return (
@@ -89,6 +129,12 @@ export function ResetPasswordForm() {
             )}
           />
         </Field>
+
+        {formError ? (
+          <div className="bg-danger/10 text-danger rounded-lg px-3 py-2 text-sm" role="alert">
+            {formError}
+          </div>
+        ) : null}
 
         <Button type="submit" fullWidth size="lg" isPending={isSubmitting}>
           {isSubmitting ? t("auth.reset.submitting") : t("auth.reset.submit")}

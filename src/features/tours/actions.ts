@@ -1,13 +1,28 @@
 "use server";
 
-import { createDestination, type DestinationRequest } from "@/lib/api/activities";
-import { archivePackage, deletePackage, publishPackage } from "@/lib/api/packages";
+import {
+  createDestination,
+  deleteDestination,
+  type CreateDestinationRequest,
+  type DestinationResponse,
+} from "@/lib/api/destinations";
+import {
+  archivePackage,
+  createPackage,
+  deletePackage,
+  publishPackage,
+  type TourPackageRequest,
+  type TourPackageResponse,
+} from "@/lib/api/packages";
 import { ApiError } from "@/lib/api/client";
 
 /**
  * Server actions for content mutations. These run on the server (so they can use
- * the session token via `apiFetch`) and are invoked from client components; the
- * caller calls `router.refresh()` afterwards to re-run the server fetch.
+ * the session token via `apiFetch`) and are invoked from client components.
+ *
+ * Create actions return the created resource so the caller can update local state
+ * optimistically; status/delete actions return a typed `ActionResult` consumed by
+ * the admin panels' `runAction` helper (which branches on `ok`).
  */
 type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -16,13 +31,22 @@ function fail(e: unknown): ActionResult {
 }
 
 /** POST /destinations — create a destination (owner derived from the token). */
-export async function createDestinationAction(body: DestinationRequest): Promise<ActionResult> {
-  try {
-    await createDestination(body);
-    return { ok: true };
-  } catch (e) {
-    return fail(e);
-  }
+export async function createDestinationAction(
+  body: CreateDestinationRequest,
+): Promise<DestinationResponse> {
+  return createDestination(body);
+}
+
+/** DELETE /destinations/{id} */
+export async function deleteDestinationAction(id: string): Promise<void> {
+  return deleteDestination(id);
+}
+
+/** POST /tours — create a tour package. */
+export async function createPackageAction(
+  body: TourPackageRequest,
+): Promise<TourPackageResponse> {
+  return createPackage(body);
 }
 
 /** PUT /tours/{id}/publish */

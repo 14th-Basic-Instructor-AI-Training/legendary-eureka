@@ -57,9 +57,6 @@ export function ToursWorkspace({ initialPackages, initialDestinations }: Props) 
           <Tabs.Tab id="packages">{t("tours.tabs.packages")}</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel id="destinations" className="pt-5">
-<<<<<<< HEAD
-          <DestinationsPanel destinations={destinations} onBuildPackage={handleBuildPackage} />
-=======
           <DestinationsPanel
             destinations={destinations}
             agencyName={agencyName}
@@ -67,7 +64,6 @@ export function ToursWorkspace({ initialPackages, initialDestinations }: Props) 
             onCreated={(dest) => setDestinations((prev) => [dest, ...prev])}
             onDeleted={(id) => setDestinations((prev) => prev.filter((d) => d.id !== id))}
           />
->>>>>>> 2d673ed7538579d7af67789c239619f46f219203
         </Tabs.Panel>
         <Tabs.Panel id="packages" className="pt-5">
           <PackagesPanel

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Edit2, Trash, CloseCircle, SearchNormal1, AddCircle } from "iconsax-reactjs";
-import { Button, Chip, StatusChip } from "@/ui";
+import { Edit2, Trash, CloseCircle, SearchNormal1, AddCircle, More } from "iconsax-reactjs";
+import { Button, Chip, Dropdown, StatusChip } from "@/ui";
 import { formatRating } from "@/lib/format";
 import { useSession } from "@/lib/auth";
 import { can } from "@/lib/permissions";
@@ -164,21 +164,34 @@ export function ActivitiesAdmin() {
                         </Button>
                       </div>
                     ) : (
-                      <div className="flex gap-2">
-                        <Button variant="secondary" size="sm" onPress={() => setEditing(a)}>
-                          <Edit2 size={16} color="currentColor" />
-                          {t("admin.activities.actions.edit")}
-                        </Button>
-                        <Button
-                          variant="tertiary"
-                          size="sm"
-                          className="text-danger"
-                          onPress={() => setConfirmingId(a.id)}
+                      <Dropdown>
+                        <Dropdown.Trigger
+                          className="text-muted hover:bg-muted/10 hover:text-foreground inline-flex h-8 w-8 items-center justify-center rounded-lg outline-none transition-colors focus-visible:ring-1 focus-visible:ring-[var(--primary)]"
+                          aria-label={t("common.moreActions")}
                         >
-                          <Trash size={16} color="currentColor" />
-                          {t("admin.activities.actions.delete")}
-                        </Button>
-                      </div>
+                          <More size={18} color="currentColor" className="rotate-90" />
+                        </Dropdown.Trigger>
+                        <Dropdown.Popover placement="bottom end">
+                          <Dropdown.Menu>
+                            <Dropdown.Item
+                              className="flex items-center gap-2"
+                              textValue={t("admin.activities.actions.edit")}
+                              onAction={() => setEditing(a)}
+                            >
+                              <Edit2 size={16} color="currentColor" />
+                              {t("admin.activities.actions.edit")}
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              className="text-danger flex items-center gap-2"
+                              textValue={t("admin.activities.actions.delete")}
+                              onAction={() => setConfirmingId(a.id)}
+                            >
+                              <Trash size={16} color="currentColor" />
+                              {t("admin.activities.actions.delete")}
+                            </Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown.Popover>
+                      </Dropdown>
                     )
                   ) : null}
                 </div>
