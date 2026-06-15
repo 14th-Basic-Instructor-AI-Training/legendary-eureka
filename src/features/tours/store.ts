@@ -157,17 +157,18 @@ export const useToursStore = create<ToursState>((set, get) => ({
 
   addPackage: (actor, input, agencyName) => {
     if (!can(actor, "managePackages")) return false;
-    const destination = get().destinations.find((d) => d.id === input.destinationId);
-    if (!destination) return false;
+    const destination = input.destinationId
+      ? get().destinations.find((d) => d.id === input.destinationId)
+      : undefined;
     const next: TourPackage = {
       id: `tp-new-${get().packages.length + 1}`,
       title: input.title,
-      destinationId: destination.id,
-      destinationName: destination.name,
+      destinationId: destination?.id ?? "unknown",
+      destinationName: destination?.name ?? input.province ?? "—",
       agencyName,
       days: input.days,
       priceFrom: input.priceFrom,
-      currency: "USD",
+      currency: input.currency ?? "USD",
       status: "draft",
     };
     set((s) => ({ packages: [next, ...s.packages] }));

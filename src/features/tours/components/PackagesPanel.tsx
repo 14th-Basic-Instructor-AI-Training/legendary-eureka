@@ -1,36 +1,75 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Add, CloseCircle, TickCircle } from "iconsax-reactjs";
+import { Add, CloseCircle, Trash } from "iconsax-reactjs";
 import { Button, StatusChip } from "@/ui";
 import { formatPrice } from "@/lib/format";
-import { useSession } from "@/lib/auth";
+import type { TourPackageResponse, TourPackageStatus } from "@/lib/api/packages";
+import {
+  publishPackageAction,
+  archivePackageAction,
+  deletePackageAction,
+} from "../actions";
+import type { DestinationResponse } from "@/lib/api/destinations";
 import { PackageForm } from "./PackageForm";
-import { useToursStore } from "../store";
-import type { TourDestination, TourPackage } from "../schema";
 
 type Props = {
-  destinations: TourDestination[];
-  packages: TourPackage[];
+  packages: TourPackageResponse[];
+  destinations: DestinationResponse[];
   agencyName: string;
   formOpen: boolean;
   setFormOpen: (open: boolean) => void;
-  presetDestinationId?: string;
+  presetDestination?: DestinationResponse;
+  onPackageCreated: (pkg: TourPackageResponse) => void;
+  onStatusChanged: (id: string, status: TourPackageStatus) => void;
+  onDeleted: (id: string) => void;
 };
 
-/** Agency: list tour packages with approval status; create + request approval. */
 export function PackagesPanel({
-  destinations,
   packages,
+  destinations,
   agencyName,
   formOpen,
   setFormOpen,
-  presetDestinationId,
+  presetDestination,
+  onPackageCreated,
+  onStatusChanged,
+  onDeleted,
 }: Props) {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
-  const { role } = useSession();
-  const submitForApproval = useToursStore((s) => s.submitForApproval);
+  const [pending, setPending] = useState<string | null>(null);
+
+  const handlePublish = async (id: string) => {
+    setPending(id);
+    try {
+      await publishPackageAction(id);
+      onStatusChanged(id, "PUBLISHED");
+    } finally {
+      setPending(null);
+    }
+  };
+
+  const handleArchive = async (id: string) => {
+    setPending(id);
+    try {
+      await archivePackageAction(id);
+      onStatusChanged(id, "ARCHIVED");
+    } finally {
+      setPending(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    setPending(id);
+    try {
+      await deletePackageAction(id);
+      onDeleted(id);
+    } finally {
+      setPending(null);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -48,11 +87,15 @@ export function PackagesPanel({
 
       {formOpen ? (
         <PackageForm
-          key={presetDestinationId ?? "new"}
+          key={presetDestination?.id ?? "new"}
           destinations={destinations}
           agencyName={agencyName}
-          presetDestinationId={presetDestinationId}
-          onDone={() => setFormOpen(false)}
+          presetDestination={presetDestination}
+          onCreated={(pkg) => {
+            onPackageCreated(pkg);
+            setFormOpen(false);
+          }}
+          onCancel={() => setFormOpen(false)}
         />
       ) : null}
 
@@ -68,28 +111,46 @@ export function PackagesPanel({
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="truncate font-medium">{p.title}</p>
-                  <StatusChip status={p.status} />
+                  <StatusChip status={p.status.toLowerCase()} />
                 </div>
                 <p className="text-muted mt-1 text-sm">
-                  {p.destinationName} · {t("tours.packages.days", { count: p.days })} ·{" "}
-                  {t("landing.tours.from")} {formatPrice(p.priceFrom, p.currency, lng)}
+                  {t(`destinations.provinces.${p.province}`)} ·{" "}
+                  {t("tours.packages.days", { count: p.durationDays || p.days || 1 })} ·{" "}
+                  {t("landing.tours.from")}{" "}
+                  {formatPrice(p.priceFrom ?? p.price, p.currency, lng)}
                 </p>
               </div>
 
-              {p.status === "draft" ? (
+              <div className="flex items-center gap-2">
+                {p.status === "DRAFT" ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    isPending={pending === p.id}
+                    onPress={() => handlePublish(p.id)}
+                  >
+                    {t("tours.packages.publish")}
+                  </Button>
+                ) : p.status === "PUBLISHED" ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    isPending={pending === p.id}
+                    onPress={() => handleArchive(p.id)}
+                  >
+                    {t("tours.packages.archive")}
+                  </Button>
+                ) : null}
                 <Button
-                  variant="secondary"
+                  variant="tertiary"
                   size="sm"
-                  onPress={() => submitForApproval(role, p.id, t("tours.packages.justNow"))}
+                  isPending={pending === p.id}
+                  onPress={() => handleDelete(p.id)}
+                  aria-label={t("common.delete")}
                 >
-                  {t("tours.packages.requestApproval")}
+                  <Trash size={15} color="currentColor" />
                 </Button>
-              ) : p.status === "pending" ? (
-                <span className="text-warning flex items-center gap-1 text-xs font-medium">
-                  <TickCircle size={14} color="currentColor" variant="Bold" />
-                  {t("tours.packages.approvalSent")}
-                </span>
-              ) : null}
+              </div>
             </li>
           ))}
         </ul>

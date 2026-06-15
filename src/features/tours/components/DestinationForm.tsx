@@ -30,6 +30,9 @@ import {
   type NewDestinationFormValues,
   type NewDestinationInput,
 } from "../schema";
+import type { DestinationResponse } from "@/lib/api/destinations";
+import type { Province, TravelType } from "@/lib/api/client";
+import { createDestinationAction } from "../actions";
 import { useToursStore } from "../store";
 
 const PROVINCES = CAMBODIA_PROVINCE_CODES;
@@ -55,10 +58,12 @@ type Props = {
   /** Display name stored as the destination owner. */
   ownerName: string;
   onClose: () => void;
+  /** When set, creates via API and calls back with the response. */
+  onCreated?: (dest: DestinationResponse) => void;
 };
 
 /** Create-destination modal. Shared by the agency tours panel and admin manager. */
-export function DestinationForm({ isOpen, origin, ownerName, onClose }: Props) {
+export function DestinationForm({ isOpen, origin, ownerName, onClose, onCreated }: Props) {
   const { t } = useTranslation();
   const { role } = useSession();
   const addDestination = useToursStore((s) => s.addDestination);
@@ -79,7 +84,24 @@ export function DestinationForm({ isOpen, origin, ownerName, onClose }: Props) {
     if (isOpen) reset(DEFAULTS);
   }, [isOpen, reset]);
 
-  const onSubmit = (values: NewDestinationInput) => {
+  const onSubmit = async (values: NewDestinationInput) => {
+    if (onCreated) {
+      const dest = await createDestinationAction({
+        name: values.name,
+        description: values.description,
+        province: values.province as Province,
+        travelType: values.travelType as TravelType,
+        coverImageUrl: values.coverImageUrl,
+        priceFrom: values.priceFrom,
+        currency: values.currency,
+        latitude: values.latitude,
+        longitude: values.longitude,
+      });
+      onCreated(dest);
+      onClose();
+      return;
+    }
+
     addDestination(role, values, origin, ownerName);
     onClose();
   };
