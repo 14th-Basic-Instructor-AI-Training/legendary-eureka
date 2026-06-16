@@ -232,7 +232,8 @@
       "bookingDescription": "The traveler will be notified once you confirm."
     },
     "moreActions": "More actions",
-    "back": "Back"
+    "back": "Back",
+    "optional": "optional"
   },
   "status": {
     "draft": "Draft",
@@ -1073,7 +1074,9 @@
       "adminEmpty": "No admin destinations available yet.",
       "noImage": "No image",
       "pageTitle": "Destinations",
-      "pageSubtitle": "Browse and manage your listed destinations"
+      "pageSubtitle": "Browse and manage your listed destinations",
+      "tabAdmin": "Admin Destinations",
+      "tabYours": "Your Destinations"
     },
     "packages": {
       "title": "Your tour packages",
@@ -1096,10 +1099,51 @@
         "selectTravelType": "Select travel type",
         "days": "Days",
         "price": "Price from (USD)",
-        "submit": "Create package"
+        "submit": "Create package",
+        "tagline": "Tagline",
+        "taglinePlaceholder": "Short subtitle shown to travelers",
+        "groupSizeMax": "Max group size",
+        "cancellationPolicy": "Cancellation policy",
+        "cancellationFree": "Free cancellation",
+        "cancellationNonRefundable": "Non-refundable",
+        "languages": "Languages",
+        "languagesPlaceholder": "e.g. English, Khmer, Korean",
+        "coverImageUrl": "Cover image URL",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe the tour experience for travelers...",
+        "highlights": "Highlights",
+        "highlightsPlaceholder": "One highlight per line",
+        "included": "What's included",
+        "includedPlaceholder": "One item per line",
+        "excluded": "What's excluded",
+        "excludedPlaceholder": "One item per line",
+        "sections": {
+          "identity": {
+            "title": "Package Identity",
+            "description": "Name, tagline, and where this tour takes travelers"
+          },
+          "logistics": {
+            "title": "Trip Logistics",
+            "description": "Duration, pricing, group limits, and policies travelers see before booking"
+          },
+          "story": {
+            "title": "Tell the Story",
+            "description": "Photos, description, and what travelers can expect to gain or bring"
+          }
+        },
+        "dayUnit": "day",
+        "daysUnit": "days",
+        "peopleUnit": "people max",
+        "highlightsHint": "One per line — these appear as bullet points on the tour page",
+        "listHint": "One per line",
+        "draftNotice": "Saved as a draft — publish when ready"
       },
       "pageTitle": "Tour Packages",
-      "pageSubtitle": "Create and manage your published and draft tour packages"
+      "pageSubtitle": "Create and manage your published and draft tour packages",
+      "newPage": {
+        "title": "Create Tour Package",
+        "subtitle": "Fill in the details travelers will see on the package page"
+      }
     },
     "admin": {
       "destinations": {

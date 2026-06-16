@@ -232,7 +232,8 @@
       "bookingDescription": "확정하면 여행자에게 알림이 전송됩니다."
     },
     "moreActions": "추가 작업",
-    "back": "뒤로"
+    "back": "뒤로",
+    "optional": "선택 사항"
   },
   "status": {
     "draft": "초안",
@@ -1073,7 +1074,9 @@
       "adminEmpty": "관리자 여행지가 없습니다.",
       "noImage": "이미지 없음",
       "pageTitle": "여행지",
-      "pageSubtitle": "등록된 여행지를 탐색하고 관리하세요"
+      "pageSubtitle": "등록된 여행지를 탐색하고 관리하세요",
+      "tabAdmin": "관리자 여행지",
+      "tabYours": "내 여행지"
     },
     "packages": {
       "title": "내 투어 패키지",
@@ -1096,10 +1099,51 @@
         "selectTravelType": "여행 유형 선택",
         "days": "일수",
         "price": "최저 가격 (USD)",
-        "submit": "패키지 생성"
+        "submit": "패키지 생성",
+        "tagline": "태그라인",
+        "taglinePlaceholder": "여행자에게 보여지는 짧은 소개",
+        "groupSizeMax": "최대 그룹 인원",
+        "cancellationPolicy": "취소 정책",
+        "cancellationFree": "무료 취소",
+        "cancellationNonRefundable": "환불 불가",
+        "languages": "언어",
+        "languagesPlaceholder": "예: 영어, 크메르어, 한국어",
+        "coverImageUrl": "커버 이미지 URL",
+        "description": "설명",
+        "descriptionPlaceholder": "여행 경험을 설명해 주세요...",
+        "highlights": "하이라이트",
+        "highlightsPlaceholder": "한 줄에 하나씩 입력",
+        "included": "포함 사항",
+        "includedPlaceholder": "한 줄에 하나씩 입력",
+        "excluded": "미포함 사항",
+        "excludedPlaceholder": "한 줄에 하나씩 입력",
+        "sections": {
+          "identity": {
+            "title": "패키지 기본 정보",
+            "description": "이름, 태그라인, 여행 위치"
+          },
+          "logistics": {
+            "title": "여행 세부 사항",
+            "description": "기간, 가격, 인원 제한, 정책"
+          },
+          "story": {
+            "title": "스토리 작성",
+            "description": "사진, 설명, 포함 및 제외 사항"
+          }
+        },
+        "dayUnit": "일",
+        "daysUnit": "일",
+        "peopleUnit": "명 최대",
+        "highlightsHint": "줄당 하나씩 — 투어 페이지에 목록으로 표시됩니다",
+        "listHint": "줄당 하나씩",
+        "draftNotice": "초안으로 저장됨 — 준비되면 게시하세요"
       },
       "pageTitle": "투어 패키지",
-      "pageSubtitle": "게시된 및 초안 투어 패키지를 만들고 관리하세요"
+      "pageSubtitle": "게시된 및 초안 투어 패키지를 만들고 관리하세요",
+      "newPage": {
+        "title": "투어 패키지 만들기",
+        "subtitle": "패키지 페이지에 표시될 정보를 입력하세요"
+      }
     },
     "admin": {
       "destinations": {

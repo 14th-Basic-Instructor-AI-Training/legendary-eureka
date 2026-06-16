@@ -2,43 +2,27 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Add, CloseCircle, Trash } from "iconsax-reactjs";
+import { Add, Trash } from "iconsax-reactjs";
 import { Button, StatusChip } from "@/ui";
 import { formatPrice } from "@/lib/format";
+import { useLocalizedRouter } from "@/lib/locale";
 import type { TourPackageResponse, TourPackageStatus } from "@/lib/api/packages";
 import {
   publishPackageAction,
   archivePackageAction,
   deletePackageAction,
 } from "@/actions/tours";
-import type { DestinationResponse } from "@/lib/api/destinations";
-import { PackageForm } from "./PackageForm";
 
 type Props = {
   packages: TourPackageResponse[];
-  destinations: DestinationResponse[];
-  agencyName: string;
-  formOpen: boolean;
-  setFormOpen: (open: boolean) => void;
-  presetDestination?: DestinationResponse;
-  onPackageCreated: (pkg: TourPackageResponse) => void;
   onStatusChanged: (id: string, status: TourPackageStatus) => void;
   onDeleted: (id: string) => void;
 };
 
-export function PackagesPanel({
-  packages,
-  destinations,
-  agencyName,
-  formOpen,
-  setFormOpen,
-  presetDestination,
-  onPackageCreated,
-  onStatusChanged,
-  onDeleted,
-}: Props) {
+export function PackagesPanel({ packages, onStatusChanged, onDeleted }: Props) {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
+  const router = useLocalizedRouter();
   const [pending, setPending] = useState<string | null>(null);
 
   const handlePublish = async (id: string) => {
@@ -86,29 +70,15 @@ export function PackagesPanel({
 
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold tracking-tight">{t("tours.packages.title")}</h2>
-        <Button variant="primary" size="sm" onPress={() => setFormOpen(!formOpen)}>
-          {formOpen ? (
-            <CloseCircle size={16} color="currentColor" />
-          ) : (
-            <Add size={16} color="currentColor" />
-          )}
+        <Button
+          variant="primary"
+          size="sm"
+          onPress={() => router.push("/agency/tours/new")}
+        >
+          <Add size={16} color="currentColor" />
           {t("tours.packages.new")}
         </Button>
       </div>
-
-      {formOpen ? (
-        <PackageForm
-          key={presetDestination?.id ?? "new"}
-          destinations={destinations}
-          agencyName={agencyName}
-          presetDestination={presetDestination}
-          onCreated={(pkg) => {
-            onPackageCreated(pkg);
-            setFormOpen(false);
-          }}
-          onCancel={() => setFormOpen(false)}
-        />
-      ) : null}
 
       {packages.length === 0 ? (
         <p className="text-muted py-8 text-center text-sm">{t("tours.packages.empty")}</p>

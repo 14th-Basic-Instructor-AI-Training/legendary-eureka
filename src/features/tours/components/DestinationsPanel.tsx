@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Add, Location, DollarCircle } from "iconsax-reactjs";
 import Image from "next/image";
-import { Button, Tabs, useConfirm } from "@/ui";
+import { Button, useConfirm } from "@/ui";
 import { cn } from "@/lib/utils";
+
+const FILLET = "radial-gradient(circle 14px at top SIDE, transparent 13px, var(--color-bg-dashboard) 14px)";
 import { formatPrice } from "@/lib/format";
 import { useSession } from "@/lib/auth";
 import type { DestinationResponse } from "@/lib/api/destinations";
@@ -41,11 +44,17 @@ export function DestinationsPanel({
   const lng = i18n.language;
   const { user } = useSession();
   const confirm = useConfirm();
+  const [activeTab, setActiveTab] = useState<"admin" | "yours">("admin");
   const [showForm, setShowForm] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const adminDestinations = publicDestinations.filter((d) => d.ownerId !== user?.id);
   const hasPending = destinations.some((d) => d.approvalStatus?.toUpperCase() === "PENDING");
+
+  const TABS = [
+    { id: "admin" as const, labelKey: "tours.destinations.tabAdmin", count: adminDestinations.length },
+    { id: "yours" as const, labelKey: "tours.destinations.tabYours", count: destinations.length },
+  ];
 
   const handleDelete = async (id: string, name: string) => {
     await confirm({
@@ -89,80 +98,134 @@ export function DestinationsPanel({
         }}
       />
 
-      <Tabs variant="primary" defaultSelectedKey="admin">
-        <Tabs.List aria-label={t("tours.destinations.title")}>
-          <Tabs.Tab id="admin">{t("tours.destinations.sectionAdmin")}</Tabs.Tab>
-          <Tabs.Tab id="yours">{t("tours.destinations.sectionYours")}</Tabs.Tab>
-        </Tabs.List>
-
-        {/* Tab A: Admin-created destinations */}
-        <Tabs.Panel id="admin" className="pt-5">
-          {adminDestinations.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 py-14 text-center">
-              <span className="bg-muted/10 inline-flex h-12 w-12 items-center justify-center rounded-full">
-                <Location size={22} color="currentColor" className="text-muted" />
-              </span>
-              <p className="text-muted text-sm">{t("tours.destinations.adminEmpty")}</p>
-            </div>
-          ) : (
-            <ul className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
-              {adminDestinations.map((d) => (
-                <DestinationCard
-                  key={d.id}
-                  d={d}
-                  lng={lng}
-                  t={t}
-                  showBuildPackage
-                  onBuildPackage={onBuildPackage}
-                />
-              ))}
-            </ul>
-          )}
-        </Tabs.Panel>
-
-        {/* Tab B: Agency's own destinations */}
-        <Tabs.Panel id="yours" className="pt-5">
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-end">
-              <Button variant="primary" size="sm" onPress={() => setShowForm(true)}>
-                <Add size={16} color="currentColor" />
-                {t("tours.destinations.new")}
-              </Button>
-            </div>
-
-            {hasPending && (
-              <div className="bg-warning/10 border-warning/30 flex items-center gap-2 rounded-xl border px-4 py-2.5">
-                <span className="text-warning text-sm font-medium">{t("tours.destinations.pendingNotice")}</span>
-              </div>
-            )}
-
-            {destinations.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 py-14 text-center">
-                <span className="bg-muted/10 inline-flex h-12 w-12 items-center justify-center rounded-full">
-                  <Location size={22} color="currentColor" className="text-muted" />
+      <div className="flex min-h-0 flex-1 flex-col">
+        {/* Folder-tab nav */}
+        <div
+          role="tablist"
+          aria-label={t("tours.destinations.pageTitle")}
+          className="relative z-10 flex shrink-0 justify-center gap-1"
+        >
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setActiveTab(tab.id)}
+                className="relative cursor-pointer rounded-t-2xl px-8 pb-4 pt-3 text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              >
+                {isActive ? (
+                  <motion.span
+                    layoutId="destTabNotch"
+                    aria-hidden="true"
+                    transition={{ type: "spring", stiffness: 480, damping: 38 }}
+                    className="bg-bg-dashboard absolute inset-0 -z-10 rounded-t-2xl"
+                  >
+                    <motion.span
+                      layout
+                      className="absolute bottom-0 left-0 h-[14px] w-[14px] -translate-x-full"
+                      style={{ background: FILLET.replace("SIDE", "left") }}
+                    />
+                    <motion.span
+                      layout
+                      className="absolute bottom-0 right-0 h-[14px] w-[14px] translate-x-full"
+                      style={{ background: FILLET.replace("SIDE", "right") }}
+                    />
+                  </motion.span>
+                ) : null}
+                <span className={cn("relative flex items-center gap-1.5 transition-colors", isActive ? "text-primary" : "text-muted hover:text-foreground")}>
+                  {t(tab.labelKey)}
+                  <span
+                    className="rounded-full px-1.5 py-px text-[10.5px] font-bold transition-all"
+                    style={
+                      isActive
+                        ? { background: "var(--color-primary)", color: "#fff" }
+                        : { background: "#E1E6EC", color: "#9BA8B5" }
+                    }
+                  >
+                    {tab.count}
+                  </span>
                 </span>
-                <p className="text-muted text-sm">{t("tours.destinations.empty")}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Panel */}
+        <div className="bg-bg-dashboard flex min-h-0 flex-1 flex-col rounded-t-3xl rounded-b-xl p-5 sm:p-6">
+          {/* Tab A: Admin-created destinations */}
+          {activeTab === "admin" && (
+            <div className="flex flex-col gap-4">
+              {adminDestinations.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 py-14 text-center">
+                  <span className="bg-muted/10 inline-flex h-12 w-12 items-center justify-center rounded-full">
+                    <Location size={22} color="currentColor" className="text-muted" />
+                  </span>
+                  <p className="text-muted text-sm">{t("tours.destinations.adminEmpty")}</p>
+                </div>
+              ) : (
+                <ul className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                  {adminDestinations.map((d) => (
+                    <DestinationCard
+                      key={d.id}
+                      d={d}
+                      lng={lng}
+                      t={t}
+                      showBuildPackage
+                      onBuildPackage={onBuildPackage}
+                    />
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {/* Tab B: Agency's own destinations */}
+          {activeTab === "yours" && (
+            <div className="flex flex-col gap-4">
+              <div className="flex justify-end">
+                <Button variant="primary" size="sm" onPress={() => setShowForm(true)}>
+                  <Add size={16} color="currentColor" />
+                  {t("tours.destinations.new")}
+                </Button>
               </div>
-            ) : (
-              <ul className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
-                {destinations.map((d) => (
-                  <DestinationCard
-                    key={d.id}
-                    d={d}
-                    lng={lng}
-                    t={t}
-                    showBuildPackage={d.approvalStatus?.toUpperCase() === "APPROVED"}
-                    showDelete
-                    isPendingDelete={deletingId === d.id}
-                    onBuildPackage={onBuildPackage}
-                    onDelete={handleDelete}
-                  />
-                ))}
-              </ul>
-            )}
-          </div>
-        </Tabs.Panel>
-      </Tabs>
+
+              {hasPending && (
+                <div className="bg-warning/10 border-warning/30 flex items-center gap-2 rounded-xl border px-4 py-2.5">
+                  <span className="text-warning text-sm font-medium">{t("tours.destinations.pendingNotice")}</span>
+                </div>
+              )}
+
+              {destinations.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 py-14 text-center">
+                  <span className="bg-muted/10 inline-flex h-12 w-12 items-center justify-center rounded-full">
+                    <Location size={22} color="currentColor" className="text-muted" />
+                  </span>
+                  <p className="text-muted text-sm">{t("tours.destinations.empty")}</p>
+                </div>
+              ) : (
+                <ul className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                  {destinations.map((d) => (
+                    <DestinationCard
+                      key={d.id}
+                      d={d}
+                      lng={lng}
+                      t={t}
+                      showBuildPackage={d.approvalStatus?.toUpperCase() === "APPROVED"}
+                      showDelete
+                      isPendingDelete={deletingId === d.id}
+                      onBuildPackage={onBuildPackage}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
