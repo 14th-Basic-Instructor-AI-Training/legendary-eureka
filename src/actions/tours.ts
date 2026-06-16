@@ -7,10 +7,13 @@ import {
 } from "@/services/destinations.service";
 import type { CreateDestinationRequest, DestinationResponse } from "@/lib/api/destinations";
 import {
+  approvePackage,
   archivePackage,
   createPackage,
   deletePackage,
   publishPackage,
+  rejectPackage,
+  submitPackage,
 } from "@/services/packages.service";
 import type { TourPackageRequest, TourPackageResponse } from "@/lib/api/packages";
 import { ApiError } from "@/lib/api/client";
@@ -80,6 +83,36 @@ export async function archivePackageAction(id: string): Promise<ActionResult> {
 export async function deletePackageAction(id: string): Promise<ActionResult> {
   try {
     await deletePackage(id);
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** POST /tours/{id}/submit — agency submits a draft package for admin approval. */
+export async function submitPackageAction(id: string): Promise<ActionResult> {
+  try {
+    await submitPackage(id);
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** PUT /tours/{id}/approve — admin approves a pending package (also publishes it). */
+export async function approvePackageAction(id: string): Promise<ActionResult> {
+  try {
+    await approvePackage(id);
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** PUT /tours/{id}/reject — admin rejects a pending package with an optional reason. */
+export async function rejectPackageAction(id: string, reason?: string): Promise<ActionResult> {
+  try {
+    await rejectPackage(id, reason);
     return { ok: true };
   } catch (e) {
     return fail(e);

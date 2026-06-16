@@ -231,7 +231,8 @@
       "bookingTitle": "Confirm this booking?",
       "bookingDescription": "The traveler will be notified once you confirm."
     },
-    "moreActions": "More actions"
+    "moreActions": "More actions",
+    "back": "Back"
   },
   "status": {
     "draft": "Draft",
@@ -1777,6 +1778,48 @@
       "settings": {
         "subtitle": "Configure platform-wide settings and commission rates."
       }
+    },
+    "destinationDetail": {
+      "back": "Back to content",
+      "description": "Description",
+      "noDescription": "No description provided.",
+      "details": "Details",
+      "province": "Province",
+      "city": "City",
+      "country": "Country",
+      "category": "Category",
+      "travelType": "Travel type",
+      "priceFrom": "Starting price",
+      "rating": "Rating",
+      "reviews_one": "{{count}} review",
+      "reviews_other": "{{count}} reviews",
+      "tags": "Tags",
+      "featured": "Featured",
+      "trending": "Trending",
+      "created": "Created",
+      "coordinates": "Coordinates",
+      "photos": "Photos",
+      "notFound": "Destination not found."
+    },
+    "packageDetail": {
+      "back": "Back to content",
+      "agency": "Agency",
+      "status": "Status",
+      "price": "Price",
+      "duration": "Duration",
+      "agenda": "Itinerary",
+      "day": "Day {{day}}",
+      "noAgenda": "No itinerary added yet.",
+      "description": "Description",
+      "noDescription": "No description provided.",
+      "details": "Details",
+      "province": "Province",
+      "travelType": "Travel type",
+      "rating": "Rating",
+      "reviews_one": "{{count}} review",
+      "reviews_other": "{{count}} reviews",
+      "created": "Created",
+      "notFound": "Package not found."
     }
   },
   "dashboard": {
@@ -2156,6 +2199,9 @@
       "bookings": "Booked Tours",
       "personal": "Personal Events"
     },
+    "calendars": {
+      "untitled": "Untitled calendar"
+    },
     "chrome": {
       "today": "Today",
       "day": "Day",
@@ -2170,6 +2216,7 @@
     "personal": {
       "title": "Personal Events",
       "addEvent": "Add Event",
+      "untitled": "Untitled event",
       "empty": "No personal events yet — add one to get started.",
       "modalTitle": "Add Personal Event",
       "save": "Save Event",

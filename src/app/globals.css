@@ -264,3 +264,7 @@ section[id] {
     scroll-behavior: auto;
   }
 }
+/* DayFlow: offset the collapsed-sidebar panel so it clears the toggle rail. */
+[data-sidebar-collapsed="true"] {
+  margin-left: calc(40px) !important;
+}

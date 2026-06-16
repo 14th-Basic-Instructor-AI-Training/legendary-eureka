@@ -1,6 +1,8 @@
 import { clientApiFetch } from "@/lib/api/client";
 import type {
   CalendarTripEntry,
+  PersonalCalendarRequest,
+  PersonalCalendarResponse,
   PersonalEventRequest,
   PersonalEventResponse,
 } from "@/lib/api/calendar";
@@ -36,4 +38,27 @@ export function updatePersonalEvent(
 
 export function deletePersonalEvent(id: string): Promise<void> {
   return clientApiFetch(`/calendar/personal-events/${id}`, { method: "DELETE" });
+}
+
+// ── Personal calendars (user-defined sub-calendars under "Personal Events") ──────
+
+export function getPersonalCalendars(): Promise<PersonalCalendarResponse[]> {
+  return clientApiFetch("/calendar/personal-calendars");
+}
+
+export function createPersonalCalendar(
+  body: PersonalCalendarRequest,
+): Promise<PersonalCalendarResponse> {
+  return clientApiFetch("/calendar/personal-calendars", { method: "POST", body });
+}
+
+export function updatePersonalCalendar(
+  id: string,
+  body: PersonalCalendarRequest,
+): Promise<PersonalCalendarResponse> {
+  return clientApiFetch(`/calendar/personal-calendars/${id}`, { method: "PUT", body });
+}
+
+export function deletePersonalCalendar(id: string): Promise<void> {
+  return clientApiFetch(`/calendar/personal-calendars/${id}`, { method: "DELETE" });
 }

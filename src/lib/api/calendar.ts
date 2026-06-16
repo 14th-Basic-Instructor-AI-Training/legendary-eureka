@@ -22,6 +22,8 @@ export interface PersonalEventResponse {
   startDate: string; // ISO YYYY-MM-DD
   endDate: string;
   allDay: boolean;
+  /** Personal calendar (sub-group) this event belongs to; null = default group. */
+  calendarId?: string | null;
   createdAt: string;
 }
 
@@ -31,4 +33,18 @@ export interface PersonalEventRequest {
   startDate: string;
   endDate: string;
   allDay?: boolean;
+  /** Assign the event to a personal calendar; omit/null for the default group. */
+  calendarId?: string | null;
+}
+
+export interface PersonalCalendarResponse {
+  id: string;
+  name: string;
+  color: string;
+  createdAt: string;
+}
+
+export interface PersonalCalendarRequest {
+  name: string;
+  color?: string;
 }

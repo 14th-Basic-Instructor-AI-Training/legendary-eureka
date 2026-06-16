@@ -4,6 +4,9 @@ import type { Province, TravelType } from "./client";
 
 export type TourPackageStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
+/** Approval lifecycle, independent of publication status. Null = never submitted. */
+export type TourApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
+
 // ── Response types ────────────────────────────────────────────────────────────
 
 export interface TourAgendaItemResponse {
@@ -39,6 +42,11 @@ export interface TourPackageResponse {
   reviewCount: number;
   createdAt: string;
   updatedAt: string;
+  // Approval workflow (null when never submitted for review)
+  approvalStatus?: TourApprovalStatus | null;
+  rejectionReason?: string | null;
+  submittedAt?: string | null;
+  reviewedAt?: string | null;
 }
 
 // ── Request bodies ────────────────────────────────────────────────────────────

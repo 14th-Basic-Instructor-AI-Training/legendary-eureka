@@ -33,7 +33,9 @@ export const CalendarEventSchema = z.object({
   /** CSS colour for this group (overrides TYPE_COLOR). */
   groupColor: z.string().optional(),
   title: z.string(),
-  subtitle: z.string().optional(),
+  // `.nullish()` (not `.optional()`) so a JSON `null` from the API is accepted
+  // without dropping the whole event; the key stays optional for fixtures.
+  subtitle: z.string().nullish(),
   start: z.string(),
   end: z.string(),
   allDay: z.boolean().default(true),
