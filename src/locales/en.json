@@ -1188,6 +1188,49 @@
       "newPage": {
         "title": "Create Tour Package",
         "subtitle": "Fill in the details travelers will see on the package page"
+      },
+      "detail": {
+        "back": "Back to packages",
+        "viewPublic": "View public page",
+        "viewLabel": "View {{title}}",
+        "familyFriendly": "Family friendly",
+        "facts": {
+          "title": "Key details",
+          "province": "Province",
+          "travelType": "Travel type",
+          "duration": "Duration",
+          "price": "Price from",
+          "groupSize": "Group size",
+          "groupSizeValue": "Up to {{count}} people",
+          "languages": "Languages",
+          "durationCategory": "Trip length",
+          "cancellation": "Cancellation policy",
+          "activityTypes": "Activity types"
+        },
+        "durationCategories": {
+          "HALF_DAY": "Half day",
+          "FULL_DAY": "Full day",
+          "TWO_TO_THREE_DAYS": "2–3 days",
+          "FOUR_TO_SEVEN_DAYS": "4–7 days",
+          "SEVEN_PLUS_DAYS": "7+ days"
+        },
+        "actions": {
+          "title": "Manage"
+        },
+        "stats": {
+          "title": "Performance",
+          "rating": "Rating",
+          "reviews": "Reviews",
+          "bookings": "Bookings",
+          "activities": "Activities"
+        },
+        "timeline": {
+          "title": "Timeline",
+          "created": "Created",
+          "updated": "Last updated",
+          "submitted": "Submitted",
+          "reviewed": "Reviewed"
+        }
       }
     },
     "admin": {
@@ -1434,6 +1477,7 @@
       "basePrice_other": "Base price × {{count}} travellers",
       "total": "Total",
       "cancelBooking": "Cancel Booking",
+      "markCompleted": "Mark as Completed",
       "close": "Close",
       "statTotal": "Total Bookings",
       "statTotalSub_one": "{{count}} approved",
@@ -1544,7 +1588,9 @@
         "province": "Province"
       },
       "location": {
-        "mapPlaceholder": "Interactive 3D map coming soon",
+        "mapPlaceholder": "No location set yet — edit to drop a pin",
+        "dropPinHint": "Click the map or drag the pin to set your location",
+        "lookingUpAddress": "Looking up address…",
         "currentAddress": "Current Address",
         "noAddress": "No address set yet",
         "editLocation": "Edit Location",
@@ -1552,6 +1598,8 @@
         "city": "City",
         "province": "Province",
         "dropPin": "Drop Pin on Map",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
         "saveLocation": "Save Location"
       },
       "reviews": {

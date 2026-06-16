@@ -127,6 +127,9 @@ export const AgencyProfileSchema = z.object({
   province: z.string().optional(),
   streetAddress: z.string().optional(),
   city: z.string().optional(),
+  /** Map pin for the per-place LocationMap (undefined until the agency drops one). */
+  lat: z.number().optional(),
+  lng: z.number().optional(),
   isVerified: z.boolean(),
   averageRating: z.number().min(0).max(5),
   reviewCount: z.number().int().nonnegative(),

@@ -18,24 +18,63 @@ import {
   TickCircle,
 } from "iconsax-reactjs";
 import { Button, Card, Input, TextArea, Select, ListBox } from "@/ui";
+import { LocationMap } from "@/features/destinations/components/LocationMap";
 import { saveProfileAction, uploadAvatarAction, uploadFileAction } from "@/actions/agencyProfile";
 import type { AgencyProfile, ProfileReview } from "../schema";
 
-const CAMBODIA_PROVINCES = [
-  "Phnom Penh",
-  "Siem Reap",
-  "Sihanoukville",
-  "Kampot",
-  "Battambang",
-  "Kratie",
-  "Mondulkiri",
-  "Ratanakiri",
-  "Kep",
-  "Kampong Cham",
-  "Kampong Speu",
-  "Prey Veng",
-  "Takeo",
+/** Province options keyed by the backend `Province` enum (value sent to the API). */
+const PROVINCE_OPTIONS: { id: string; label: string }[] = [
+  { id: "PHNOM_PENH", label: "Phnom Penh" },
+  { id: "SIEM_REAP", label: "Siem Reap" },
+  { id: "SIHANOUKVILLE", label: "Sihanoukville" },
+  { id: "KAMPOT", label: "Kampot" },
+  { id: "BATTAMBANG", label: "Battambang" },
+  { id: "KRATIE", label: "Kratie" },
+  { id: "MONDULKIRI", label: "Mondulkiri" },
+  { id: "RATANAKIRI", label: "Ratanakiri" },
+  { id: "KEP", label: "Kep" },
+  { id: "KAMPONG_CHAM", label: "Kampong Cham" },
+  { id: "KAMPONG_SPEU", label: "Kampong Speu" },
+  { id: "PREY_VENG", label: "Prey Veng" },
+  { id: "TAKEO", label: "Takeo" },
 ];
+
+/** Match a Nominatim region name (e.g. "Siem Reap Province") to a Province enum id. */
+function provinceIdFromRegion(region?: string): string | undefined {
+  if (!region) return undefined;
+  const norm = region.replace(/\s*province$/i, "").trim().toLowerCase();
+  return PROVINCE_OPTIONS.find((p) => p.label.toLowerCase() === norm)?.id;
+}
+
+/**
+ * Reverse-geocode coordinates → a human address + province, so dropping a pin
+ * fills the address fields (not just lat/lng). Uses the free, no-key OpenStreetMap
+ * Nominatim service to match the free MapLibre tiles. Best-effort: returns {} on
+ * any failure (the agency can still type the address manually).
+ *
+ * Note: Nominatim's usage policy is fine for low-volume/dev use; a production
+ * deployment should swap in a keyed geocoder (or self-hosted Nominatim).
+ */
+async function reverseGeocode(
+  lat: number,
+  lng: number,
+): Promise<{ address?: string; province?: string }> {
+  try {
+    const url =
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=en`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) return {};
+    const data = (await res.json()) as {
+      display_name?: string;
+      address?: Record<string, string>;
+    };
+    const a = data.address ?? {};
+    const region = a.state || a.province || a.region || a.county;
+    return { address: data.display_name, province: provinceIdFromRegion(region) };
+  } catch {
+    return {};
+  }
+}
 
 // ── Initials avatar (replaces HeroUI Avatar whose typings are too narrow) ────
 
@@ -257,9 +296,9 @@ function ProfileInfoTab({
             </Select.Trigger>
             <Select.Popover>
               <ListBox>
-                {CAMBODIA_PROVINCES.map((p) => (
-                  <ListBox.Item key={p} id={p} textValue={p}>
-                    {p}
+                {PROVINCE_OPTIONS.map((p) => (
+                  <ListBox.Item key={p.id} id={p.id} textValue={p.label}>
+                    {p.label}
                   </ListBox.Item>
                 ))}
               </ListBox>
@@ -316,7 +355,7 @@ function ProfileInfoTab({
                 <div className="flex items-center gap-2 py-2">
                   <Location size={14} variant="Linear" color="#9CA3AF" />
                   <span className="text-foreground/70">
-                    {form.province}, Cambodia
+                    {(PROVINCE_OPTIONS.find((p) => p.id === form.province)?.label ?? form.province)}, Cambodia
                   </span>
                 </div>
               )}
@@ -338,50 +377,119 @@ function ProfileInfoTab({
 
 // ── Tab 2 — Location ──────────────────────────────────────────────────────────
 
+type LocationPayload = {
+  address: string;
+  province: string;
+  latitude?: number;
+  longitude?: number;
+};
+
 function LocationTab({
   profile,
-  onSaveAddress,
+  onSaveLocation,
 }: {
   profile: AgencyProfile;
-  onSaveAddress: (address: string) => Promise<void>;
+  onSaveLocation: (loc: LocationPayload) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
   const [form, setForm] = useState({
+    // `address` is a single free-form line (the backend has no separate city field).
     streetAddress: profile.streetAddress ?? "",
-    city: profile.city ?? "",
     province: profile.province ?? "",
+    latitude: profile.lat !== undefined ? String(profile.lat) : "",
+    longitude: profile.lng !== undefined ? String(profile.lng) : "",
   });
 
-  const currentAddressLine = profile.streetAddress
-    ? `${profile.streetAddress}${profile.city ? `, ${profile.city}` : ""}${profile.province ? `, ${profile.province}` : ""}, Cambodia`
-    : t("agency.profile.location.noAddress");
+  // Drop/drag a pin → set coords immediately, then reverse-geocode to fill the
+  // address + province so the whole location updates, not just lat/lng.
+  function handlePin(la: number, ln: number) {
+    setForm((f) => ({ ...f, latitude: la.toFixed(6), longitude: ln.toFixed(6) }));
+    setGeocoding(true);
+    void reverseGeocode(la, ln).then((r) => {
+      setGeocoding(false);
+      if (r.address || r.province) {
+        setForm((f) => ({
+          ...f,
+          streetAddress: r.address ?? f.streetAddress,
+          province: r.province ?? f.province,
+        }));
+      }
+    });
+  }
+
+  const provinceLabel =
+    PROVINCE_OPTIONS.find((p) => p.id === profile.province)?.label ?? profile.province ?? "";
+
+  // Compose "address, province, Cambodia" without duplicating parts the free-form
+  // address line may already contain (seed data bakes in the city + country).
+  const currentAddressLine = (() => {
+    const addr = (profile.streetAddress ?? "").trim();
+    if (!addr) return t("agency.profile.location.noAddress");
+    const lc = addr.toLowerCase();
+    let line = addr;
+    if (provinceLabel && !lc.includes(provinceLabel.toLowerCase())) line += `, ${provinceLabel}`;
+    if (!/cambodia/i.test(line)) line += ", Cambodia";
+    return line;
+  })();
+
+  // The pin the agency has saved (shown read-only when not editing).
+  const savedHasPin =
+    profile.lat !== undefined &&
+    profile.lng !== undefined &&
+    !(profile.lat === 0 && profile.lng === 0);
+  // Coords currently typed/picked in the form (0 = none yet → map falls back to center).
+  const formLat = Number(form.latitude);
+  const formLng = Number(form.longitude);
 
   async function handleSaveLocation() {
     setSaving(true);
-    const combined = [form.streetAddress, form.city, form.province].filter(Boolean).join(", ");
-    await onSaveAddress(combined);
+    const lat = Number(form.latitude);
+    const lng = Number(form.longitude);
+    await onSaveLocation({
+      address: form.streetAddress.trim(),
+      province: form.province,
+      latitude: form.latitude.trim() && Number.isFinite(lat) ? lat : undefined,
+      longitude: form.longitude.trim() && Number.isFinite(lng) ? lng : undefined,
+    });
     setSaving(false);
     setIsEditing(false);
   }
 
   return (
     <div className="space-y-6">
-      {/* Map placeholder */}
-      <div className="border-border flex h-80 w-full items-center justify-center overflow-hidden rounded-2xl border bg-slate-100">
-        <div className="flex flex-col items-center gap-3 text-slate-400">
-          <Map1 size={48} variant="Linear" color="#CBD5E1" />
-          <p className="text-sm font-medium">
-            {t("agency.profile.location.mapPlaceholder")}
+      {/* Editing → interactive 3D map to drop/drag the pin; viewing → static map
+          when a pin is saved; otherwise a prompt to add one. */}
+      {isEditing ? (
+        <div className="space-y-2">
+          <LocationMap
+            lat={Number.isFinite(formLat) ? formLat : 0}
+            lng={Number.isFinite(formLng) ? formLng : 0}
+            label={profile.name}
+            interactive
+            onPositionChange={handlePin}
+          />
+          <p className="text-muted flex items-center gap-1.5 text-xs">
+            <Location size={13} variant="Linear" color="currentColor" />
+            {geocoding
+              ? t("agency.profile.location.lookingUpAddress")
+              : t("agency.profile.location.dropPinHint")}
           </p>
-          {profile.city && (
-            <span className="rounded-full bg-white px-4 py-1.5 text-xs font-medium text-slate-500 shadow-sm">
-              {profile.city}, {profile.province}
-            </span>
-          )}
         </div>
-      </div>
+      ) : savedHasPin ? (
+        <LocationMap lat={profile.lat as number} lng={profile.lng as number} label={profile.name} />
+      ) : (
+        <div className="border-border flex h-80 w-full items-center justify-center overflow-hidden rounded-2xl border bg-slate-100">
+          <div className="flex flex-col items-center gap-3 text-slate-400">
+            <Map1 size={48} variant="Linear" color="#CBD5E1" />
+            <p className="text-sm font-medium">
+              {t("agency.profile.location.mapPlaceholder")}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Current address */}
       <div className="flex items-start gap-3">
@@ -419,16 +527,6 @@ function LocationTab({
             />
           </Field>
 
-          <Field label={t("agency.profile.location.city")}>
-            <Input
-              value={form.city}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, city: e.target.value }))
-              }
-              aria-label={t("agency.profile.location.city")}
-            />
-          </Field>
-
           <Field
             icon={<Location size={15} variant="Linear" color="#6B7280" />}
             label={t("agency.profile.location.province")}
@@ -446,9 +544,9 @@ function LocationTab({
               </Select.Trigger>
               <Select.Popover>
                 <ListBox>
-                  {CAMBODIA_PROVINCES.map((p) => (
-                    <ListBox.Item key={p} id={p} textValue={p}>
-                      {p}
+                  {PROVINCE_OPTIONS.map((p) => (
+                    <ListBox.Item key={p.id} id={p.id} textValue={p.label}>
+                      {p.label}
                     </ListBox.Item>
                   ))}
                 </ListBox>
@@ -456,15 +554,33 @@ function LocationTab({
             </Select>
           </Field>
 
-          <Button
-            variant="ghost"
-            className="text-[#185FA5]"
-          >
-            <span className="flex items-center gap-1.5">
-              <Location size={16} variant="Linear" />
-              {t("agency.profile.location.dropPin")}
-            </span>
-          </Button>
+          {/* Map pin coordinates — feed the per-place LocationMap above. */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <Field label={t("agency.profile.location.latitude")}>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={form.latitude}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, latitude: e.target.value }))
+                }
+                placeholder="11.5564"
+                aria-label={t("agency.profile.location.latitude")}
+              />
+            </Field>
+            <Field label={t("agency.profile.location.longitude")}>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={form.longitude}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, longitude: e.target.value }))
+                }
+                placeholder="104.9282"
+                aria-label={t("agency.profile.location.longitude")}
+              />
+            </Field>
+          </div>
 
           <div className="flex items-center gap-3 border-t border-border pt-4">
             <Button
@@ -602,6 +718,7 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
         description: form.description || undefined,
         contactPhone: form.phone || undefined,
         website: form.website || undefined,
+        province: form.province || undefined,
       });
       if (result.ok) {
         setSaved(true);
@@ -612,8 +729,18 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
     });
   }
 
-  async function handleSaveAddress(address: string) {
-    const result = await saveProfileAction({ address: address || undefined });
+  async function handleSaveLocation(loc: {
+    address: string;
+    province: string;
+    latitude?: number;
+    longitude?: number;
+  }) {
+    const result = await saveProfileAction({
+      address: loc.address || undefined,
+      province: loc.province || undefined,
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+    });
     if (result.ok) {
       router.refresh();
     } else {
@@ -734,7 +861,25 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
           </div>
         </div>
 
-        <div className="absolute bottom-3 right-0 flex items-center gap-3">
+      </div>
+
+      {/* ─── Agency name + tagline + save action (normal flow, no overlap) ──── */}
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4 pl-28">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-foreground text-2xl font-bold leading-none tracking-tight">
+              {form.name}
+            </h1>
+            {initialProfile.isVerified && (
+              <ShieldTick size={22} variant="Linear" color="#185FA5" />
+            )}
+          </div>
+          {form.tagline && (
+            <p className="text-muted mt-1.5 text-sm">{form.tagline}</p>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3">
           {saved && (
             <span className="flex items-center gap-1.5 text-sm text-green-600">
               <TickCircle size={16} variant="Bold" color="#16a34a" />
@@ -754,21 +899,6 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
             </Button>
           )}
         </div>
-      </div>
-
-      {/* ─── Agency name + tagline ─────────────────────────────────────────── */}
-      <div className="mb-6 pl-28">
-        <div className="flex items-center gap-2">
-          <h1 className="text-foreground text-2xl font-bold leading-none tracking-tight">
-            {form.name}
-          </h1>
-          {initialProfile.isVerified && (
-            <ShieldTick size={22} variant="Linear" color="#185FA5" />
-          )}
-        </div>
-        {form.tagline && (
-          <p className="text-muted mt-1.5 text-sm">{form.tagline}</p>
-        )}
       </div>
 
       {/* ─── Tab navigation ────────────────────────────────────────────────── */}
@@ -800,7 +930,13 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
         <ProfileInfoTab form={form} setForm={setForm} profile={initialProfile} />
       )}
       {activeTab === "location" && (
-        <LocationTab profile={initialProfile} onSaveAddress={handleSaveAddress} />
+        <LocationTab
+          // Remount with fresh form state whenever the saved location changes
+          // (router.refresh updates the prop but would not reset useState).
+          key={`${initialProfile.streetAddress ?? ""}|${initialProfile.province ?? ""}|${initialProfile.lat ?? ""}|${initialProfile.lng ?? ""}`}
+          profile={initialProfile}
+          onSaveLocation={handleSaveLocation}
+        />
       )}
       {activeTab === "reviews" && (
         <ReviewsTab profile={initialProfile} reviews={initialReviews} />

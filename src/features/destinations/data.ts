@@ -106,20 +106,35 @@ function mapFeaturedTour(t: TourPackageResponse): FeaturedTour {
 }
 
 function mapAgencyProfile(a: AgencyProfileResponse): AgencyProfile {
+  const createdYear = a.createdAt ? new Date(a.createdAt).getFullYear() : undefined;
+  const currentYear = new Date().getFullYear();
+  const languages = (a.languages ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  // Coordinates are present only when the agency has dropped a pin; the backend
+  // sends latitude/longitude null (and lat/lng 0) when unset, so the map hides.
+  const hasCoords = a.latitude != null && a.longitude != null;
   return {
     id: a.id,
-    slug: a.id,
+    slug: a.slug || a.id,
     name: a.agencyName || "",
     owner: a.agencyName || "",
     logo: a.avatarUrl || IMAGE_PLACEHOLDER,
-    province: a.address || "",
+    province: (a.province ?? "PHNOM_PENH") as AgencyProfile["province"],
     status: a.status,
     rating: a.averageRating ?? 0,
     reviewCount: a.reviewCount ?? 0,
     tourCount: 0,
     tags: [],
-    languages: [],
+    languages,
     about: a.bio,
+    responseTimeHours: a.responseTimeHours ?? undefined,
+    memberSince: createdYear,
+    yearsActive:
+      createdYear !== undefined ? Math.max(0, currentYear - createdYear) : undefined,
+    lat: hasCoords ? (a.lat || a.latitude || 0) : undefined,
+    lng: hasCoords ? (a.lng || a.longitude || 0) : undefined,
   };
 }
 
@@ -223,7 +238,7 @@ export async function getFeaturedTours(): Promise<Result<FeaturedTour[]>> {
 
 export async function getAgencyBySlug(slug: string): Promise<Result<AgencyProfile>> {
   try {
-    const a = await publicApiFetch<AgencyProfileResponse>(`/agencies/${slug}`);
+    const a = await publicApiFetch<AgencyProfileResponse>(`/agencies/by-slug/${slug}`);
     return { ok: true, data: mapAgencyProfile(a) };
   } catch {
     return { ok: false, error: "not_found" };

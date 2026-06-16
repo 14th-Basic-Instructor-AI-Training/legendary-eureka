@@ -46,6 +46,14 @@ const nextConfig: NextConfig = {
     // resolves to 127.0.0.1/::1, so allow it for local development.
     dangerouslyAllowLocalIP: process.env.NODE_ENV !== "production",
   },
+  experimental: {
+    // Avatar/cover uploads stream the image file through a Server Action; the
+    // default 1 MB Server Action body cap rejects normal photos. Raise it so
+    // profile image uploads succeed (storage itself goes to RustFS/S3).
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
+  },
 };
 
 export default nextConfig;

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -55,8 +56,6 @@ import {
 // ---------------------------------------------------------------------------
 
 const ITEMS_PER_PAGE = 8;
-
-const FILLET = `radial-gradient(circle at SIDE bottom, transparent 14px, var(--bg-dashboard) 14px)`;
 
 const PROVINCES = [
   "Siem Reap",
@@ -789,13 +788,21 @@ function ActivityRow({
 // Page
 // ---------------------------------------------------------------------------
 
+const VALID_TABS: TabId[] = ["all", "destination", "thingToDo", "food", "stay"];
+
 export function ActivitiesContent() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const activities     = useAgencyStore((s) => s.activities);
   const setActivities  = useAgencyStore((s) => s.setActivities);
 
-  const [activeTab, setActiveTab]   = useState<TabId>("all");
+  const rawTab = searchParams.get("tab") as TabId | null;
+  const [activeTab, setActiveTab]   = useState<TabId>(
+    rawTab && VALID_TABS.includes(rawTab) ? rawTab : "all"
+  );
   const [search, setSearch]         = useState("");
   const [page, setPage]             = useState(1);
   const [loading, setLoading]       = useState(true);
@@ -906,10 +913,17 @@ export function ActivitiesContent() {
     });
   }
 
-  function handleTabChange(tab: TabId) {
+  const handleTabChange = useCallback((tab: TabId) => {
     setActiveTab(tab);
     setPage(1);
-  }
+    const params = new URLSearchParams(searchParams.toString());
+    if (tab === "all") {
+      params.delete("tab");
+    } else {
+      params.set("tab", tab);
+    }
+    router.replace(`${pathname}${params.size ? `?${params}` : ""}`, { scroll: false });
+  }, [searchParams, pathname, router]);
 
   function handleSearchChange(val: string) {
     setSearch(val);
@@ -937,12 +951,12 @@ export function ActivitiesContent() {
         </Button>
       </header>
 
-      {/* Folder-tab navigation */}
-      <div className="flex flex-col">
+      {/* Tab navigation */}
+      <div className="bg-bg-dashboard flex flex-col gap-4 rounded-2xl p-5 sm:p-6">
         <div
           role="tablist"
           aria-label={t("agency.activitiesPage.pageTitle")}
-          className="relative z-10 flex shrink-0 gap-1"
+          className="border-border flex shrink-0 gap-1 overflow-x-auto border-b pb-0 scrollbar-none"
         >
           {TABS.map((tab) => {
             const count =
@@ -957,50 +971,35 @@ export function ActivitiesContent() {
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => handleTabChange(tab.id)}
-                className="relative cursor-pointer rounded-t-2xl px-5 pt-3 pb-4 text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className={cn(
+                  "relative flex cursor-pointer items-center gap-1.5 whitespace-nowrap px-4 pb-3 pt-1 text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/40",
+                  isActive ? "text-primary" : "text-muted hover:text-foreground",
+                )}
               >
-                {isActive ? (
-                  <motion.span
-                    layoutId="activitiesTabNotch"
-                    aria-hidden="true"
-                    transition={{ type: "spring", stiffness: 480, damping: 38 }}
-                    className="absolute inset-0 -z-10 rounded-t-2xl bg-bg-dashboard"
-                  >
-                    <motion.span
-                      layout
-                      className="absolute bottom-0 left-0 h-[14px] w-[14px] -translate-x-full"
-                      style={{ background: FILLET.replace("SIDE", "left") }}
-                    />
-                    <motion.span
-                      layout
-                      className="absolute bottom-0 right-0 h-[14px] w-[14px] translate-x-full"
-                      style={{ background: FILLET.replace("SIDE", "right") }}
-                    />
-                  </motion.span>
-                ) : null}
+                {t(tab.labelKey)}
                 <span
                   className={cn(
-                    "relative flex items-center gap-1.5 transition-colors",
-                    isActive ? "text-primary" : "text-muted hover:text-foreground",
+                    "rounded-full px-1.5 py-0.5 text-[10px] font-bold transition-colors",
+                    isActive ? "bg-primary text-white" : "bg-content2 text-muted",
                   )}
                 >
-                  {t(tab.labelKey)}
-                  <span
-                    className={cn(
-                      "rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                      isActive ? "bg-primary text-white" : "bg-content2 text-muted",
-                    )}
-                  >
-                    {count}
-                  </span>
+                  {count}
                 </span>
+                {isActive && (
+                  <motion.span
+                    layoutId="activitiesTabUnderline"
+                    aria-hidden="true"
+                    transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                    className="bg-primary absolute bottom-0 left-0 h-0.5 w-full rounded-full"
+                  />
+                )}
               </button>
             );
           })}
         </div>
 
-        {/* Panel — seamlessly connected to the active tab notch above */}
-        <div className="bg-bg-dashboard flex flex-col gap-4 rounded-t-3xl rounded-b-xl p-5 sm:p-6">
+        {/* Panel content */}
+        <div className="flex flex-col gap-4">
           {/* Search */}
           <SearchField
             value={search}

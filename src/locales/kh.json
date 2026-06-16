@@ -1186,6 +1186,49 @@
       "newPage": {
         "title": "បង្កើតកញ្ចប់ទ្រីប",
         "subtitle": "បំពេញព័ត៌មានដែលអ្នកដំណើរនឹងឃើញ"
+      },
+      "detail": {
+        "back": "ត្រឡប់ទៅកញ្ចប់ដំណើរ",
+        "viewPublic": "មើលទំព័រសាធារណៈ",
+        "viewLabel": "មើល {{title}}",
+        "familyFriendly": "សមរម្យសម្រាប់គ្រួសារ",
+        "facts": {
+          "title": "ព័ត៌មានសំខាន់",
+          "province": "ខេត្ត",
+          "travelType": "ប្រភេទដំណើរ",
+          "duration": "រយៈពេល",
+          "price": "តម្លៃចាប់ពី",
+          "groupSize": "ទំហំក្រុម",
+          "groupSizeValue": "រហូតដល់ {{count}} នាក់",
+          "languages": "ភាសា",
+          "durationCategory": "រយៈពេលដំណើរ",
+          "cancellation": "គោលការណ៍បោះបង់",
+          "activityTypes": "ប្រភេទសកម្មភាព"
+        },
+        "durationCategories": {
+          "HALF_DAY": "កន្លះថ្ងៃ",
+          "FULL_DAY": "ពេញមួយថ្ងៃ",
+          "TWO_TO_THREE_DAYS": "២-៣ ថ្ងៃ",
+          "FOUR_TO_SEVEN_DAYS": "៤-៧ ថ្ងៃ",
+          "SEVEN_PLUS_DAYS": "៧ ថ្ងៃឡើងទៅ"
+        },
+        "actions": {
+          "title": "គ្រប់គ្រង"
+        },
+        "stats": {
+          "title": "ស្ថិតិ",
+          "rating": "ការវាយតម្លៃ",
+          "reviews": "មតិ",
+          "bookings": "ការកក់",
+          "activities": "សកម្មភាព"
+        },
+        "timeline": {
+          "title": "កាលវិភាគ",
+          "created": "បានបង្កើត",
+          "updated": "ធ្វើបច្ចុប្បន្នភាពចុងក្រោយ",
+          "submitted": "បានដាក់ស្នើ",
+          "reviewed": "បានពិនិត្យ"
+        }
       }
     },
     "admin": {
@@ -1432,6 +1475,7 @@
       "basePrice_other": "តម្លៃមូលដ្ឋាន × {{count}} នាក់",
       "total": "សរុប",
       "cancelBooking": "លុបចោលការកក់",
+      "markCompleted": "សម្គាល់ថាបានបញ្ចប់",
       "close": "បិទ",
       "statTotal": "ការកក់សរុប",
       "statTotalSub_one": "{{count}} បានអនុម័ត",
@@ -1542,7 +1586,9 @@
         "province": "ខេត្ត"
       },
       "location": {
-        "mapPlaceholder": "ផែនទីអន្តរកម្មត្រីមិតិនឹងមានឆាប់ៗ",
+        "mapPlaceholder": "មិនទាន់កំណត់ទីតាំង — កែសម្រួលដើម្បីដាក់ Pin",
+        "dropPinHint": "ចុចលើផែនទី ឬអូស Pin ដើម្បីកំណត់ទីតាំងរបស់អ្នក",
+        "lookingUpAddress": "កំពុងស្វែងរកអាសយដ្ឋាន…",
         "currentAddress": "អាស័យដ្ឋានបច្ចុប្បន្ន",
         "noAddress": "មិនទាន់មានអាស័យដ្ឋានទេ",
         "editLocation": "កែសម្រួលទីតាំង",
@@ -1550,6 +1596,8 @@
         "city": "ទីក្រុង",
         "province": "ខេត្ត",
         "dropPin": "ដាក់ Pin លើផែនទី",
+        "latitude": "រយៈទទឹង",
+        "longitude": "រយៈបណ្ដោយ",
         "saveLocation": "រក្សាទុកទីតាំង"
       },
       "reviews": {

@@ -1188,6 +1188,49 @@
       "newPage": {
         "title": "투어 패키지 만들기",
         "subtitle": "패키지 페이지에 표시될 정보를 입력하세요"
+      },
+      "detail": {
+        "back": "패키지로 돌아가기",
+        "viewPublic": "공개 페이지 보기",
+        "viewLabel": "{{title}} 보기",
+        "familyFriendly": "가족 친화적",
+        "facts": {
+          "title": "주요 정보",
+          "province": "지역",
+          "travelType": "여행 유형",
+          "duration": "기간",
+          "price": "최저 가격",
+          "groupSize": "그룹 규모",
+          "groupSizeValue": "최대 {{count}}명",
+          "languages": "언어",
+          "durationCategory": "여행 길이",
+          "cancellation": "취소 정책",
+          "activityTypes": "액티비티 유형"
+        },
+        "durationCategories": {
+          "HALF_DAY": "반나절",
+          "FULL_DAY": "종일",
+          "TWO_TO_THREE_DAYS": "2~3일",
+          "FOUR_TO_SEVEN_DAYS": "4~7일",
+          "SEVEN_PLUS_DAYS": "7일 이상"
+        },
+        "actions": {
+          "title": "관리"
+        },
+        "stats": {
+          "title": "실적",
+          "rating": "평점",
+          "reviews": "리뷰",
+          "bookings": "예약",
+          "activities": "액티비티"
+        },
+        "timeline": {
+          "title": "타임라인",
+          "created": "생성됨",
+          "updated": "최종 수정",
+          "submitted": "제출됨",
+          "reviewed": "검토됨"
+        }
       }
     },
     "admin": {
@@ -1434,6 +1477,7 @@
       "basePrice_other": "기본 가격 × {{count}}명",
       "total": "합계",
       "cancelBooking": "예약 취소",
+      "markCompleted": "완료로 표시",
       "close": "닫기",
       "statTotal": "총 예약",
       "statTotalSub_one": "{{count}}건 승인됨",
@@ -1544,7 +1588,9 @@
         "province": "지역"
       },
       "location": {
-        "mapPlaceholder": "3D 인터랙티브 지도 출시 예정",
+        "mapPlaceholder": "아직 위치가 설정되지 않았습니다 — 편집하여 핀을 놓으세요",
+        "dropPinHint": "지도를 클릭하거나 핀을 드래그하여 위치를 설정하세요",
+        "lookingUpAddress": "주소를 찾는 중…",
         "currentAddress": "현재 주소",
         "noAddress": "아직 주소가 등록되지 않았습니다",
         "editLocation": "위치 편집",
@@ -1552,6 +1598,8 @@
         "city": "도시",
         "province": "지역",
         "dropPin": "지도에 핀 꽂기",
+        "latitude": "위도",
+        "longitude": "경도",
         "saveLocation": "위치 저장"
       },
       "reviews": {

@@ -13,6 +13,11 @@ export interface SaveProfileInput {
   contactPhone?: string;
   website?: string;
   address?: string;
+  province?: string;
+  latitude?: number;
+  longitude?: number;
+  languages?: string;
+  responseTimeHours?: number;
   avatarUrl?: string;
 }
 
@@ -35,6 +40,11 @@ export async function saveProfileAction(input: SaveProfileInput): Promise<Profil
       contactPhone: input.contactPhone || undefined,
       website: input.website || undefined,
       address: input.address || undefined,
+      province: input.province || undefined,
+      latitude: input.latitude,
+      longitude: input.longitude,
+      languages: input.languages || undefined,
+      responseTimeHours: input.responseTimeHours,
       avatarUrl: input.avatarUrl,
     });
     return { ok: true };

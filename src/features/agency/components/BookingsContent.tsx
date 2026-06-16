@@ -14,7 +14,11 @@ import {
   MoneyRecive,
   CloseSquare,
 } from "iconsax-reactjs";
-import { approveBookingAction, rejectBookingAction } from "@/actions/agencyBookings";
+import {
+  approveBookingAction,
+  rejectBookingAction,
+  completeBookingAction,
+} from "@/actions/agencyBookings";
 import type { BookingRequest } from "@/features/agency/schema";
 import { cn } from "@/lib/utils";
 import { Button, SearchField, TextArea } from "@/ui";
@@ -293,13 +297,13 @@ function DetailModal({
   onClose,
   onApprove,
   onReject,
-  onCancel,
+  onComplete,
 }: {
   booking: BookingRequest;
   onClose: () => void;
   onApprove: (b: BookingRequest) => void;
   onReject: (b: BookingRequest) => void;
-  onCancel: (b: BookingRequest) => void;
+  onComplete: (b: BookingRequest) => void;
 }) {
   const { t } = useTranslation();
 
@@ -644,12 +648,12 @@ function DetailModal({
           )}
           {booking.status === "approved" && (
             <Button
-              onPress={() => onCancel(booking)}
-              variant="secondary"
-              className="rounded-full border-[1.5px] px-[18px] py-2 text-[13px] font-semibold transition-colors hover:bg-red-50"
-              style={{ borderColor: "#EF4444", color: "#EF4444", background: "#FFFFFF" }}
+              onPress={() => onComplete(booking)}
+              variant="primary"
+              className="rounded-full px-[18px] py-2 text-[13px] font-semibold text-white transition-colors hover:opacity-90"
+              style={{ background: "#10B981", boxShadow: "0 2px 8px rgba(16,185,129,0.28)" }}
             >
-              {t("agency.bookings.cancelBooking")}
+              {t("agency.bookings.markCompleted")}
             </Button>
           )}
           <Button
@@ -717,9 +721,12 @@ export function BookingsContent({ bookings }: { bookings: BookingRequest[] }) {
     }
   }
 
-  function handleCancel(_b: BookingRequest) {
-    // The agency cannot cancel a booking (cancel is traveler-only); just close.
-    setDetailBooking(null);
+  async function handleComplete(b: BookingRequest) {
+    const res = await completeBookingAction(b.id);
+    if (res.ok) {
+      setDetailBooking(null);
+      router.refresh();
+    }
   }
 
   return (
@@ -836,7 +843,7 @@ export function BookingsContent({ bookings }: { bookings: BookingRequest[] }) {
           onClose={() => setDetailBooking(null)}
           onApprove={handleApprove}
           onReject={handleReject}
-          onCancel={handleCancel}
+          onComplete={handleComplete}
         />
       )}
     </div>

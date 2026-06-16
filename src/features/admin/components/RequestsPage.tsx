@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useSearchParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Chip, Tabs } from "@/ui";
+import { Chip } from "@/ui";
 import { useLocalizedRouter } from "@/lib/locale";
 import { useRealtimeReload } from "@/lib/useRealtimeReload";
 import { AGENCY_REGISTERED } from "@/lib/realtime";
@@ -15,6 +16,9 @@ import { cn } from "@/lib/utils";
 import type { AdminAgencyProfile } from "@/lib/api/admin";
 import type { TourPackageResponse } from "@/lib/api/packages";
 import type { DestinationResponse } from "@/lib/api/destinations";
+
+/** Outer concave fillet that blends the active tab's base down into the panel. */
+const FILLET = "radial-gradient(circle 14px at top SIDE, transparent 13px, var(--color-bg-dashboard) 14px)";
 
 const RequestFlowPanel = dynamic(
   () =>
@@ -50,6 +54,12 @@ export function RequestsPage({
   const pendingAgency = agencies.filter((r) => r.status === "PENDING").length;
   const pendingTour = tourApprovals.filter((p) => p.approvalStatus === "PENDING").length;
   const pendingDestination = pendingDestinations.length;
+
+  const tabs: Array<{ id: RequestTab; label: string; count: number }> = [
+    { id: "agencies", label: t("admin.requests.tabs.agencies"), count: pendingAgency },
+    { id: "tourApprovals", label: t("admin.requests.tabs.tourApprovals"), count: pendingTour },
+    { id: "destinations", label: t("admin.requests.tabs.destinations"), count: pendingDestination },
+  ];
 
   // The React Flow lifecycle panel only models the agency onboarding flow.
   const showFlow = tab === "agencies";
@@ -109,70 +119,84 @@ export function RequestsPage({
           </div>
         </div>
 
-        {/* tabs */}
-        <Tabs
-          selectedKey={tab}
-          onSelectionChange={(key) =>
-            router.replace(`/admin/requests?tab=${String(key)}`)
-          }
-        >
-          <div className="flex items-center justify-between gap-3">
-            <Tabs.ListContainer>
-              <Tabs.List aria-label={t("admin.nav.requests")} className="bg-primary/15! w-fit!">
-                <Tabs.Tab id="agencies">
-                <span className="flex items-center gap-2 whitespace-nowrap">
-                  {t("admin.requests.tabs.agencies")}
-                  {pendingAgency > 0 ? (
-                    <Chip color="warning" variant="soft" size="sm">
-                      {pendingAgency}
-                    </Chip>
+        {/* Folder-tab header + panel — the active tab's notch slides between tabs
+            and connects seamlessly into the panel below (matches the content page). */}
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div
+            role="tablist"
+            aria-label={t("admin.nav.requests")}
+            className="relative z-10 flex shrink-0 justify-center gap-1"
+          >
+            {tabs.map((tt) => {
+              const active = tab === tt.id;
+              return (
+                <button
+                  key={tt.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => router.replace(`/admin/requests?tab=${tt.id}`)}
+                  className="relative px-8 pt-3 pb-4 cursor-pointer text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-t-2xl"
+                >
+                  {active ? (
+                    <motion.span
+                      layoutId="requestsTabNotch"
+                      aria-hidden="true"
+                      transition={{ type: "spring", stiffness: 480, damping: 38 }}
+                      className="bg-bg-dashboard absolute inset-0 -z-10 rounded-t-2xl"
+                    >
+                      {/* Outer concave fillets — the curve flows from the tab side
+                          down into the panel, instead of biting into the tab. */}
+                      <motion.span
+                        layout
+                        className="absolute bottom-0 left-0 h-[14px] w-[14px] -translate-x-full"
+                        style={{ background: FILLET.replace("SIDE", "left") }}
+                      />
+                      <motion.span
+                        layout
+                        className="absolute bottom-0 right-0 h-[14px] w-[14px] translate-x-full"
+                        style={{ background: FILLET.replace("SIDE", "right") }}
+                      />
+                    </motion.span>
                   ) : null}
-                </span>
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id="tourApprovals">
-                <span className="flex items-center gap-2 whitespace-nowrap">
-                  {t("admin.requests.tabs.tourApprovals")}
-                  {pendingTour > 0 ? (
-                    <Chip color="warning" variant="soft" size="sm">
-                      {pendingTour}
-                    </Chip>
-                  ) : null}
-                </span>
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id="destinations">
-                <span className="flex items-center gap-2 whitespace-nowrap">
-                  {t("admin.requests.tabs.destinations")}
-                  {pendingDestination > 0 ? (
-                    <Chip color="warning" variant="soft" size="sm">
-                      {pendingDestination}
-                    </Chip>
-                  ) : null}
-                </span>
-                <Tabs.Indicator />
-              </Tabs.Tab>
-            </Tabs.List>
-            </Tabs.ListContainer>
-
-            {tab === "agencies" && pendingAgency > 0 ? (
-              <div className="bg-warning/10 border-warning/30 flex w-fit shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5">
-                <span className="text-warning text-sm font-medium">
-                  {t("admin.requests.pendingCount", { count: pendingAgency })}
-                </span>
-              </div>
-            ) : null}
+                  <span
+                    className={cn(
+                      "relative flex items-center gap-2 whitespace-nowrap transition-colors",
+                      active ? "text-primary" : "text-muted hover:text-foreground",
+                    )}
+                  >
+                    {tt.label}
+                    {tt.count > 0 ? (
+                      <Chip color="warning" variant="soft" size="sm">
+                        {tt.count}
+                      </Chip>
+                    ) : null}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-          <Tabs.Panel id="agencies" className="pt-5">
-            <AgencyRequestsQueue view={view} requests={agencies} />
-          </Tabs.Panel>
-          <Tabs.Panel id="tourApprovals" className="pt-5">
-            <TourApprovalsQueue packages={tourApprovals} />
-          </Tabs.Panel>
-          <Tabs.Panel id="destinations" className="pt-5">
-            <DestinationApprovalsQueue destinations={pendingDestinations} />
-          </Tabs.Panel>
-        </Tabs>
+
+          {/* Panel — same bg-dashboard fill the active notch connects into. */}
+          <div className="bg-bg-dashboard flex min-h-0 flex-1 flex-col rounded-t-3xl rounded-b-2xl p-5 sm:p-6">
+            {tab === "agencies" ? (
+              <div className="flex flex-col gap-4">
+                {pendingAgency > 0 ? (
+                  <div className="bg-warning/10 border-warning/30 flex w-fit shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5">
+                    <span className="text-warning text-sm font-medium">
+                      {t("admin.requests.pendingCount", { count: pendingAgency })}
+                    </span>
+                  </div>
+                ) : null}
+                <AgencyRequestsQueue view={view} requests={agencies} />
+              </div>
+            ) : tab === "tourApprovals" ? (
+              <TourApprovalsQueue packages={tourApprovals} />
+            ) : (
+              <DestinationApprovalsQueue destinations={pendingDestinations} />
+            )}
+          </div>
+        </div>
       </div>
 
       {/* ── right column: React Flow panel (agency onboarding flow only) ── */}

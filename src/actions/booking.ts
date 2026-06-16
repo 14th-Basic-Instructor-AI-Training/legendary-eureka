@@ -1,6 +1,6 @@
 "use server";
 
-import { bookTrip } from "@/services/bookings.service";
+import { bookTrip, cancelTrip } from "@/services/bookings.service";
 import type { TripRequest, TripResponse } from "@/lib/api/bookings";
 import { ApiError } from "@/lib/api/client";
 
@@ -17,6 +17,22 @@ export async function createBookingAction(body: TripRequest): Promise<CreateBook
   try {
     const trip = await bookTrip(body);
     return { ok: true, trip };
+  } catch (e) {
+    return { ok: false, error: e instanceof ApiError ? e.message : "Something went wrong" };
+  }
+}
+
+export type CancelBookingResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Traveler cancels their own booking (`PUT /trips/{id}/cancel`). The backend
+ * enforces ownership + the PENDING/APPROVED-only transition and notifies the
+ * owning agency.
+ */
+export async function cancelBookingAction(id: string): Promise<CancelBookingResult> {
+  try {
+    await cancelTrip(id);
+    return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof ApiError ? e.message : "Something went wrong" };
   }
