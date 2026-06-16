@@ -19,6 +19,7 @@ import {
   Routing,
   Layer,
   ExportSquare,
+  Edit2,
   Trash,
 } from "iconsax-reactjs";
 import { sileo } from "sileo";
@@ -31,6 +32,7 @@ import type {
   TourPackageResponse,
   TourPackageStatus,
 } from "@/lib/api/packages";
+import { AgendaBuilder, type AgendaActivity } from "./AgendaBuilder";
 import {
   submitPackageAction,
   archivePackageAction,
@@ -39,6 +41,7 @@ import {
 
 type Props = {
   package: TourPackageResponse;
+  activities: AgendaActivity[];
 };
 
 /** Split a "one per line" / comma-separated authoring string into trimmed items. */
@@ -142,7 +145,7 @@ function Section({
  * actions. Lives inside the agency AppShell; reuses the lifecycle server actions
  * from the packages list.
  */
-export function AgencyTourDetail({ package: p }: Props) {
+export function AgencyTourDetail({ package: p, activities }: Props) {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
   const router = useLocalizedRouter();
@@ -407,8 +410,15 @@ export function AgencyTourDetail({ package: p }: Props) {
             </Section>
           ) : null}
 
-          {/* Itinerary */}
-          {agenda.length ? (
+          {/* Itinerary — editable builder for drafts, read-only for published/archived */}
+          {isDraft ? (
+            <AgendaBuilder
+              tourId={pkg.id}
+              initialAgenda={agenda}
+              durationDays={pkg.durationDays || pkg.days || 1}
+              activities={activities}
+            />
+          ) : agenda.length ? (
             <Section title={t("tours.detail.travelPlan.title")}>
               <ol className="flex flex-col gap-4">
                 {agenda.map((day) => (
@@ -483,6 +493,17 @@ export function AgencyTourDetail({ package: p }: Props) {
                   )}
                 </Button>
               ) : null}
+              {isDraft && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => router.push(`/agency/tours/${pkg.id}/edit`)}
+                  isDisabled={pending}
+                >
+                  <Edit2 size={15} color="currentColor" />
+                  {t("tours.packages.detail.actions.edit")}
+                </Button>
+              )}
               <Button
                 variant="tertiary"
                 size="sm"

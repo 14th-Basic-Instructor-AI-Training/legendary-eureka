@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import {
   Add,
   Edit2,
@@ -24,6 +25,11 @@ import {
   ArrowDown2,
   ArrowUp2,
   Location,
+  DocumentText1,
+  Calendar,
+  Eye,
+  InfoCircle,
+  Warning2,
 } from "iconsax-reactjs";
 import { Button, Input, TextArea, Select, ListBox, SearchField, Skeleton } from "@/ui";
 import {
@@ -73,10 +79,10 @@ const TABS = [
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
-const STEPS = [
-  { n: 1, labelKey: "agency.packages.step1" },
-  { n: 2, labelKey: "agency.packages.step2" },
-  { n: 3, labelKey: "agency.packages.step3" },
+const STEP_CONFIGS = [
+  { n: 1, labelKey: "agency.packages.step1", Icon: DocumentText1 },
+  { n: 2, labelKey: "agency.packages.step2", Icon: Calendar },
+  { n: 3, labelKey: "agency.packages.step3", Icon: Eye },
 ];
 
 // Cover placeholder colours per package position
@@ -131,32 +137,41 @@ function CoverPlaceholder({ colorIdx = 0, height = 120 }: { colorIdx?: number; h
 function StepIndicator({ step }: { step: number }) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center gap-0 mb-6">
-      {STEPS.map((s, i) => {
-        const done    = step > s.n;
-        const active  = step === s.n;
+    <div className="flex items-start mb-8">
+      {STEP_CONFIGS.map((s, i) => {
+        const done   = step > s.n;
+        const active = step === s.n;
+        const { Icon } = s;
         return (
-          <div key={s.n} className="flex items-center flex-1 last:flex-none">
-            <div className="flex flex-col items-center gap-1">
+          <div key={s.n} className="flex items-start flex-1 last:flex-none">
+            <div className="flex flex-col items-center gap-2 flex-shrink-0">
+              {/* Circle */}
               <div
-                className="flex h-8 w-8 items-center justify-center rounded-full text-[12px] font-bold flex-shrink-0"
-                style={{
-                  background: done ? "#185FA5" : active ? "#185FA5" : "#F1F5F9",
-                  color:      done || active ? "#FFFFFF" : "#9BA8B5",
-                }}
+                className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 flex-shrink-0 ${
+                  done || active
+                    ? "border-agency bg-agency"
+                    : "border-agency-border bg-white"
+                }`}
               >
-                {done ? <TickCircle size={16} color="#fff" variant="Bold" /> : s.n}
+                {done ? (
+                  <TickCircle size={18} color="#fff" variant="Bold" />
+                ) : (
+                  <Icon size={18} color={active ? "#fff" : "#9BA8B5"} variant={active ? "Bold" : "Linear"} />
+                )}
               </div>
+              {/* Label */}
               <span
-                className="text-[10.5px] font-semibold whitespace-nowrap"
-                style={{ color: active ? "#185FA5" : "#9BA8B5" }}
+                className={`text-[10.5px] font-semibold whitespace-nowrap transition-colors duration-200 ${
+                  active ? "text-agency" : done ? "text-agency/60" : "text-agency-muted"
+                }`}
               >
                 {t(s.labelKey)}
               </span>
             </div>
-            {i < STEPS.length - 1 && (
+            {/* Connector line */}
+            {i < STEP_CONFIGS.length - 1 && (
               <div
-                className="flex-1 mx-2 h-px mb-4"
+                className="flex-1 h-0.5 mx-3 mt-5 transition-colors duration-500"
                 style={{ background: step > s.n ? "#185FA5" : "#E1E6EC" }}
               />
             )}
@@ -170,6 +185,25 @@ function StepIndicator({ step }: { step: number }) {
 // ---------------------------------------------------------------------------
 // Step 1 — Basic Info form
 // ---------------------------------------------------------------------------
+
+function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
+  return (
+    <label className="block text-[11.5px] font-semibold tracking-wide uppercase text-agency-muted mb-1.5">
+      {children}
+      {required && <span className="ml-0.5 text-red-500">*</span>}
+    </label>
+  );
+}
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p className="mt-1 flex items-center gap-1 text-[11px] text-red-500 font-medium">
+      <InfoCircle size={11} color="currentColor" />
+      {message}
+    </p>
+  );
+}
 
 function BasicInfoStep({
   defaultValues,
@@ -187,6 +221,7 @@ function BasicInfoStep({
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [coverUploading, setCoverUploading] = useState(false);
   const [coverError, setCoverError] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   async function handleCoverFile(file: File) {
     setCoverError(null);
@@ -202,37 +237,41 @@ function BasicInfoStep({
     }
   }
 
-  const labelCls = "block text-[12px] font-semibold text-agency-dark mb-1.5";
-
   return (
-    <form id="pkgStep1" onSubmit={handleSubmit(onNext)} className="flex flex-col gap-4">
-      {/* Package name */}
-      <div>
-        <label className={labelCls}>
-          {t("agency.packages.fieldName")}<span className="text-red-500">*</span>
-        </label>
-        <Input
-          {...register("title")}
-          placeholder={t("agency.packages.fieldNamePlaceholder")}
-          variant="secondary"
-        />
-        {errors.title && <p className="mt-1 text-[11px] text-red-500">{errors.title.message}</p>}
+    <form id="pkgStep1" onSubmit={handleSubmit(onNext)} className="flex flex-col gap-5">
+
+      {/* ── Package identity ── */}
+      <div className="flex flex-col gap-4 rounded-2xl border border-agency-border bg-bg-ghostwhite p-4">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-agency-muted">
+          Package Details
+        </p>
+
+        {/* Name */}
+        <div>
+          <FieldLabel required>{t("agency.packages.fieldName")}</FieldLabel>
+          <Input
+            {...register("title")}
+            placeholder={t("agency.packages.fieldNamePlaceholder")}
+            variant="secondary"
+          />
+          <FieldError message={errors.title?.message} />
+        </div>
+
+        {/* Description */}
+        <div>
+          <FieldLabel>{t("agency.packages.fieldDescription")}</FieldLabel>
+          <TextArea
+            {...register("description")}
+            rows={3}
+            placeholder={t("agency.packages.fieldDescriptionPlaceholder")}
+            variant="secondary"
+          />
+        </div>
       </div>
 
-      {/* Description */}
+      {/* ── Cover image ── */}
       <div>
-        <label className={labelCls}>{t("agency.packages.fieldDescription")}</label>
-        <TextArea
-          {...register("description")}
-          rows={3}
-          placeholder={t("agency.packages.fieldDescriptionPlaceholder")}
-          variant="secondary"
-        />
-      </div>
-
-      {/* Cover upload */}
-      <div>
-        <label className={labelCls}>{t("agency.packages.fieldCover")}</label>
+        <FieldLabel>{t("agency.packages.fieldCover")}</FieldLabel>
         <input
           ref={coverInputRef}
           type="file"
@@ -248,17 +287,43 @@ function BasicInfoStep({
           type="button"
           disabled={coverUploading}
           onClick={() => coverInputRef.current?.click()}
-          className="flex w-full flex-col items-center gap-2 rounded-[10px] border-2 border-dashed border-agency-border bg-bg-ghostwhite px-4 py-5 transition-all hover:border-agency hover:bg-agency-light disabled:opacity-60"
+          onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+          onDragLeave={() => setIsDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setIsDragOver(false);
+            const file = e.dataTransfer.files?.[0];
+            if (file?.type.startsWith("image/")) void handleCoverFile(file);
+          }}
+          className={`flex w-full flex-col items-center gap-2.5 rounded-2xl border-2 border-dashed px-4 py-6 transition-all duration-200 disabled:opacity-60 ${
+            isDragOver
+              ? "border-agency bg-agency-light"
+              : coverPreview
+              ? "border-agency/30 bg-white"
+              : "border-agency-border bg-bg-ghostwhite hover:border-agency hover:bg-agency-light"
+          }`}
         >
           {coverPreview ? (
-            <img src={coverPreview} alt="cover preview" className="h-24 w-full rounded-[6px] object-cover" />
+            <div className="relative w-full">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={coverPreview} alt="cover preview" className="h-28 w-full rounded-[10px] object-cover" />
+              <span className="absolute bottom-2 right-2 rounded-lg bg-black/50 px-2 py-1 text-[11px] font-semibold text-white">
+                Click to change
+              </span>
+            </div>
           ) : (
             <>
-              <DocumentUpload size={26} color={coverUploading ? "#185FA5" : "#9BA8B5"} />
+              <div className={`flex h-12 w-12 items-center justify-center rounded-full transition-colors ${
+                coverUploading ? "bg-agency-light" : isDragOver ? "bg-agency" : "bg-bg-ghostwhite border border-agency-border"
+              }`}>
+                <DocumentUpload size={22} color={coverUploading || isDragOver ? "#185FA5" : "#9BA8B5"} />
+              </div>
               <div className="text-center">
                 <p className="text-[13px] font-semibold text-agency-dark">
-                  {coverUploading ? t("common.loading") : (
-                    <>{t("agency.packages.dropCover")}{" "}<span className="text-agency">{t("agency.packages.browse")}</span></>
+                  {coverUploading ? (
+                    <span className="text-agency">Uploading…</span>
+                  ) : (
+                    <>{t("agency.packages.dropCover")}{" "}<span className="text-agency underline">{t("agency.packages.browse")}</span></>
                   )}
                 </p>
                 <p className="mt-0.5 text-[11.5px] text-agency-muted">{t("agency.packages.coverHint")}</p>
@@ -266,15 +331,13 @@ function BasicInfoStep({
             </>
           )}
         </button>
-        {coverError && <p className="mt-1 text-[11px] text-red-500">{coverError}</p>}
+        {coverError && <FieldError message={coverError} />}
       </div>
 
-      {/* Province + Price */}
+      {/* ── Location + Pricing ── */}
       <div className="grid grid-cols-2 gap-3.5">
         <div>
-          <label className={labelCls}>
-            {t("agency.packages.fieldProvince")}<span className="text-red-500">*</span>
-          </label>
+          <FieldLabel required>{t("agency.packages.fieldProvince")}</FieldLabel>
           <Controller
             control={control}
             name="location"
@@ -300,12 +363,10 @@ function BasicInfoStep({
               </Select>
             )}
           />
-          {errors.location && <p className="mt-1 text-[11px] text-red-500">{errors.location.message}</p>}
+          <FieldError message={errors.location?.message} />
         </div>
         <div>
-          <label className={labelCls}>
-            {t("agency.packages.fieldPrice")}<span className="text-red-500">*</span>
-          </label>
+          <FieldLabel required>{t("agency.packages.fieldPrice")}</FieldLabel>
           <div className="relative">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 z-10 text-[13px] font-semibold text-agency-muted">$</span>
             <Input
@@ -317,14 +378,14 @@ function BasicInfoStep({
               className="pl-6"
             />
           </div>
-          {errors.priceFrom && <p className="mt-1 text-[11px] text-red-500">{errors.priceFrom.message}</p>}
+          <FieldError message={errors.priceFrom?.message} />
         </div>
       </div>
 
-      {/* Group size + Days */}
+      {/* ── Trip config ── */}
       <div className="grid grid-cols-2 gap-3.5">
         <div>
-          <label className={labelCls}>{t("agency.packages.fieldGroupSize")}</label>
+          <FieldLabel>{t("agency.packages.fieldGroupSize")}</FieldLabel>
           <div className="relative">
             <People size={14} color="#9BA8B5" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 z-10" />
             <Input
@@ -338,18 +399,20 @@ function BasicInfoStep({
           </div>
         </div>
         <div>
-          <label className={labelCls}>
-            {t("agency.packages.fieldDays")}<span className="text-red-500">*</span>
-          </label>
-          <Input
-            {...register("days", { valueAsNumber: true })}
-            type="number"
-            min="1"
-            max="30"
-            placeholder="3"
-            variant="secondary"
-          />
-          {errors.days && <p className="mt-1 text-[11px] text-red-500">{errors.days.message}</p>}
+          <FieldLabel required>{t("agency.packages.fieldDays")}</FieldLabel>
+          <div className="relative">
+            <Clock size={14} color="#9BA8B5" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 z-10" />
+            <Input
+              {...register("days", { valueAsNumber: true })}
+              type="number"
+              min="1"
+              max="30"
+              placeholder="3"
+              variant="secondary"
+              className="pl-8"
+            />
+          </div>
+          <FieldError message={errors.days?.message} />
         </div>
       </div>
     </form>
@@ -417,164 +480,216 @@ function ItineraryStep({
     stay:        { bg: "#EDE9FE", color: "#5B21B6" },
   };
 
+  // How many days have at least one activity
+  const daysPlanned = Array.from({ length: days }, (_, i) => i + 1).filter(
+    (day) => (dayData(day).activityIds.length) > 0,
+  ).length;
+  const progress = days > 0 ? daysPlanned / days : 0;
+
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-[12.5px] text-agency-muted mb-2">
-        {t("agency.packages.itineraryHint", { count: days })}
-      </p>
+    <div className="flex flex-col gap-3">
+      {/* Progress header */}
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-[12.5px] text-agency-muted">
+          {t("agency.packages.itineraryHint", { count: days })}
+        </p>
+        <span className="text-[12px] font-bold text-agency-dark">
+          {daysPlanned}<span className="text-agency-muted font-medium">/{days} planned</span>
+        </span>
+      </div>
 
-      {Array.from({ length: days }, (_, i) => i + 1).map((day) => {
-        const d = dayData(day);
-        const isOpen = openDay === day;
-        const dayActivities = d.activityIds
-          .map((id) => activities.find((a) => a.id === id))
-          .filter(Boolean) as Activity[];
+      {/* Progress bar */}
+      <div className="h-1.5 w-full rounded-full bg-agency-border overflow-hidden">
+        <motion.div
+          className="h-full rounded-full bg-agency"
+          initial={{ width: 0 }}
+          animate={{ width: `${progress * 100}%` }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        />
+      </div>
 
-        return (
-          <div
-            key={day}
-            className="overflow-hidden rounded-xl border border-agency-border"
-          >
-            {/* Accordion header */}
-            <button
-              type="button"
-              onClick={() => setOpenDay(isOpen ? 0 : day)}
-              className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-bg-ghostwhite"
-              style={{ background: isOpen ? "#F7F9FB" : "#FFFFFF" }}
+      {/* Day accordions */}
+      <div className="flex flex-col gap-2 mt-1">
+        {Array.from({ length: days }, (_, i) => i + 1).map((day) => {
+          const d = dayData(day);
+          const isOpen = openDay === day;
+          const dayActivities = d.activityIds
+            .map((id) => activities.find((a) => a.id === id))
+            .filter(Boolean) as Activity[];
+          const hasActivities = dayActivities.length > 0;
+
+          return (
+            <div
+              key={day}
+              className={`overflow-hidden rounded-xl border transition-all duration-200 ${
+                isOpen ? "border-agency/40 shadow-sm" : "border-agency-border"
+              }`}
             >
-              <div className="flex items-center gap-3">
-                <div
-                  className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-[11px] font-bold text-white"
-                  style={{ background: "#185FA5" }}
-                >
-                  {day}
-                </div>
-                <span className="text-[13px] font-bold text-agency-navy">
-                  {t("agency.packages.day", { n: day })}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {dayActivities.length > 0 && (
-                  <span className="rounded-full bg-agency-light px-2 py-0.5 text-[10.5px] font-bold text-agency">
-                    {t("agency.packages.activitiesCount", { count: dayActivities.length })}
-                  </span>
-                )}
-                {isOpen ? <ArrowUp2 size={15} color="#9BA8B5" /> : <ArrowDown2 size={15} color="#9BA8B5" />}
-              </div>
-            </button>
-
-            {/* Accordion body */}
-            {isOpen && (
-              <div className="border-t border-agency-border px-4 py-4 flex flex-col gap-3">
-                {/* Activity list */}
-                {dayActivities.length > 0 ? (
-                  <div className="flex flex-col gap-1.5">
-                    {dayActivities.map((a) => {
-                      const catStyle = CATEGORY_COLORS[a.category] ?? { bg: "#F1F5F9", color: "#64748B" };
-                      return (
-                        <div
-                          key={a.id}
-                          className="flex items-center gap-2.5 rounded-lg border border-agency-border bg-white px-3 py-2"
-                        >
-                          <span className="flex-1 text-[12.5px] font-semibold text-agency-dark truncate">
-                            {a.title}
-                          </span>
-                          <span
-                            className="rounded-full px-2 py-0.5 text-[10px] font-bold whitespace-nowrap flex-shrink-0"
-                            style={catStyle}
-                          >
-                            {CATEGORY_LABELS[a.category] ?? a.category}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => removeActivity(day, a.id)}
-                            className="flex-shrink-0 rounded p-0.5 text-agency-muted transition-colors hover:text-red-500"
-                          >
-                            <CloseCircle size={14} color="currentColor" />
-                          </button>
-                        </div>
-                      );
-                    })}
+              {/* Accordion header */}
+              <button
+                type="button"
+                onClick={() => setOpenDay(isOpen ? 0 : day)}
+                className={`flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors ${
+                  isOpen ? "bg-agency-light/40" : "bg-white hover:bg-bg-ghostwhite"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-[11px] font-bold text-white transition-colors ${
+                      hasActivities ? "bg-agency" : "bg-agency-muted/50"
+                    }`}
+                  >
+                    {hasActivities ? <TickCircle size={14} color="#fff" variant="Bold" /> : day}
                   </div>
-                ) : (
-                  <p className="text-[12px] text-agency-muted">
-                    {t("agency.packages.noActivitiesDay")}
-                  </p>
-                )}
+                  <div className="flex flex-col">
+                    <span className="text-[13px] font-bold text-agency-navy leading-snug">
+                      {t("agency.packages.day", { n: day })}
+                    </span>
+                    {!hasActivities && !isOpen && (
+                      <span className="text-[11px] text-agency-muted">No activities yet</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {hasActivities && (
+                    <span className="rounded-full bg-agency-light px-2 py-0.5 text-[10.5px] font-bold text-agency">
+                      {t("agency.packages.activitiesCount", { count: dayActivities.length })}
+                    </span>
+                  )}
+                  {isOpen ? <ArrowUp2 size={15} color="#9BA8B5" /> : <ArrowDown2 size={15} color="#9BA8B5" />}
+                </div>
+              </button>
 
-                {/* Add activity picker */}
-                {pickerDay === day ? (
-                  <div className="rounded-xl border border-agency-border bg-white shadow-sm">
-                    <SearchField
-                      autoFocus
-                      value={pickerSearch}
-                      onChange={setPickerSearch}
-                      aria-label={t("agency.packages.searchActivities")}
-                    >
-                      <SearchField.Group className="border-b border-agency-border px-3 py-2">
-                        <SearchField.SearchIcon />
-                        <SearchField.Input
-                          placeholder={t("agency.packages.searchActivities")}
-                          className="text-[12.5px] text-agency-dark placeholder:text-agency-muted"
-                        />
-                        <SearchField.ClearButton />
-                      </SearchField.Group>
-                    </SearchField>
-                    <div className="max-h-[180px] overflow-y-auto">
-                      {filteredActivities.length === 0 ? (
-                        <p className="px-3 py-3 text-[12px] text-agency-muted">{t("agency.packages.noMatchingActivities")}</p>
-                      ) : (
-                        filteredActivities.map((a) => (
-                          <button
+              {/* Accordion body */}
+              {isOpen && (
+                <div className="border-t border-agency-border px-4 py-4 flex flex-col gap-3">
+                  {/* Activity list */}
+                  {dayActivities.length > 0 ? (
+                    <div className="flex flex-col gap-1.5">
+                      {dayActivities.map((a) => {
+                        const catStyle = CATEGORY_COLORS[a.category] ?? { bg: "#F1F5F9", color: "#64748B" };
+                        return (
+                          <div
                             key={a.id}
-                            type="button"
-                            onClick={() => addActivity(day, a.id)}
-                            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-bg-ghostwhite"
+                            className="flex items-center gap-2.5 rounded-xl border border-agency-border bg-white px-3 py-2.5"
                           >
-                            <span className="flex-1 text-[12.5px] font-semibold text-agency-dark truncate">{a.title}</span>
-                            <span className="text-[11px] text-agency-muted truncate">{a.location}</span>
-                          </button>
-                        ))
-                      )}
+                            {/* Category dot */}
+                            <span
+                              className="h-2 w-2 rounded-full flex-shrink-0"
+                              style={{ background: catStyle.color }}
+                            />
+                            <span className="flex-1 text-[12.5px] font-semibold text-agency-dark truncate">
+                              {a.title}
+                            </span>
+                            <span
+                              className="rounded-full px-2 py-0.5 text-[10px] font-bold whitespace-nowrap flex-shrink-0"
+                              style={catStyle}
+                            >
+                              {CATEGORY_LABELS[a.category] ?? a.category}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label="Remove activity"
+                              onClick={() => removeActivity(day, a.id)}
+                              className="flex-shrink-0 rounded-md p-0.5 text-agency-muted transition-colors hover:bg-red-50 hover:text-red-500"
+                            >
+                              <CloseCircle size={14} color="currentColor" />
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
+                  ) : (
+                    <div className="flex items-center gap-2.5 rounded-xl border border-dashed border-agency-border bg-bg-ghostwhite px-3 py-3">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-agency-border/50 flex-shrink-0">
+                        <Calendar size={14} color="#9BA8B5" />
+                      </span>
+                      <p className="text-[12px] text-agency-muted">
+                        {t("agency.packages.noActivitiesDay")}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Add activity picker */}
+                  {pickerDay === day ? (
+                    <div className="rounded-xl border border-agency bg-white shadow-sm overflow-hidden">
+                      <SearchField
+                        autoFocus
+                        value={pickerSearch}
+                        onChange={setPickerSearch}
+                        aria-label={t("agency.packages.searchActivities")}
+                      >
+                        <SearchField.Group className="border-b border-agency-border px-3 py-2">
+                          <SearchField.SearchIcon />
+                          <SearchField.Input
+                            placeholder={t("agency.packages.searchActivities")}
+                            className="text-[12.5px] text-agency-dark placeholder:text-agency-muted"
+                          />
+                          <SearchField.ClearButton />
+                        </SearchField.Group>
+                      </SearchField>
+                      <div className="max-h-[180px] overflow-y-auto">
+                        {filteredActivities.length === 0 ? (
+                          <p className="px-3 py-3 text-[12px] text-agency-muted">
+                            {t("agency.packages.noMatchingActivities")}
+                          </p>
+                        ) : (
+                          filteredActivities.map((a) => {
+                            const catStyle = CATEGORY_COLORS[a.category] ?? { bg: "#F1F5F9", color: "#64748B" };
+                            return (
+                              <button
+                                key={a.id}
+                                type="button"
+                                onClick={() => addActivity(day, a.id)}
+                                className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-agency-light/50"
+                              >
+                                <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: catStyle.color }} />
+                                <span className="flex-1 text-[12.5px] font-semibold text-agency-dark truncate">{a.title}</span>
+                                <span className="text-[11px] text-agency-muted truncate">{a.location}</span>
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setPickerDay(null); setPickerSearch(""); }}
+                        className="w-full border-t border-agency-border py-2 text-[12px] text-agency-muted transition-colors hover:bg-bg-ghostwhite"
+                      >
+                        {t("agency.packages.cancelAdd")}
+                      </button>
+                    </div>
+                  ) : (
                     <button
                       type="button"
-                      onClick={() => { setPickerDay(null); setPickerSearch(""); }}
-                      className="w-full border-t border-agency-border py-2 text-[12px] text-agency-muted transition-colors hover:bg-bg-ghostwhite"
+                      onClick={() => setPickerDay(day)}
+                      className="flex items-center gap-1.5 rounded-xl border border-dashed border-agency-border px-3 py-2.5 text-[12px] font-semibold text-agency transition-all hover:border-agency hover:bg-agency-light"
                     >
-                      {t("agency.packages.cancelAdd")}
+                      <Add size={14} color="currentColor" variant="Bold" />
+                      {t("agency.packages.addActivity")}
                     </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setPickerDay(day)}
-                    className="flex items-center gap-1.5 rounded-lg border border-dashed border-agency-border px-3 py-2 text-[12px] font-semibold text-agency transition-colors hover:border-agency hover:bg-agency-light"
-                  >
-                    <Add size={14} color="currentColor" variant="Bold" />
-                    {t("agency.packages.addActivity")}
-                  </button>
-                )}
+                  )}
 
-                {/* Day notes */}
-                <div>
-                  <label className="mb-1 block text-[11.5px] font-semibold text-agency-muted">
-                    {t("agency.packages.dayNotes")}
-                  </label>
-                  <TextArea
-                    rows={2}
-                    value={d.notes ?? ""}
-                    onChange={(e) => setDay(day, { notes: e.target.value })}
-                    placeholder={t("agency.packages.dayNotesPlaceholder")}
-                    variant="secondary"
-                    className="w-full resize-y rounded-[9px] text-[12.5px] text-agency-dark outline-none transition-colors placeholder:text-agency-muted focus:border-agency"
-                  />
+                  {/* Day notes */}
+                  <div>
+                    <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-agency-muted">
+                      {t("agency.packages.dayNotes")}
+                    </label>
+                    <TextArea
+                      rows={2}
+                      value={d.notes ?? ""}
+                      onChange={(e) => setDay(day, { notes: e.target.value })}
+                      placeholder={t("agency.packages.dayNotesPlaceholder")}
+                      variant="secondary"
+                      className="w-full resize-y rounded-[9px] text-[12.5px] text-agency-dark outline-none transition-colors placeholder:text-agency-muted focus:border-agency"
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -593,100 +708,154 @@ function ReviewStep({
   activities: Activity[];
 }) {
   const { t } = useTranslation();
-  const [expandedDay, setExpandedDay] = useState<number | null>(null);
+
+  // Coverage stat
+  const totalDays = basicInfo.days;
+  const daysWithActivities = Array.from({ length: totalDays }, (_, i) => i + 1).filter((day) => {
+    const d = itinerary.find((x) => x.day === day);
+    return (d?.activityIds.length ?? 0) > 0;
+  }).length;
+  const allPlanned = daysWithActivities === totalDays;
+
+  const totalActivities = itinerary.reduce((sum, d) => sum + d.activityIds.length, 0);
 
   return (
-    <div className="grid gap-6" style={{ gridTemplateColumns: "1fr 1fr" }}>
-      {/* Left — summary */}
-      <div className="flex flex-col gap-4">
-        <p className="text-[11px] font-bold uppercase tracking-widest text-agency-navy">
-          {t("agency.packages.reviewBasicInfo")}
-        </p>
+    <div className="flex flex-col gap-5">
+      <div className="grid gap-5" style={{ gridTemplateColumns: "1fr 1fr" }}>
 
-        <CoverPlaceholder height={100} colorIdx={0} />
+        {/* ── Left: Package preview card ── */}
+        <div className="flex flex-col rounded-2xl border border-agency-border overflow-hidden">
+          <CoverPlaceholder height={110} colorIdx={0} />
+          <div className="flex flex-col gap-3 p-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-agency-muted mb-1">
+                {t("agency.packages.reviewBasicInfo")}
+              </p>
+              <h3 className="text-[15px] font-extrabold text-agency-navy leading-snug">{basicInfo.title}</h3>
+            </div>
 
-        <div className="flex flex-col gap-2.5">
-          <div>
-            <p className="text-[11px] text-agency-muted mb-0.5">{t("agency.packages.fieldName")}</p>
-            <p className="text-[13.5px] font-bold text-agency-navy">{basicInfo.title}</p>
+            {basicInfo.description && (
+              <p className="text-[12px] text-agency-muted leading-relaxed line-clamp-2">{basicInfo.description}</p>
+            )}
+
+            {/* Meta grid */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="flex items-center gap-1.5">
+                <Location size={12} color="#9BA8B5" />
+                <span className="text-[12px] font-semibold text-agency-dark">{basicInfo.location || "—"}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <MoneyRecive size={12} color="#9BA8B5" />
+                <span className="text-[12px] font-semibold text-agency-dark">${basicInfo.priceFrom}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock size={12} color="#9BA8B5" />
+                <span className="text-[12px] text-agency-muted">
+                  {t("agency.packages.days", { count: basicInfo.days })}
+                </span>
+              </div>
+              {basicInfo.maxGroupSize && (
+                <div className="flex items-center gap-1.5">
+                  <People size={12} color="#9BA8B5" />
+                  <span className="text-[12px] text-agency-muted">
+                    {t("agency.packages.maxGroupSize", { n: basicInfo.maxGroupSize })}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Activity count badge */}
+            <div className="flex items-center gap-1.5 rounded-xl bg-agency-light px-3 py-2">
+              <Map1 size={13} color="#185FA5" />
+              <span className="text-[12px] font-semibold text-agency">
+                {t("agency.packages.activitiesCount", { count: totalActivities })} across {totalDays} days
+              </span>
+            </div>
           </div>
-          {basicInfo.description && (
-            <div>
-              <p className="text-[11px] text-agency-muted mb-0.5">{t("agency.packages.fieldDescription")}</p>
-              <p className="text-[12.5px] text-agency-dark leading-relaxed">{basicInfo.description}</p>
-            </div>
-          )}
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <p className="text-[11px] text-agency-muted mb-0.5">{t("agency.packages.fieldProvince")}</p>
-              <p className="text-[12.5px] font-semibold text-agency-dark">{basicInfo.location}</p>
-            </div>
-            <div>
-              <p className="text-[11px] text-agency-muted mb-0.5">{t("agency.packages.fieldPrice")}</p>
-              <p className="text-[12.5px] font-semibold text-agency-dark">${basicInfo.priceFrom}</p>
-            </div>
-            <div>
-              <p className="text-[11px] text-agency-muted mb-0.5">{t("agency.packages.fieldGroupSize")}</p>
-              <p className="text-[12.5px] font-semibold text-agency-dark">{basicInfo.maxGroupSize ?? "—"}</p>
-            </div>
-            <div>
-              <p className="text-[11px] text-agency-muted mb-0.5">{t("agency.packages.fieldDays")}</p>
-              <p className="text-[12.5px] font-semibold text-agency-dark">{basicInfo.days}</p>
-            </div>
+        </div>
+
+        {/* ── Right: Itinerary timeline ── */}
+        <div className="flex flex-col gap-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-agency-muted mb-1">
+            {t("agency.packages.reviewItinerary")}
+          </p>
+
+          <div className="relative flex flex-col gap-0">
+            {Array.from({ length: totalDays }, (_, i) => i + 1).map((day, idx) => {
+              const d = itinerary.find((x) => x.day === day);
+              const dayActivities = (d?.activityIds ?? [])
+                .map((id) => activities.find((a) => a.id === id))
+                .filter(Boolean) as Activity[];
+              const hasActs = dayActivities.length > 0;
+              const isLast = idx === totalDays - 1;
+
+              return (
+                <div key={day} className="flex gap-3">
+                  {/* Timeline spine */}
+                  <div className="flex flex-col items-center flex-shrink-0" style={{ width: 24 }}>
+                    <div
+                      className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold flex-shrink-0 ${
+                        hasActs ? "bg-agency text-white" : "bg-agency-border text-agency-muted"
+                      }`}
+                    >
+                      {hasActs ? <TickCircle size={13} color="#fff" variant="Bold" /> : day}
+                    </div>
+                    {!isLast && (
+                      <div className={`flex-1 w-px mt-1 mb-1 ${hasActs ? "bg-agency/30" : "bg-agency-border"}`} style={{ minHeight: 16 }} />
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className={`flex-1 pb-3 ${isLast ? "" : ""}`}>
+                    <p className="text-[12px] font-bold text-agency-navy mb-1">
+                      {t("agency.packages.day", { n: day })}
+                    </p>
+                    {hasActs ? (
+                      <div className="flex flex-wrap gap-1">
+                        {dayActivities.slice(0, 3).map((a) => (
+                          <span
+                            key={a.id}
+                            className="rounded-full bg-bg-ghostwhite border border-agency-border px-2 py-0.5 text-[10.5px] font-medium text-agency-dark truncate max-w-[120px]"
+                          >
+                            {a.title}
+                          </span>
+                        ))}
+                        {dayActivities.length > 3 && (
+                          <span className="rounded-full bg-agency-light px-2 py-0.5 text-[10.5px] font-bold text-agency">
+                            +{dayActivities.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-agency-muted italic">No activities planned</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      {/* Right — itinerary summary */}
-      <div className="flex flex-col gap-3">
-        <p className="text-[11px] font-bold uppercase tracking-widest text-agency-navy">
-          {t("agency.packages.reviewItinerary")}
+      {/* ── Coverage summary ── */}
+      <div
+        className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${
+          allPlanned
+            ? "border-green-200 bg-green-50"
+            : "border-amber-200 bg-amber-50"
+        }`}
+      >
+        {allPlanned ? (
+          <TickCircle size={18} color="#059669" variant="Bold" />
+        ) : (
+          <Warning2 size={18} color="#B45309" variant="Bold" />
+        )}
+        <p className={`text-[12.5px] font-semibold ${allPlanned ? "text-green-700" : "text-amber-700"}`}>
+          {allPlanned
+            ? `All ${totalDays} days have activities planned — ready to publish!`
+            : `${daysWithActivities} of ${totalDays} days have activities. ${totalDays - daysWithActivities} ${totalDays - daysWithActivities === 1 ? "day is" : "days are"} still empty.`
+          }
         </p>
-        {Array.from({ length: basicInfo.days }, (_, i) => i + 1).map((day) => {
-          const d = itinerary.find((x) => x.day === day);
-          const dayActivities = (d?.activityIds ?? [])
-            .map((id) => activities.find((a) => a.id === id))
-            .filter(Boolean) as Activity[];
-          const isOpen = expandedDay === day;
-
-          return (
-            <div key={day} className="overflow-hidden rounded-xl border border-agency-border">
-              <button
-                type="button"
-                onClick={() => setExpandedDay(isOpen ? null : day)}
-                className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-bg-ghostwhite transition-colors"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div
-                    className="flex h-6 w-6 items-center justify-center rounded-md text-[11px] font-bold text-white"
-                    style={{ background: "#185FA5" }}
-                  >
-                    {day}
-                  </div>
-                  <span className="text-[12.5px] font-semibold text-agency-navy">
-                    {t("agency.packages.day", { n: day })}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-agency-muted">
-                    {t("agency.packages.activitiesCount", { count: dayActivities.length })}
-                  </span>
-                  {isOpen ? <ArrowUp2 size={13} color="#9BA8B5" /> : <ArrowDown2 size={13} color="#9BA8B5" />}
-                </div>
-              </button>
-              {isOpen && dayActivities.length > 0 && (
-                <ul className="border-t border-agency-border px-4 py-2.5 flex flex-col gap-1">
-                  {dayActivities.map((a) => (
-                    <li key={a.id} className="text-[12px] text-agency-dark flex items-center gap-1.5">
-                      <span className="h-1 w-1 rounded-full bg-agency-muted flex-shrink-0" />
-                      {a.title}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          );
-        })}
       </div>
     </div>
   );
@@ -695,6 +864,12 @@ function ReviewStep({
 // ---------------------------------------------------------------------------
 // Create / Edit modal
 // ---------------------------------------------------------------------------
+
+const STEP_VARIANTS: Variants = {
+  initial: (dir: number) => ({ x: dir * 40, opacity: 0 }),
+  animate: { x: 0, opacity: 1, transition: { duration: 0.26, ease: "easeOut" } },
+  exit: (dir: number) => ({ x: dir * -40, opacity: 0, transition: { duration: 0.18, ease: "easeIn" } }),
+};
 
 function PackageModal({
   pkg,
@@ -715,6 +890,7 @@ function PackageModal({
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const [step, setStep] = useState(1);
+  const [stepDir, setStepDir] = useState(1); // +1 = forward, -1 = backward
   const [basicInfo, setBasicInfo] = useState<BasicInfoValues | null>(
     pkg
       ? {
@@ -732,6 +908,11 @@ function PackageModal({
       (pkg ? Array.from({ length: pkg.days }, (_, i) => ({ day: i + 1, notes: "", activityIds: [] })) : []),
   );
 
+  function goTo(n: number) {
+    setStepDir(n > step ? 1 : -1);
+    setStep(n);
+  }
+
   function buildInput(info: BasicInfoValues): PackageInput {
     return {
       title: info.title,
@@ -746,7 +927,6 @@ function PackageModal({
 
   function handleStep1Next(data: BasicInfoValues) {
     setBasicInfo(data);
-    // Sync itinerary days count when days changes
     const newDays = data.days;
     setItinerary((prev) => {
       const updated: ItineraryDay[] = [];
@@ -755,7 +935,7 @@ function PackageModal({
       }
       return updated;
     });
-    setStep(2);
+    goTo(2);
   }
 
   const title = isEdit ? t("agency.packages.modalEditTitle") : t("agency.packages.modalCreateTitle");
@@ -763,104 +943,130 @@ function PackageModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(13,35,58,0.48)", backdropFilter: "blur(4px)" }}
+      style={{ background: "rgba(13,35,58,0.48)", backdropFilter: "blur(6px)" }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0, transition: { duration: 0.25, ease: [0.25, 0.1, 0.25, 1] } }}
+        exit={{ opacity: 0, scale: 0.96, y: 8, transition: { duration: 0.18 } }}
         className="flex w-full flex-col rounded-[20px] bg-white"
-        style={{ maxWidth: 920, maxHeight: "90vh", boxShadow: "0 24px 64px rgba(13,35,58,0.22)" }}
+        style={{ maxWidth: 940, maxHeight: "90vh", boxShadow: "0 32px 80px rgba(13,35,58,0.26)" }}
       >
-        {/* Header */}
+        {/* ── Header ── */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-agency-border px-6 py-5">
-          <h2 className="text-[18px] font-extrabold tracking-tight text-agency-navy">{title}</h2>
+          <div>
+            <h2 className="text-[18px] font-extrabold tracking-tight text-agency-navy">{title}</h2>
+            <p className="text-[11.5px] text-agency-muted mt-0.5">
+              Step {step} of 3
+            </p>
+          </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-[9px] border border-agency-border bg-bg-ghostwhite text-agency-muted transition-colors hover:bg-gray-100"
+            aria-label="Close"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-agency-border bg-bg-ghostwhite text-agency-muted transition-colors hover:bg-gray-100"
           >
-            <CloseCircle size={15} color="currentColor" />
+            <CloseCircle size={16} color="currentColor" />
           </button>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        {/* ── Body ── */}
+        <div className="flex-1 overflow-y-auto px-6 py-6">
           <StepIndicator step={step} />
 
-          {step === 1 && (
-            <BasicInfoStep defaultValues={basicInfo ?? undefined} onNext={handleStep1Next} />
-          )}
-          {step === 2 && basicInfo && (
-            <ItineraryStep
-              days={basicInfo.days}
-              itinerary={itinerary}
-              activities={activities}
-              onChange={setItinerary}
-            />
-          )}
-          {step === 3 && basicInfo && (
-            <ReviewStep basicInfo={basicInfo} itinerary={itinerary} activities={activities} />
-          )}
+          {/* Animated step content */}
+          <div className="overflow-hidden">
+            <AnimatePresence mode="wait" custom={stepDir}>
+              <motion.div
+                key={step}
+                custom={stepDir}
+                variants={STEP_VARIANTS}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                {step === 1 && (
+                  <BasicInfoStep defaultValues={basicInfo ?? undefined} onNext={handleStep1Next} />
+                )}
+                {step === 2 && basicInfo && (
+                  <ItineraryStep
+                    days={basicInfo.days}
+                    itinerary={itinerary}
+                    activities={activities}
+                    onChange={setItinerary}
+                  />
+                )}
+                {step === 3 && basicInfo && (
+                  <ReviewStep basicInfo={basicInfo} itinerary={itinerary} activities={activities} />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
 
-        {/* Footer */}
+        {/* ── Footer ── */}
         <div className="flex flex-shrink-0 flex-col gap-2 border-t border-agency-border bg-bg-ghostwhite px-6 py-4">
           {saveError && (
-            <p className="text-center text-[12px] font-semibold text-red-500">{saveError}</p>
+            <div className="flex items-center gap-1.5 rounded-xl bg-red-50 border border-red-200 px-3 py-2">
+              <InfoCircle size={14} color="#EF4444" />
+              <p className="text-[12px] font-semibold text-red-600">{saveError}</p>
+            </div>
           )}
           <div className="flex items-center justify-between">
             {/* Back */}
             <div>
               {step > 1 && (
-                <button
-                  type="button"
-                  disabled={saving}
-                  onClick={() => setStep(step - 1)}
-                  className="flex items-center gap-1.5 rounded-full border border-agency-border px-5 py-2 text-[13px] font-semibold text-agency-dark transition-colors hover:bg-white disabled:opacity-50"
+                <Button
+                  variant="secondary"
+                  isDisabled={saving}
+                  onPress={() => goTo(step - 1)}
+                  className="flex items-center gap-1.5 rounded-full"
                 >
                   <ArrowLeft2 size={14} color="currentColor" />
                   {t("agency.packages.back")}
-                </button>
+                </Button>
               )}
             </div>
 
             {/* Right actions */}
             <div className="flex gap-2.5">
-              <button
-                type="button"
-                disabled={saving}
-                onClick={onClose}
-                className="rounded-full border border-agency-border px-5 py-2 text-[13px] font-semibold text-agency-dark transition-colors hover:bg-white disabled:opacity-50"
+              <Button
+                variant="secondary"
+                isDisabled={saving}
+                onPress={onClose}
+                className="rounded-full"
               >
                 {t("agency.packages.cancel")}
-              </button>
+              </Button>
 
               {step < 3 ? (
                 <button
                   type={step === 1 ? "submit" : "button"}
                   form={step === 1 ? "pkgStep1" : undefined}
                   disabled={saving}
-                  onClick={step === 2 ? () => setStep(3) : undefined}
-                  className="flex items-center gap-1.5 rounded-full px-5 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                  style={{ background: "#185FA5" }}
+                  onClick={step === 2 ? () => goTo(3) : undefined}
+                  className="flex items-center gap-1.5 rounded-full bg-agency px-5 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50 cursor-pointer"
                 >
                   {t("agency.packages.nextStep")}
                   <ArrowRight2 size={14} color="currentColor" />
                 </button>
               ) : (
                 <>
-                  <button
-                    type="button"
-                    disabled={saving}
-                    onClick={async () => {
+                  <Button
+                    variant="secondary"
+                    isDisabled={saving}
+                    onPress={async () => {
                       if (!basicInfo) return;
                       setSaving(true);
                       setSaveError(null);
                       try { await onSaveDraft(buildInput(basicInfo)); }
+                      catch { setSaveError("Failed to save. Please try again."); }
                       finally { setSaving(false); }
                     }}
-                    className="rounded-full border border-agency-border px-5 py-2 text-[13px] font-semibold text-agency-dark transition-colors hover:bg-white disabled:opacity-50"
+                    className="rounded-full"
                   >
                     {saving ? t("common.loading") : t("agency.packages.saveDraft")}
-                  </button>
+                  </Button>
                   <button
                     type="button"
                     disabled={saving}
@@ -869,10 +1075,10 @@ function PackageModal({
                       setSaving(true);
                       setSaveError(null);
                       try { await onPublish(buildInput(basicInfo)); }
+                      catch { setSaveError("Failed to publish. Please try again."); }
                       finally { setSaving(false); }
                     }}
-                    className="flex items-center gap-1.5 rounded-full px-5 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                    style={{ background: "#185FA5" }}
+                    className="flex items-center gap-1.5 rounded-full bg-agency px-5 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50 cursor-pointer"
                   >
                     <TickCircle size={14} color="currentColor" />
                     {saving ? t("common.loading") : t("agency.packages.publish")}
@@ -882,7 +1088,7 @@ function PackageModal({
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
