@@ -358,8 +358,8 @@ function LocationTab({
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
+    // `address` is a single free-form line (the backend has no separate city field).
     streetAddress: profile.streetAddress ?? "",
-    city: profile.city ?? "",
     province: profile.province ?? "",
     latitude: profile.lat !== undefined ? String(profile.lat) : "",
     longitude: profile.lng !== undefined ? String(profile.lng) : "",
@@ -368,9 +368,17 @@ function LocationTab({
   const provinceLabel =
     PROVINCE_OPTIONS.find((p) => p.id === profile.province)?.label ?? profile.province ?? "";
 
-  const currentAddressLine = profile.streetAddress
-    ? `${profile.streetAddress}${profile.city ? `, ${profile.city}` : ""}${provinceLabel ? `, ${provinceLabel}` : ""}, Cambodia`
-    : t("agency.profile.location.noAddress");
+  // Compose "address, province, Cambodia" without duplicating parts the free-form
+  // address line may already contain (seed data bakes in the city + country).
+  const currentAddressLine = (() => {
+    const addr = (profile.streetAddress ?? "").trim();
+    if (!addr) return t("agency.profile.location.noAddress");
+    const lc = addr.toLowerCase();
+    let line = addr;
+    if (provinceLabel && !lc.includes(provinceLabel.toLowerCase())) line += `, ${provinceLabel}`;
+    if (!/cambodia/i.test(line)) line += ", Cambodia";
+    return line;
+  })();
 
   // The pin the agency has saved (shown read-only when not editing).
   const savedHasPin =
@@ -383,11 +391,10 @@ function LocationTab({
 
   async function handleSaveLocation() {
     setSaving(true);
-    const combined = [form.streetAddress, form.city].filter(Boolean).join(", ");
     const lat = Number(form.latitude);
     const lng = Number(form.longitude);
     await onSaveLocation({
-      address: combined,
+      address: form.streetAddress.trim(),
       province: form.province,
       latitude: form.latitude.trim() && Number.isFinite(lat) ? lat : undefined,
       longitude: form.longitude.trim() && Number.isFinite(lng) ? lng : undefined,
@@ -462,16 +469,6 @@ function LocationTab({
                 setForm((f) => ({ ...f, streetAddress: e.target.value }))
               }
               aria-label={t("agency.profile.location.streetAddress")}
-            />
-          </Field>
-
-          <Field label={t("agency.profile.location.city")}>
-            <Input
-              value={form.city}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, city: e.target.value }))
-              }
-              aria-label={t("agency.profile.location.city")}
             />
           </Field>
 
@@ -867,7 +864,13 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
         <ProfileInfoTab form={form} setForm={setForm} profile={initialProfile} />
       )}
       {activeTab === "location" && (
-        <LocationTab profile={initialProfile} onSaveLocation={handleSaveLocation} />
+        <LocationTab
+          // Remount with fresh form state whenever the saved location changes
+          // (router.refresh updates the prop but would not reset useState).
+          key={`${initialProfile.streetAddress ?? ""}|${initialProfile.province ?? ""}|${initialProfile.lat ?? ""}|${initialProfile.lng ?? ""}`}
+          profile={initialProfile}
+          onSaveLocation={handleSaveLocation}
+        />
       )}
       {activeTab === "reviews" && (
         <ReviewsTab profile={initialProfile} reviews={initialReviews} />
