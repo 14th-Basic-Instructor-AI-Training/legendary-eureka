@@ -23,6 +23,13 @@ export interface DestinationResponse {
   lng: number;
   featured: boolean;
   trending: boolean;
+  /** Explore facets — backend enum names (e.g. "SOUTHEAST_ASIA") or null when unset. */
+  region: string | null;
+  regionType: string | null;
+  bestSeason: string | null;
+  /** Free-text, comma-separated activity focus (e.g. "Adventure,Nature"). */
+  activityFocus: string | null;
+  familyFriendly: boolean;
   tags: string[];
   rating: number;
   reviewCount: number;

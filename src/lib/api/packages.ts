@@ -29,6 +29,19 @@ export interface TourPackageResponse {
   currency: string;
   durationDays: number;
   days?: number;
+  /** Explore facets — backend enum / free-text columns, may be null when unset. */
+  durationCategory?:
+    | "HALF_DAY"
+    | "FULL_DAY"
+    | "TWO_TO_THREE_DAYS"
+    | "FOUR_TO_SEVEN_DAYS"
+    | "SEVEN_PLUS_DAYS"
+    | null;
+  familyFriendly?: boolean;
+  /** Comma-separated activity types (e.g. "Adventure,Cultural"). */
+  activityTypes?: string | null;
+  /** Comma-separated languages (e.g. "English,Khmer"). */
+  languages?: string | null;
   coverImageUrl: string;
   image: string;
   status: TourPackageStatus;

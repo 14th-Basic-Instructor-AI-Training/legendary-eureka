@@ -1,6 +1,7 @@
 import { publicApiFetch, type PagedData } from "@/lib/api/client";
 import type { DestinationResponse } from "@/lib/api/destinations";
 import type { TourPackageResponse } from "@/lib/api/packages";
+import { PRICE_MIN, PRICE_MAX } from "./schema";
 import type {
   DestinationFilter,
   ExploreDestination,
@@ -98,6 +99,106 @@ function daysToDuration(days: number): TourDuration {
   return "7+ days";
 }
 
+// ── Backend enum → frontend display vocab ─────────────────────────────────────
+// The backend exposes the explore-facet columns as enum names / free-text. Map
+// them back to the feature's display vocabulary so client-side filtering and the
+// cards operate on REAL data (falling back to travelType-derived guesses only
+// when a column is unset).
+
+function regionFromBackend(v: string | null): Region {
+  switch (v) {
+    case "SOUTHEAST_ASIA": return "Southeast Asia";
+    case "NORTHEAST_ASIA": return "East Asia";
+    case "SOUTH_ASIA": return "South Asia";
+    case "EUROPE": return "Europe";
+    case "NORTH_AMERICA": return "North America";
+    case "SOUTH_AMERICA": return "South America";
+    case "AFRICA": return "Africa";
+    case "OCEANIA": return "Oceania";
+    default: return "Southeast Asia";
+  }
+}
+
+function regionTypeFromBackend(v: string | null, tt: string): RegionType {
+  switch (v) {
+    case "BEACH": return "Beach";
+    case "MOUNTAIN": return "Mountain";
+    case "CITY": return "City";
+    case "JUNGLE": return "Jungle";
+    case "ISLAND": return "Island";
+    case "DESERT":
+    case "COUNTRYSIDE": return "Mountain";
+    default: return travelTypeToRegionType(tt);
+  }
+}
+
+function seasonFromBackend(v: string | null): Season {
+  switch (v) {
+    case "YEAR_ROUND": return "Year-round";
+    case "SUMMER": return "Summer";
+    case "WINTER": return "Winter";
+    case "SPRING": return "Dry Season";
+    case "FALL": return "Wet Season";
+    default: return "Dry Season";
+  }
+}
+
+function activityFocusFromBackend(v: string | null, tt: string): ActivityFocus[] {
+  const valid: ActivityFocus[] = ["Adventure", "Wellness", "Food", "History", "Nature"];
+  const parsed = (v ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s): s is ActivityFocus => (valid as string[]).includes(s));
+  return parsed.length ? parsed : travelTypeToActivityFocus(tt);
+}
+
+function tourActivityFromBackend(v: string | null | undefined, tt: string): TourActivityType[] {
+  const valid: TourActivityType[] = [
+    "Adventure", "Cultural", "Food & Drink", "Nature", "Wellness", "Family", "Water Sports",
+  ];
+  const parsed = (v ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s): s is TourActivityType => (valid as string[]).includes(s));
+  return parsed.length ? parsed : travelTypeToTourActivity(tt);
+}
+
+function languagesFromBackend(v: string | null | undefined): string[] {
+  const parsed = (v ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  return parsed.length ? parsed : ["English"];
+}
+
+function durationCategoryFromBackend(v: string | null | undefined, days: number): TourDuration {
+  switch (v) {
+    case "HALF_DAY": return "half-day";
+    case "FULL_DAY": return "full-day";
+    case "TWO_TO_THREE_DAYS": return "2-3 days";
+    case "FOUR_TO_SEVEN_DAYS": return "4-7 days";
+    case "SEVEN_PLUS_DAYS": return "7+ days";
+    default: return daysToDuration(days);
+  }
+}
+
+// ── Frontend filter value → backend query param ───────────────────────────────
+
+const SORT_PARAM: Record<ExploreSort, string> = {
+  recommended: "RECOMMENDED",
+  priceAsc: "PRICE_ASC",
+  ratingDesc: "RATING_DESC",
+  newest: "NEWEST",
+};
+
+const DURATION_PARAM: Record<TourDuration, string> = {
+  "half-day": "HALF_DAY",
+  "full-day": "FULL_DAY",
+  "2-3 days": "TWO_TO_THREE_DAYS",
+  "4-7 days": "FOUR_TO_SEVEN_DAYS",
+  "7+ days": "SEVEN_PLUS_DAYS",
+};
+
+/** Query params accepted by `publicApiFetch` — primitives only (lists go comma-joined). */
+type QueryParams = Record<string, string | number | boolean | undefined>;
+
 function mapToExploreDestination(d: DestinationResponse): ExploreDestination {
   const tt = d.travelType ?? "CULTURAL";
   return {
@@ -123,13 +224,13 @@ function mapToExploreDestination(d: DestinationResponse): ExploreDestination {
     gallery: d.photos || [],
     pois: [],
     continent: "Asia",
-    region: "Southeast Asia",
-    regionType: travelTypeToRegionType(tt),
-    bestSeason: "Dry Season",
-    activityFocus: travelTypeToActivityFocus(tt),
-    topActivities: travelTypeToActivityFocus(tt).slice(0, 3),
+    region: regionFromBackend(d.region),
+    regionType: regionTypeFromBackend(d.regionType, tt),
+    bestSeason: seasonFromBackend(d.bestSeason),
+    activityFocus: activityFocusFromBackend(d.activityFocus, tt),
+    topActivities: activityFocusFromBackend(d.activityFocus, tt).slice(0, 3),
     tourCount: 0,
-    familyFriendly: false,
+    familyFriendly: d.familyFriendly ?? false,
   };
 }
 
@@ -153,10 +254,10 @@ function mapToExploreTour(t: TourPackageResponse): ExploreTour {
     agencyAvatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(t.agencyName || t.id)}`,
     agencySlug: t.agencyId,
     durationLabel: `${t.durationDays} day${t.durationDays !== 1 ? "s" : ""}`,
-    durationCategory: daysToDuration(t.durationDays),
-    activityTypes: travelTypeToTourActivity(t.travelType),
-    languages: ["English"],
-    familyFriendly: false,
+    durationCategory: durationCategoryFromBackend(t.durationCategory, t.durationDays),
+    activityTypes: tourActivityFromBackend(t.activityTypes, t.travelType),
+    languages: languagesFromBackend(t.languages),
+    familyFriendly: t.familyFriendly ?? false,
     availableFrom: "2025-01-01",
     availableTo: "2026-12-31",
     createdAt: t.createdAt,
@@ -256,9 +357,13 @@ export async function getExploreDestinations(
   sort: ExploreSort = "recommended",
 ): Promise<Result<ExploreDestination[]>> {
   try {
-    const params: Record<string, string | number> = { size: 50 };
+    // Structured facets the backend reliably stores go server-side; multi-select
+    // taxonomy facets (region/season/regionType/activityFocus) are refined
+    // client-side below, now on REAL mapped data.
+    const params: QueryParams = { size: 100, sort: SORT_PARAM[sort] };
     if (filter.province) params.province = filter.province;
     if (filter.query.trim()) params.query = filter.query.trim();
+    if (filter.familyFriendly) params.familyFriendly = true;
     const paged = await publicApiFetch<PagedData<DestinationResponse>>("/search", { params });
     const mapped = (paged.content ?? []).map(mapToExploreDestination);
     const filtered = mapped.filter((d) => matchesDestination(d, filter));
@@ -273,9 +378,19 @@ export async function getExploreTours(
   sort: ExploreSort = "recommended",
 ): Promise<Result<ExploreTour[]>> {
   try {
-    const params: Record<string, string | number> = { size: 50 };
+    // Structured facets go server-side; the free-text taxonomy facets
+    // (activityTypes/languages) and the availability-window date range are
+    // refined client-side below, on REAL mapped data.
+    const params: QueryParams = { size: 100, sort: SORT_PARAM[sort] };
     if (filter.province) params.province = filter.province;
     if (filter.query.trim()) params.query = filter.query.trim();
+    if (filter.priceMin > PRICE_MIN) params.priceMin = filter.priceMin;
+    if (filter.priceMax < PRICE_MAX) params.priceMax = filter.priceMax;
+    if (filter.minRating !== undefined) params.ratingMin = filter.minRating;
+    if (filter.familyFriendly) params.familyFriendly = true;
+    if (filter.durations.length) {
+      params.duration = filter.durations.map((d) => DURATION_PARAM[d]).join(",");
+    }
     const paged = await publicApiFetch<PagedData<TourPackageResponse>>("/search/tours", { params });
     const mapped = (paged.content ?? []).map(mapToExploreTour);
     const filtered = mapped.filter((t) => matchesTour(t, filter));
