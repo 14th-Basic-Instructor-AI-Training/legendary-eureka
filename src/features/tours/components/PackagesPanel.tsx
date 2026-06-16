@@ -72,7 +72,18 @@ export function PackagesPanel({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
+      {/* Page header */}
+      <div>
+        <h1
+          className="text-4xl font-black tracking-tight"
+          style={{ color: "var(--primary-lightskyblue)" }}
+        >
+          {t("tours.packages.pageTitle")}
+        </h1>
+        <p className="text-muted mt-1 text-sm">{t("tours.packages.pageSubtitle")}</p>
+      </div>
+
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold tracking-tight">{t("tours.packages.title")}</h2>
         <Button variant="primary" size="sm" onPress={() => setFormOpen(!formOpen)}>

@@ -1071,7 +1071,9 @@
       "deleteTitle": "여행지 삭제",
       "deleteDescription": "\"{{name}}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
       "adminEmpty": "관리자 여행지가 없습니다.",
-      "noImage": "이미지 없음"
+      "noImage": "이미지 없음",
+      "pageTitle": "여행지",
+      "pageSubtitle": "등록된 여행지를 탐색하고 관리하세요"
     },
     "packages": {
       "title": "내 투어 패키지",
@@ -1095,7 +1097,9 @@
         "days": "일수",
         "price": "최저 가격 (USD)",
         "submit": "패키지 생성"
-      }
+      },
+      "pageTitle": "투어 패키지",
+      "pageSubtitle": "게시된 및 초안 투어 패키지를 만들고 관리하세요"
     },
     "admin": {
       "destinations": {
@@ -1439,7 +1443,8 @@
         "totalReviews_one": "리뷰 {{count}}개",
         "totalReviews_other": "리뷰 {{count}}개",
         "empty": "아직 리뷰가 없습니다. 여행자들이 여행을 완료하면 여기에 리뷰가 표시됩니다."
-      }
+      },
+      "subtitle": "공개 여행사 프로필 및 연락처 정보를 관리하세요"
     }
   },
   "admin": {

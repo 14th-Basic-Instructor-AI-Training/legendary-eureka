@@ -67,6 +67,17 @@ export function DestinationsPanel({
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Page header */}
+      <div>
+        <h1
+          className="text-4xl font-black tracking-tight"
+          style={{ color: "var(--primary-lightskyblue)" }}
+        >
+          {t("tours.destinations.pageTitle")}
+        </h1>
+        <p className="text-muted mt-1 text-sm">{t("tours.destinations.pageSubtitle")}</p>
+      </div>
+
       <DestinationForm
         isOpen={showForm}
         origin="agency"

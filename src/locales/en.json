@@ -1071,7 +1071,9 @@
       "deleteTitle": "Delete destination",
       "deleteDescription": "Are you sure you want to delete \"{{name}}\"? This cannot be undone.",
       "adminEmpty": "No admin destinations available yet.",
-      "noImage": "No image"
+      "noImage": "No image",
+      "pageTitle": "Destinations",
+      "pageSubtitle": "Browse and manage your listed destinations"
     },
     "packages": {
       "title": "Your tour packages",
@@ -1095,7 +1097,9 @@
         "days": "Days",
         "price": "Price from (USD)",
         "submit": "Create package"
-      }
+      },
+      "pageTitle": "Tour Packages",
+      "pageSubtitle": "Create and manage your published and draft tour packages"
     },
     "admin": {
       "destinations": {
@@ -1439,7 +1443,8 @@
         "totalReviews_one": "{{count}} review",
         "totalReviews_other": "{{count}} reviews",
         "empty": "No reviews yet. Reviews appear here once travelers complete their trips."
-      }
+      },
+      "subtitle": "Manage your public agency profile and contact information"
     }
   },
   "admin": {

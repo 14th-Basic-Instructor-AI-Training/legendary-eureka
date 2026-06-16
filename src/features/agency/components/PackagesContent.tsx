@@ -1343,11 +1343,14 @@ export function PackagesContent() {
   return (
     <div className="flex min-h-full flex-col">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-agency-border bg-white px-7 py-6">
-        <h1 className="text-[24px] font-extrabold tracking-tight leading-tight text-agency-navy">
+      <div className="flex-shrink-0 border-b border-border px-7 py-6">
+        <h1
+          className="text-4xl font-black tracking-tight"
+          style={{ color: "var(--primary-lightskyblue)" }}
+        >
           {t("agency.packages.pageTitle")}
         </h1>
-        <p className="mt-1 text-[13px] text-agency-muted">{t("agency.packages.pageSubtitle")}</p>
+        <p className="text-muted mt-1 text-sm">{t("agency.packages.pageSubtitle")}</p>
       </div>
 
       {/* Tabs */}

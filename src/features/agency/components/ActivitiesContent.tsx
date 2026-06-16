@@ -917,11 +917,14 @@ export function ActivitiesContent() {
       {/* Header */}
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-primary text-2xl font-bold tracking-tight">
+          <h1
+            className="text-4xl font-black tracking-tight"
+            style={{ color: "var(--primary-lightskyblue)" }}
+          >
             {t("agency.activitiesPage.pageTitle")}
           </h1>
-          <p className="text-muted mt-1">
-            {t("agency.activitiesPage.totalCount", { count: activities.length })}
+          <p className="text-muted mt-1 text-sm">
+            {t("agency.activitiesPage.subtitle")}
           </p>
         </div>
         <Button variant="primary" onPress={() => setCreateOpen(true)}>

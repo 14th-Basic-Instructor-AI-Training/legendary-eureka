@@ -660,6 +660,17 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
 
   return (
     <div className="mx-auto max-w-5xl">
+      {/* Page header */}
+      <div className="mb-6">
+        <h1
+          className="text-4xl font-black tracking-tight"
+          style={{ color: "var(--primary-lightskyblue)" }}
+        >
+          {t("agency.profile.title")}
+        </h1>
+        <p className="text-muted mt-1 text-sm">{t("agency.profile.subtitle")}</p>
+      </div>
+
       {/* ─── Agency Header ─────────────────────────────────────────────────── */}
       <div className="relative mb-16">
         {/* Cover photo */}
