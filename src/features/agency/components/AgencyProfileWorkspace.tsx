@@ -18,6 +18,7 @@ import {
   TickCircle,
 } from "iconsax-reactjs";
 import { Button, Card, Input, TextArea, Select, ListBox } from "@/ui";
+import { LocationMap } from "@/features/destinations/components/LocationMap";
 import { saveProfileAction, uploadAvatarAction, uploadFileAction } from "@/actions/agencyProfile";
 import type { AgencyProfile, ProfileReview } from "../schema";
 
@@ -35,6 +36,23 @@ const CAMBODIA_PROVINCES = [
   "Kampong Speu",
   "Prey Veng",
   "Takeo",
+];
+
+/** Province options keyed by the backend `Province` enum (value sent to the API). */
+const PROVINCE_OPTIONS: { id: string; label: string }[] = [
+  { id: "PHNOM_PENH", label: "Phnom Penh" },
+  { id: "SIEM_REAP", label: "Siem Reap" },
+  { id: "SIHANOUKVILLE", label: "Sihanoukville" },
+  { id: "KAMPOT", label: "Kampot" },
+  { id: "BATTAMBANG", label: "Battambang" },
+  { id: "KRATIE", label: "Kratie" },
+  { id: "MONDULKIRI", label: "Mondulkiri" },
+  { id: "RATANAKIRI", label: "Ratanakiri" },
+  { id: "KEP", label: "Kep" },
+  { id: "KAMPONG_CHAM", label: "Kampong Cham" },
+  { id: "KAMPONG_SPEU", label: "Kampong Speu" },
+  { id: "PREY_VENG", label: "Prey Veng" },
+  { id: "TAKEO", label: "Takeo" },
 ];
 
 // ── Initials avatar (replaces HeroUI Avatar whose typings are too narrow) ────
@@ -338,12 +356,19 @@ function ProfileInfoTab({
 
 // ── Tab 2 — Location ──────────────────────────────────────────────────────────
 
+type LocationPayload = {
+  address: string;
+  province: string;
+  latitude?: number;
+  longitude?: number;
+};
+
 function LocationTab({
   profile,
-  onSaveAddress,
+  onSaveLocation,
 }: {
   profile: AgencyProfile;
-  onSaveAddress: (address: string) => Promise<void>;
+  onSaveLocation: (loc: LocationPayload) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
@@ -352,36 +377,57 @@ function LocationTab({
     streetAddress: profile.streetAddress ?? "",
     city: profile.city ?? "",
     province: profile.province ?? "",
+    latitude: profile.lat !== undefined ? String(profile.lat) : "",
+    longitude: profile.lng !== undefined ? String(profile.lng) : "",
   });
 
+  const provinceLabel =
+    PROVINCE_OPTIONS.find((p) => p.id === profile.province)?.label ?? profile.province ?? "";
+
   const currentAddressLine = profile.streetAddress
-    ? `${profile.streetAddress}${profile.city ? `, ${profile.city}` : ""}${profile.province ? `, ${profile.province}` : ""}, Cambodia`
+    ? `${profile.streetAddress}${profile.city ? `, ${profile.city}` : ""}${provinceLabel ? `, ${provinceLabel}` : ""}, Cambodia`
     : t("agency.profile.location.noAddress");
+
+  // Live pin: the form coords while editing, otherwise the saved profile pin.
+  const parsedLat = isEditing ? Number(form.latitude) : profile.lat;
+  const parsedLng = isEditing ? Number(form.longitude) : profile.lng;
+  const hasPin =
+    parsedLat !== undefined &&
+    parsedLng !== undefined &&
+    Number.isFinite(parsedLat) &&
+    Number.isFinite(parsedLng) &&
+    !(parsedLat === 0 && parsedLng === 0);
 
   async function handleSaveLocation() {
     setSaving(true);
-    const combined = [form.streetAddress, form.city, form.province].filter(Boolean).join(", ");
-    await onSaveAddress(combined);
+    const combined = [form.streetAddress, form.city].filter(Boolean).join(", ");
+    const lat = Number(form.latitude);
+    const lng = Number(form.longitude);
+    await onSaveLocation({
+      address: combined,
+      province: form.province,
+      latitude: form.latitude.trim() && Number.isFinite(lat) ? lat : undefined,
+      longitude: form.longitude.trim() && Number.isFinite(lng) ? lng : undefined,
+    });
     setSaving(false);
     setIsEditing(false);
   }
 
   return (
     <div className="space-y-6">
-      {/* Map placeholder */}
-      <div className="border-border flex h-80 w-full items-center justify-center overflow-hidden rounded-2xl border bg-slate-100">
-        <div className="flex flex-col items-center gap-3 text-slate-400">
-          <Map1 size={48} variant="Linear" color="#CBD5E1" />
-          <p className="text-sm font-medium">
-            {t("agency.profile.location.mapPlaceholder")}
-          </p>
-          {profile.city && (
-            <span className="rounded-full bg-white px-4 py-1.5 text-xs font-medium text-slate-500 shadow-sm">
-              {profile.city}, {profile.province}
-            </span>
-          )}
+      {/* Real per-place map when a pin exists, else a placeholder prompt. */}
+      {hasPin ? (
+        <LocationMap lat={parsedLat as number} lng={parsedLng as number} label={profile.name} />
+      ) : (
+        <div className="border-border flex h-80 w-full items-center justify-center overflow-hidden rounded-2xl border bg-slate-100">
+          <div className="flex flex-col items-center gap-3 text-slate-400">
+            <Map1 size={48} variant="Linear" color="#CBD5E1" />
+            <p className="text-sm font-medium">
+              {t("agency.profile.location.mapPlaceholder")}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Current address */}
       <div className="flex items-start gap-3">
@@ -446,9 +492,9 @@ function LocationTab({
               </Select.Trigger>
               <Select.Popover>
                 <ListBox>
-                  {CAMBODIA_PROVINCES.map((p) => (
-                    <ListBox.Item key={p} id={p} textValue={p}>
-                      {p}
+                  {PROVINCE_OPTIONS.map((p) => (
+                    <ListBox.Item key={p.id} id={p.id} textValue={p.label}>
+                      {p.label}
                     </ListBox.Item>
                   ))}
                 </ListBox>
@@ -456,15 +502,33 @@ function LocationTab({
             </Select>
           </Field>
 
-          <Button
-            variant="ghost"
-            className="text-[#185FA5]"
-          >
-            <span className="flex items-center gap-1.5">
-              <Location size={16} variant="Linear" />
-              {t("agency.profile.location.dropPin")}
-            </span>
-          </Button>
+          {/* Map pin coordinates — feed the per-place LocationMap above. */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <Field label={t("agency.profile.location.latitude")}>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={form.latitude}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, latitude: e.target.value }))
+                }
+                placeholder="11.5564"
+                aria-label={t("agency.profile.location.latitude")}
+              />
+            </Field>
+            <Field label={t("agency.profile.location.longitude")}>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={form.longitude}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, longitude: e.target.value }))
+                }
+                placeholder="104.9282"
+                aria-label={t("agency.profile.location.longitude")}
+              />
+            </Field>
+          </div>
 
           <div className="flex items-center gap-3 border-t border-border pt-4">
             <Button
@@ -612,8 +676,18 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
     });
   }
 
-  async function handleSaveAddress(address: string) {
-    const result = await saveProfileAction({ address: address || undefined });
+  async function handleSaveLocation(loc: {
+    address: string;
+    province: string;
+    latitude?: number;
+    longitude?: number;
+  }) {
+    const result = await saveProfileAction({
+      address: loc.address || undefined,
+      province: loc.province || undefined,
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+    });
     if (result.ok) {
       router.refresh();
     } else {
@@ -789,7 +863,7 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
         <ProfileInfoTab form={form} setForm={setForm} profile={initialProfile} />
       )}
       {activeTab === "location" && (
-        <LocationTab profile={initialProfile} onSaveAddress={handleSaveAddress} />
+        <LocationTab profile={initialProfile} onSaveLocation={handleSaveLocation} />
       )}
       {activeTab === "reviews" && (
         <ReviewsTab profile={initialProfile} reviews={initialReviews} />

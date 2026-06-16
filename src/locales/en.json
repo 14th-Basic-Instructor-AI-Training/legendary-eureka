@@ -1432,6 +1432,8 @@
         "city": "City",
         "province": "Province",
         "dropPin": "Drop Pin on Map",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
         "saveLocation": "Save Location"
       },
       "reviews": {

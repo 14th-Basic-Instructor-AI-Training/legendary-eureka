@@ -1432,6 +1432,8 @@
         "city": "도시",
         "province": "지역",
         "dropPin": "지도에 핀 꽂기",
+        "latitude": "위도",
+        "longitude": "경도",
         "saveLocation": "위치 저장"
       },
       "reviews": {

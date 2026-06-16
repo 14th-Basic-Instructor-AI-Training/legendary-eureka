@@ -6,6 +6,7 @@ export type AgencyStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export interface AgencyProfileResponse {
   id: string;
+  slug: string;
   agencyName: string;
   /** Long-form description (maps to Java field `bio`). */
   bio: string;
@@ -14,6 +15,16 @@ export interface AgencyProfileResponse {
   contactPhone: string;
   website: string;
   address: string;
+  /** Backend Province enum name (e.g. "SIEM_REAP") or null when unset. */
+  province: string | null;
+  /** Map pin — BigDecimal on the wire (null when unset); lat/lng are 0 when unset. */
+  latitude: number | null;
+  longitude: number | null;
+  lat: number;
+  lng: number;
+  /** Comma-separated languages (e.g. "English,Khmer"). */
+  languages: string | null;
+  responseTimeHours: number | null;
   status: AgencyStatus;
   rejectionReason: string | null;
   averageRating: number;
@@ -74,7 +85,12 @@ export interface UpdateAgencyProfileRequest {
   contactEmail?: string;
   contactPhone?: string;
   address?: string;
+  province?: string;
   website?: string;
+  latitude?: number;
+  longitude?: number;
+  languages?: string;
+  responseTimeHours?: number;
 }
 
 export interface UpdateTravelerProfileRequest {

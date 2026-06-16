@@ -430,9 +430,10 @@ export async function getToursByAgency(
   sort: ExploreSort = "recommended",
 ): Promise<Result<ExploreTour[]>> {
   try {
-    const paged = await publicApiFetch<PagedData<TourPackageResponse>>("/tours", {
-      params: { agencyId: agencySlug, size: 30 },
-    });
+    const paged = await publicApiFetch<PagedData<TourPackageResponse>>(
+      `/agencies/by-slug/${agencySlug}/tours`,
+      { params: { size: 30 } },
+    );
     const mapped = (paged.content ?? []).map(mapToExploreTour);
     return { ok: true, data: sortTours(mapped, sort) };
   } catch {

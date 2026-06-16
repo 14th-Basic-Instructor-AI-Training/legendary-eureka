@@ -1430,6 +1430,8 @@
         "city": "ទីក្រុង",
         "province": "ខេត្ត",
         "dropPin": "ដាក់ Pin លើផែនទី",
+        "latitude": "រយៈទទឹង",
+        "longitude": "រយៈបណ្ដោយ",
         "saveLocation": "រក្សាទុកទីតាំង"
       },
       "reviews": {
