@@ -11,6 +11,11 @@ import { signOut } from "next-auth/react";
 import { dashboardPathFor } from "@/lib/permissions";
 import { useLocalizedRouter } from "@/lib/locale";
 import { cn } from "@/lib/utils";
+import { clientApiFetch } from "@/lib/api/client";
+import { onRealtime, AGENCY_APPROVED } from "@/lib/realtime";
+import type { AgencyProfileResponse, AgencyStatus } from "@/lib/api/profile";
+import { AgencyApprovalPendingModal } from "./AgencyApprovalPendingModal";
+import { AgencyApprovedModal } from "./AgencyApprovedModal";
 
 function initialsOf(name: string) {
   return name
@@ -44,6 +49,10 @@ export function MarketingHeader() {
   const { user } = useSession();
   const confirm = useConfirm();
   const [scrolled, setScrolled] = useState(false);
+  // Agency-registration approval state (only fetched for agency accounts).
+  const [agencyStatus, setAgencyStatus] = useState<AgencyStatus | null>(null);
+  const [showPendingModal, setShowPendingModal] = useState(false);
+  const [showApprovedModal, setShowApprovedModal] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -51,6 +60,53 @@ export function MarketingHeader() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // A pending agency keeps the `agency` role but its profile isn't approved yet,
+  // so gate the Workspace button until an admin confirms the registration.
+  useEffect(() => {
+    if (user?.role !== "agency") return;
+    let active = true;
+    clientApiFetch<AgencyProfileResponse>("/agencies/me")
+      .then((profile) => {
+        if (active) setAgencyStatus(profile.status);
+      })
+      .catch(() => {
+        // On failure, leave the button navigating normally — don't block access.
+        if (active) setAgencyStatus(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [user?.role, user?.id]);
+
+  // Live approval: when an admin approves THIS agency, the requests queue emits an
+  // `AGENCY_APPROVED` frame. Unlock the workspace in place (clears the pending gate)
+  // and surface the success modal so the agency can jump straight in — no reload.
+  useEffect(() => {
+    if (user?.role !== "agency") return;
+    return onRealtime(AGENCY_APPROVED, (msg) => {
+      const data = msg.data as { userId?: string } | null;
+      if (data?.userId !== user.id) return;
+      setAgencyStatus("APPROVED");
+      setShowPendingModal(false);
+      setShowApprovedModal(true);
+    });
+  }, [user?.role, user?.id]);
+
+  const goToWorkspace = () => {
+    if (!user) return;
+    setShowApprovedModal(false);
+    router.push(dashboardPathFor(user.role));
+  };
+
+  const goToDashboard = () => {
+    if (!user) return;
+    if (user.role === "agency" && agencyStatus === "PENDING") {
+      setShowPendingModal(true);
+      return;
+    }
+    router.push(dashboardPathFor(user.role));
+  };
 
   const handleLogout = async () => {
     const ok = await confirm({
@@ -66,6 +122,7 @@ export function MarketingHeader() {
   };
 
   return (
+    <>
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-50 transition-colors duration-300",
@@ -116,11 +173,7 @@ export function MarketingHeader() {
           <LanguageSwitcher className="hidden sm:block" tone="default" />
           {user ? (
             <>
-              <Button
-                variant="secondary"
-                size="sm"
-                onPress={() => router.push(dashboardPathFor(user.role))}
-              >
+              <Button variant="secondary" size="sm" onPress={goToDashboard}>
                 {user.role === "admin"
                   ? t("nav.controlPanel")
                   : user.role === "agency"
@@ -156,5 +209,17 @@ export function MarketingHeader() {
         </div>
       </div>
     </header>
+
+    <AgencyApprovalPendingModal
+      isOpen={showPendingModal}
+      onClose={() => setShowPendingModal(false)}
+    />
+
+    <AgencyApprovedModal
+      isOpen={showApprovedModal}
+      onClose={() => setShowApprovedModal(false)}
+      onGoToWorkspace={goToWorkspace}
+    />
+    </>
   );
 }

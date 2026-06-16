@@ -21,7 +21,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend,
 } from "recharts";
 import { Layer, Clock, Category, Star1, Add, Bag } from "iconsax-reactjs";
 import { Avatar, StatusChip } from "@/ui";
@@ -50,7 +49,13 @@ export interface AgencyDashboardViewProps {
   agencyName: string;
 }
 
-const DONUT_COLORS = ["var(--primary-lightskyblue)", "var(--orange)", "var(--red)", "var(--green)", "var(--text-secondary)"];
+const DONUT_COLORS = [
+  "#a5b4fc", // approved  — soft indigo/purple (matches reference large segment)
+  "#fb923c", // pending   — orange
+  "#f472b6", // rejected  — pink/magenta (matches reference tiny segment)
+  "#93c5fd", // completed — sky blue (matches reference light-blue segment)
+  "#fbbf24", // cancelled — amber/yellow (matches reference small segment)
+];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -181,60 +186,126 @@ function StatsGrid({ stats }: { stats: AgencyStatsResponse }) {
 
 // ── Charts — require "use client" (Recharts uses browser SVG / ResizeObserver) ─
 
+const ALL_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function normalizeToYear(data: MonthlyBookingResponse[]): MonthlyBookingResponse[] {
+  const map = new Map(data.map((d) => [d.month, d.bookings]));
+  return ALL_MONTHS.map((month) => ({ month, bookings: map.get(month) ?? 0 }));
+}
+
 function BookingsTrendChart({ data }: { data: MonthlyBookingResponse[] }) {
   const { t } = useTranslation();
+  const normalized = normalizeToYear(data);
+  const currentMonth = new Date().toLocaleString("en", { month: "short" });
+
   return (
     <Panel title={t("agency.dashboard.bookingsTrend")}>
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+      <ResponsiveContainer width="100%" height={260}>
+        <BarChart data={normalized} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
           <CartesianGrid {...gridProps} />
           <XAxis dataKey="month" {...axisProps} />
-          <YAxis {...axisProps} />
-          <Tooltip {...tooltipProps} />
-          <Bar dataKey="bookings" fill="var(--primary-lightskyblue)" radius={[4, 4, 0, 0]} />
+          <YAxis {...axisProps} allowDecimals={false} tickCount={5} />
+          <Tooltip
+            {...tooltipProps}
+            formatter={(value: number) => [`${value} bookings`, ""]}
+          />
+          <Bar dataKey="bookings" radius={[4, 4, 0, 0]}>
+            {normalized.map((entry) => {
+              const isCurrent = entry.month === currentMonth;
+              const hasData = entry.bookings > 0;
+              const fill = isCurrent
+                ? "var(--color-primary)"
+                : hasData
+                  ? "var(--primary-lightskyblue)"
+                  : "var(--border)";
+              return <Cell key={entry.month} fill={fill} />;
+            })}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </Panel>
   );
 }
 
+const STATUS_META = [
+  { key: "approved",  label: "Approved",  colorIdx: 0 },
+  { key: "pending",   label: "Pending",   colorIdx: 1 },
+  { key: "rejected",  label: "Rejected",  colorIdx: 2 },
+  { key: "completed", label: "Completed", colorIdx: 3 },
+  { key: "cancelled", label: "Cancelled", colorIdx: 4 },
+] as const;
+
 function BookingStatusChart({ summary }: { summary: BookingStatusSummaryResponse }) {
   const { t } = useTranslation();
-  const data = [
-    { name: "Approved", value: summary.approved },
-    { name: "Pending", value: summary.pending },
-    { name: "Rejected", value: summary.rejected },
-    { name: "Completed", value: summary.completed },
-    { name: "Cancelled", value: summary.cancelled },
-  ].filter((d) => d.value > 0);
+
+  const rows = STATUS_META.map((s) => ({
+    ...s,
+    value: summary[s.key as keyof BookingStatusSummaryResponse] as number,
+    color: DONUT_COLORS[s.colorIdx],
+  }));
+
+  const data = rows.filter((d) => d.value > 0);
+  const total = rows.reduce((sum, d) => sum + d.value, 0);
 
   return (
     <Panel title={t("agency.dashboard.bookingStatus")}>
-      <ResponsiveContainer width="100%" height={200}>
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={55}
-            outerRadius={80}
-            paddingAngle={2}
-            dataKey="value"
-          >
-            {data.map((_, i) => (
-              <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
-            ))}
-          </Pie>
-          <Legend
-            iconType="circle"
-            iconSize={10}
-            formatter={(value) => (
-              <span style={{ color: "var(--text-secondary)", fontSize: 12 }}>{value}</span>
-            )}
-          />
-          <Tooltip {...tooltipProps} />
-        </PieChart>
-      </ResponsiveContainer>
+      <div className="flex items-center gap-6">
+        {/* Donut with center label */}
+        <div className="relative shrink-0" style={{ width: 180, height: 180 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data.length ? data : [{ name: "empty", value: 1 }]}
+                cx="50%"
+                cy="50%"
+                innerRadius={58}
+                outerRadius={82}
+                paddingAngle={data.length > 1 ? 3 : 0}
+                dataKey="value"
+                startAngle={90}
+                endAngle={-270}
+                strokeWidth={0}
+              >
+                {data.length ? (
+                  data.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))
+                ) : (
+                  <Cell fill="var(--border)" />
+                )}
+              </Pie>
+              <Tooltip {...tooltipProps} />
+            </PieChart>
+          </ResponsiveContainer>
+          {/* Center total overlay */}
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-muted text-xs font-medium">Total</span>
+            <span className="text-xl font-black leading-tight tracking-tight" style={{ color: "var(--text-primary)" }}>
+              {total}
+            </span>
+          </div>
+        </div>
+
+        {/* Legend rows */}
+        <div className="flex flex-1 flex-col gap-2.5">
+          {rows.map((row) => (
+            <div key={row.key} className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="h-3 w-3 shrink-0 rounded-sm"
+                  style={{ backgroundColor: row.color }}
+                />
+                <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                  {row.label}
+                </span>
+              </div>
+              <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                {row.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
     </Panel>
   );
 }

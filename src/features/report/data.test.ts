@@ -1,12 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { submitReport } from "./data";
 import type { ReportFormInput } from "./schema";
+
+// The permission + validation gating runs before any network call; stub the
+// server action so the "happy path" doesn't try to reach the backend.
+vi.mock("@/actions/reports", () => ({
+  submitReportAction: vi.fn().mockResolvedValue({ id: "rep-1" }),
+}));
 
 const valid: ReportFormInput = {
   reason: "fraud",
   description:
     "The listing advertised a private tour but it was a crowded group bus.",
-  evidence: [],
 };
 
 describe("report submit — permissions", () => {

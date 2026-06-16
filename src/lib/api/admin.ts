@@ -11,6 +11,7 @@ export type AdminUserStatus = "active" | "suspended" | "banned";
 export type AdminUserRole = "traveler" | "agency";
 export type EditRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
 export type ReportStatus = "PENDING" | "RESOLVED" | "DISMISSED";
+export type ReportSeverity = "LOW" | "MEDIUM" | "HIGH";
 
 // ── Response types ────────────────────────────────────────────────────────────
 
@@ -50,12 +51,16 @@ export interface ReportResponse {
   id: string;
   targetType: string;
   targetId: string;
+  targetLabel: string | null;
   reason: string;
+  severity: ReportSeverity;
   description: string | null;
   status: ReportStatus;
   adminNote: string | null;
   reporterId: string;
   reporterName: string;
+  reporterRole: string | null;
+  resolvedAt: string | null;
   createdAt: string;
 }
 
@@ -111,6 +116,7 @@ export interface AdminEditRequestParams extends PageParams {
 
 export interface AdminReportParams extends PageParams {
   status?: ReportStatus;
+  severity?: ReportSeverity;
 }
 
 // ── Re-exports ────────────────────────────────────────────────────────────────

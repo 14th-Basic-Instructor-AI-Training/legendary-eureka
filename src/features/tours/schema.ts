@@ -160,11 +160,25 @@ const toStringList = (value: string | undefined): string[] =>
     .filter(Boolean);
 
 /**
+ * Native `<input type="number">` hands back `""` when cleared, which
+ * `z.coerce.number()` would turn into `0` and silently pass — so a required
+ * numeric field would never error. Treat blank (or a non-numeric value) as
+ * "missing" so the inner `z.number()` surfaces its required message instead.
+ */
+const blankToUndefined = (v: unknown): unknown => {
+  if (v === "" || v === null || v === undefined) return undefined;
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isNaN(n) ? undefined : n;
+};
+
+/**
  * Create-destination form shape — mirrors the backend POST body 1:1 so the same
  * schema validates the form today and the request later. Number fields coerce so
- * they bind to native `<input type="number">` string values. `tags`/`photos` are
- * entered as comma/newline-separated text and transform into the array the API
- * expects.
+ * they bind to native `<input type="number">` string values. `coverImageUrl` and
+ * `photos` hold the **file names** returned by the `/files/upload(-multiple)`
+ * endpoints (the form uploads files rather than asking for URLs). `tags` is an
+ * optional comma/newline-separated text field that transforms into the array the
+ * API expects.
  */
 export const NewDestinationSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -172,11 +186,26 @@ export const NewDestinationSchema = z.object({
   shortDescription: z.string().max(500, "Keep it under 500 characters").default(""),
   province: ProvinceSchema,
   travelType: TravelTypeSchema,
-  coverImageUrl: z.string().url("Enter a valid image URL"),
-  priceFrom: z.coerce.number().min(0, "Enter a price"),
+  coverImageUrl: z.string().min(1, "Upload a cover image"),
+  priceFrom: z.preprocess(
+    blankToUndefined,
+    z.number({ error: "Price from is required" }).min(0, "Enter a valid price"),
+  ),
   currency: z.string().min(1, "Currency is required").max(8).default("USD"),
-  latitude: z.coerce.number().min(-90, "Invalid latitude").max(90, "Invalid latitude"),
-  longitude: z.coerce.number().min(-180, "Invalid longitude").max(180, "Invalid longitude"),
+  latitude: z.preprocess(
+    blankToUndefined,
+    z
+      .number({ error: "Latitude is required" })
+      .min(-90, "Invalid latitude")
+      .max(90, "Invalid latitude"),
+  ),
+  longitude: z.preprocess(
+    blankToUndefined,
+    z
+      .number({ error: "Longitude is required" })
+      .min(-180, "Invalid longitude")
+      .max(180, "Invalid longitude"),
+  ),
   featured: z.boolean().default(false),
   trending: z.boolean().default(false),
   tags: z
@@ -184,15 +213,7 @@ export const NewDestinationSchema = z.object({
     .optional()
     .transform(toStringList)
     .pipe(z.array(z.string().max(100)).max(20, "Maximum 20 tags allowed")),
-  photos: z
-    .string()
-    .optional()
-    .transform(toStringList)
-    .pipe(
-      z
-        .array(z.string().url("Each photo must be a valid URL").max(500))
-        .max(10, "Maximum 10 photos allowed"),
-    ),
+  photos: z.array(z.string()).max(10, "Maximum 10 photos allowed").default([]),
 });
 export type NewDestinationInput = z.output<typeof NewDestinationSchema>;
 export type NewDestinationFormValues = z.input<typeof NewDestinationSchema>;
@@ -224,14 +245,21 @@ export type TourPackage = z.infer<typeof TourPackageSchema>;
 /** Create-package form shape. Matches the backend TourPackageRequest. */
 export const NewPackageSchema = z.object({
   title: z.string().min(1, "Title is required"),
+  tagline: z.string().max(220).optional(),
   destinationId: z.string().optional(),
   province: ProvinceSchema.optional(),
   travelType: TravelTypeSchema.optional(),
   days: z.coerce.number().int().min(1, "At least 1 day"),
   priceFrom: z.coerce.number().min(0, "Enter a price"),
   currency: z.string().min(1).max(8).default("USD"),
+  groupSizeMax: z.coerce.number().int().positive().optional().or(z.literal("")),
+  cancellationPolicy: z.enum(["free", "nonRefundable"]).default("free"),
+  languages: z.string().optional(),
   description: z.string().optional(),
   coverImageUrl: z.string().url("Enter a valid image URL").optional().or(z.literal("")),
+  highlights: z.string().optional(),
+  included: z.string().optional(),
+  excluded: z.string().optional(),
 });
 export type NewPackageInput = z.output<typeof NewPackageSchema>;
 export type NewPackageFormValues = z.input<typeof NewPackageSchema>;

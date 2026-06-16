@@ -48,7 +48,7 @@ export function AppShell({ role, children }: { role: Role; children: React.React
         <DashboardSidebar role={role} />
 
         <SidebarInset className="min-h-0 bg-[var(--bg-dashboard)] p-3">
-          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl bg-white">
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl bg-white">
             {/* Ogee corner at the top-left (matches the supplied clip sample):
                 three tangent arcs of equal radius — convex into the top edge,
                 concave scoop in the middle, convex into the left edge — filled
@@ -56,18 +56,18 @@ export function AppShell({ role, children }: { role: Role; children: React.React
                 trigger sits in front of it. Tune R below to scale the notch. */}
             <svg
               aria-hidden
-              className="pointer-events-none absolute left-0 top-0 z-20"
-              width={120}
-              height={96}
-              viewBox="0 0 120 96"
+              className="pointer-events-none absolute left-0 top-0 z-20 shrink-0"
+              width={89}
+              height={84}
+              viewBox="0 0 89 84"
               fill="none"
             >
               <path
-                d="M0,0 L120,0 A40,32 0 0 0 80,32 A40,32 0 0 1 40,64 A40,32 0 0 0 0,96 Z"
+                d="M0,0 L89,0 A29.67,28 0 0 0 59.33,28 A29.67,28 0 0 1 29.67,56 A29.67,28 0 0 0 0,84 Z"
                 fill="var(--color-bg-dashboard)"
               />
             </svg>
-            <header className="border-border flex h-16 shrink-0 items-center gap-3 rounded-t-xl border-b bg-white px-4 md:px-8">
+          <header className="border-border flex h-16 shrink-0 items-center gap-3 rounded-t-xl border-b bg-white px-4 md:pr-8 md:pl-2 ">
               <span className="relative z-30 flex">
                 <SidebarTrigger />
               </span>

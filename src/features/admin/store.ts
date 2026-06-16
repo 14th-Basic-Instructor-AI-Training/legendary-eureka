@@ -48,6 +48,8 @@ interface AdminState {
    * ignored so a redelivered frame can't clobber an admin's in-progress triage.
    */
   receiveReport: (report: Report) => void;
+  /** Bulk-hydrate the queue from a server fetch (ungated — server already gated). */
+  setReports: (reports: Report[]) => void;
   /** Act on a traveler report. */
   resolveReport: (actor: Actor | null, id: string) => boolean;
   dismissReport: (actor: Actor | null, id: string) => boolean;
@@ -122,6 +124,8 @@ export const useAdminStore = create<AdminState>((set) => ({
         : { reports: [report, ...s.reports] },
     );
   },
+
+  setReports: (reports) => set({ reports }),
 
   resolveReport: (actor, id) => {
     if (!can(actor, "manageReports")) return false;

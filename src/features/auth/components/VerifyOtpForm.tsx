@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { signIn } from "next-auth/react";
 import { useLocalizedRouter } from "@/lib/locale";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -55,24 +56,45 @@ export function VerifyOtpForm() {
       return;
     }
     setFormError(null);
-    const result = isReset
-      ? await verifyResetOtpAction(pendingEmail, values.code)
-      : await verifyOtpAction(pendingEmail, values.code);
+
+    if (isReset) {
+      const result = await verifyResetOtpAction(pendingEmail, values.code);
+      if (!result.ok) {
+        setFormError(
+          result.error === "invalid_code" ? t("auth.otp.invalid") : t("auth.otp.serverError"),
+        );
+        return;
+      }
+      // Reset code verified — carry it to the set-new-password step.
+      setResetOtp(values.code);
+      router.push("/reset-password");
+      return;
+    }
+
+    const result = await verifyOtpAction(pendingEmail, values.code);
     if (!result.ok) {
       setFormError(
         result.error === "invalid_code" ? t("auth.otp.invalid") : t("auth.otp.serverError"),
       );
       return;
     }
-    if (isReset) {
-      // Reset code verified — carry it to the set-new-password step.
-      setResetOtp(values.code);
-      router.push("/reset-password");
+    // Account verified — the backend already issued login tokens, so sign the
+    // user straight in (Path A of the Credentials provider) instead of bouncing
+    // them to the login page.
+    const signInResult = await signIn("credentials", {
+      redirect: false,
+      email: pendingEmail,
+      _verifiedAccessToken: result.accessToken,
+      _refreshToken: result.refreshToken,
+    });
+    clearPending();
+    if (!signInResult || signInResult.error || !signInResult.ok) {
+      // Verified but auto-login failed — fall back to manual sign-in.
+      router.replace("/login");
       return;
     }
-    // Account verified — send the user to the login page to sign in.
-    clearPending();
-    router.replace("/login");
+    // auth/callback reads the session role and redirects to the correct home.
+    router.replace("/auth/callback");
   };
 
   const handleResend = async () => {
@@ -89,8 +111,8 @@ export function VerifyOtpForm() {
       title={t(isReset ? "auth.forgot.title" : "auth.otp.title")}
       subtitle={t("auth.otp.subtitle", { email: pendingEmail ?? "" })}
     >
-      <Form className="flex flex-col gap-5" validationBehavior="aria" onSubmit={handleSubmit(onSubmit)}>
-        <Field id="code" label={t("auth.otp.codeLabel")} error={errors.code?.message}>
+      <Form className="flex flex-col justify-center gap-5" validationBehavior="aria" onSubmit={handleSubmit(onSubmit)}>
+        <Field id="code" label={""} error={errors.code?.message}>
           <Controller
             control={control}
             name="code"
@@ -103,6 +125,7 @@ export function VerifyOtpForm() {
                 value={field.value}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
+                className="flex justify-center w-full"
               >
                 <InputOTP.Group>
                   <InputOTP.Slot index={0} />

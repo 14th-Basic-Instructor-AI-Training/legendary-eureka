@@ -12,7 +12,7 @@ export default async function DashboardPage() {
   const [stats, monthlyBookings, bookingStatusSummary, reviewsPage, tripsPage, profile] =
     await Promise.all([
       getMyAgencyStats(),
-      getMonthlyBookings(6),
+      getMonthlyBookings(12),
       getBookingStatusSummary(),
       getMyAgencyReviews({ size: 3 }),
       getIncomingTrips({ size: 6 }),

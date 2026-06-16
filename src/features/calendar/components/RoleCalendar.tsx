@@ -283,8 +283,13 @@ export function RoleCalendar({ role }: { role: Role }) {
   return (
     <div className="mx-auto flex max-w-full max-h-fit flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight">{t("calendar.title")}</h1>
-        <p className="text-muted text-sm">{t(`calendar.subtitle.${role}`)}</p>
+        <h1
+          className="text-4xl font-black tracking-tight"
+          style={{ color: "var(--primary-lightskyblue)" }}
+        >
+          {t("calendar.title")}
+        </h1>
+        <p className="text-muted mt-1 text-sm">{t(`calendar.subtitle.${role}`)}</p>
       </header>
 
       {status === "loading" ? (

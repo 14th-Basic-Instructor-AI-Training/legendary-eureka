@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Flag, SearchNormal1 } from "iconsax-reactjs";
 import { Input, Pagination, Tabs } from "@/ui";
@@ -49,9 +49,26 @@ function StatTile({
   );
 }
 
-export function ReportsQueue() {
+export function ReportsQueue({
+  initialReports = [],
+  loadError = false,
+}: {
+  /** Server-fetched reports (GET /admin/reports), adapted in the route file. */
+  initialReports?: Report[];
+  loadError?: boolean;
+}) {
   const { t } = useTranslation();
   const reports = useAdminStore((s) => s.reports);
+  const setReports = useAdminStore((s) => s.setReports);
+
+  // Hydrate the store once from the server fetch. The store is module-global, so
+  // a ref guard keeps later re-renders from clobbering in-progress triage.
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (seededRef.current) return;
+    seededRef.current = true;
+    setReports(initialReports);
+  }, [initialReports, setReports]);
 
   // Live ingest: new reports emitted by travelers/agencies (tag
   // `agency-report-<uuid>`) stream into the queue without a refresh.
@@ -138,7 +155,14 @@ export function ReportsQueue() {
       </div>
 
       {/* list */}
-      {filtered.length === 0 ? (
+      {loadError && reports.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 py-14 text-center">
+          <span className="bg-danger/10 inline-flex h-12 w-12 items-center justify-center rounded-full">
+            <Flag size={22} color="currentColor" className="text-danger" />
+          </span>
+          <p className="text-muted text-sm">{t("admin.reports.error")}</p>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-14 text-center">
           <span className="bg-muted/10 inline-flex h-12 w-12 items-center justify-center rounded-full">
             <Flag size={22} color="currentColor" className="text-muted" />

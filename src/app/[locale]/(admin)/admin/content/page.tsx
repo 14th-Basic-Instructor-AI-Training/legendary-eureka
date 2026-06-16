@@ -1,10 +1,6 @@
 import { getAdminDestinations } from "@/services/admin.service";
 import type { DestinationResponse } from "@/lib/api/admin";
-import {
-  getPackages,
-  getArchivedPackages,
-  getApprovalPackages,
-} from "@/services/packages.service";
+import { getPackages, getArchivedPackages } from "@/services/packages.service";
 import type { TourPackageResponse } from "@/lib/api/packages";
 import { ContentPage } from "@/features/admin/components/ContentPage";
 
@@ -17,32 +13,23 @@ import { ContentPage } from "@/features/admin/components/ContentPage";
 export default async function AdminContentPage() {
   let destinations: DestinationResponse[] = [];
   let packages: TourPackageResponse[] = [];
-  let approvals: TourPackageResponse[] = [];
   let loadError = false;
 
   try {
-    const [destinationsPage, packagesPage, archivedPage, approvalsPage] = await Promise.all([
+    const [destinationsPage, packagesPage, archivedPage] = await Promise.all([
       getAdminDestinations({ size: 100 }),
       getPackages({ size: 100 }),
       getArchivedPackages({ size: 100 }),
-      // All packages submitted for approval (any approval status) — the queue filters client-side.
-      getApprovalPackages({ size: 100 }),
     ]);
     destinations = destinationsPage.content;
     // Published (GET /tours) + archived (GET /tours/archived) — disjoint statuses,
     // so PackagesAdmin's Archive tab can filter to the archived ones.
     packages = [...packagesPage.content, ...archivedPage.content];
-    approvals = approvalsPage.content;
   } catch {
     loadError = true;
   }
 
   return (
-    <ContentPage
-      destinations={destinations}
-      packages={packages}
-      approvals={approvals}
-      loadError={loadError}
-    />
+    <ContentPage destinations={destinations} packages={packages} loadError={loadError} />
   );
 }

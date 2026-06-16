@@ -191,8 +191,8 @@ export function CalendarInner({
         plusBtn.setAttribute("role", "button");
         plusBtn.setAttribute("tabindex", "0");
 
-        plusBtn.style.width = "14px";
-        plusBtn.style.height = "14px";
+        plusBtn.style.width = "12px";
+        plusBtn.style.height = "12px";
         plusBtn.style.borderRadius = "50%";
         plusBtn.style.backgroundColor = "#10B981";
         plusBtn.style.color = "#ffffff";

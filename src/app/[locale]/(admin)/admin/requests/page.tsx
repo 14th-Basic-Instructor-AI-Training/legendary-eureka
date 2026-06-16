@@ -1,11 +1,15 @@
 import { RequestsPage } from "@/features/admin/components/RequestsPage";
-import { getAdminAgencies, getAdminEditRequests } from "@/services/admin.service";
-import type { AdminAgencyProfile, AdminEditRequest, EditRequestTargetType } from "@/lib/api/admin";
+import { getAdminAgencies } from "@/services/admin.service";
+import { getApprovalPackages } from "@/services/packages.service";
+import { getPendingDestinations } from "@/services/destinations.service";
+import type { AdminAgencyProfile } from "@/lib/api/admin";
 
 export default async function AdminRequestsPage() {
-  const [agencies, editRequests] = await Promise.all([
+  const [agencies, tourApprovalsPage, pendingDestinationsPage] = await Promise.all([
     getAdminAgencies({ size: 100 }),
-    getAdminEditRequests({ size: 100 }),
+    // Tour packages + destinations agencies submitted for admin approval.
+    getApprovalPackages({ size: 100 }),
+    getPendingDestinations({ size: 100 }),
   ]);
 
   // Adapt the backend response shapes to the admin requests UI's prop types.
@@ -20,17 +24,11 @@ export default async function AdminRequestsPage() {
     createdAt: a.createdAt,
   }));
 
-  const requests: AdminEditRequest[] = editRequests.content.map((e) => ({
-    id: e.id,
-    requesterId: e.agencyId,
-    targetType: e.targetType as EditRequestTargetType,
-    targetId: e.targetId,
-    message: e.message,
-    status: e.status,
-    adminNote: e.adminNote,
-    createdAt: e.createdAt,
-    updatedAt: e.createdAt,
-  }));
-
-  return <RequestsPage agencies={agencyProfiles} editRequests={requests} />;
+  return (
+    <RequestsPage
+      agencies={agencyProfiles}
+      tourApprovals={tourApprovalsPage.content}
+      pendingDestinations={pendingDestinationsPage.content}
+    />
+  );
 }

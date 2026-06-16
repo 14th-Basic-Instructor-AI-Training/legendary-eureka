@@ -35,7 +35,16 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "**" },
       { protocol: "http", hostname: "**" },
+      // Local S3/MinIO (RustFS) storage — the `hostname: "**"` wildcard doesn't
+      // match the single-segment `localhost` with an explicit port, so the image
+      // optimizer would reject uploaded cover/photo URLs (`localhost:9000/...`).
+      { protocol: "http", hostname: "localhost", port: "9000" },
+      { protocol: "http", hostname: "127.0.0.1", port: "9000" },
     ],
+    // Next 16's optimizer blocks upstream images that resolve to a private/
+    // loopback IP (SSRF guard). Our dev storage (MinIO at localhost:9000)
+    // resolves to 127.0.0.1/::1, so allow it for local development.
+    dangerouslyAllowLocalIP: process.env.NODE_ENV !== "production",
   },
   experimental: {
     // Avatar/cover uploads stream the image file through a Server Action; the

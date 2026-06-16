@@ -36,6 +36,16 @@ export const TOURS_CHANGED = "tours-changed";
  */
 export const DESTINATIONS_CHANGED = "destinations-changed";
 
+/**
+ * Shared event tag for an agency registration being approved. Emitted by the
+ * admin from the requests queue when a pending agency is confirmed; the public
+ * surfaces (landing + explore, via the marketing header) subscribe and — for the
+ * matching agency only — surface the "you're approved" modal so the agency can
+ * jump straight to its workspace without reloading. Frame data: the approved
+ * agency's `userId` (used to target the right account) plus its `agencyName`.
+ */
+export const AGENCY_APPROVED = "agency-approved";
+
 const ENDPOINT = "/api/realtime";
 
 let source: EventSource | null = null;

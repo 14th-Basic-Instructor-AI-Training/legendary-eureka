@@ -3,28 +3,38 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Add, CloseCircle, Trash } from "iconsax-reactjs";
+import { sileo } from "sileo";
 import { Button, StatusChip } from "@/ui";
 import { formatPrice } from "@/lib/format";
-import type { TourPackageResponse, TourPackageStatus } from "@/lib/api/packages";
+import { useLocalizedRouter } from "@/lib/locale";
+import type {
+  TourApprovalStatus,
+  TourPackageResponse,
+  TourPackageStatus,
+} from "@/lib/api/packages";
 import {
-  publishPackageAction,
+  submitPackageAction,
   archivePackageAction,
   deletePackageAction,
 } from "@/actions/tours";
-import type { DestinationResponse } from "@/lib/api/destinations";
-import { PackageForm } from "./PackageForm";
 
 type Props = {
   packages: TourPackageResponse[];
-  destinations: DestinationResponse[];
-  agencyName: string;
-  formOpen: boolean;
-  setFormOpen: (open: boolean) => void;
-  presetDestination?: DestinationResponse;
-  onPackageCreated: (pkg: TourPackageResponse) => void;
   onStatusChanged: (id: string, status: TourPackageStatus) => void;
+  onSubmitted: (id: string) => void;
   onDeleted: (id: string) => void;
 };
+
+/** The status the pill should reflect: publication state, or the approval state while still a draft. */
+function chipStatus(p: TourPackageResponse): string {
+  if (p.status === "PUBLISHED") return "published";
+  if (p.status === "ARCHIVED") return "archived";
+  const approval = p.approvalStatus?.toUpperCase() as TourApprovalStatus | undefined;
+  if (approval === "PENDING") return "pending";
+  if (approval === "REJECTED") return "rejected";
+  if (approval === "APPROVED") return "approved";
+  return "draft";
+}
 
 export function PackagesPanel({
   packages,
@@ -35,17 +45,31 @@ export function PackagesPanel({
   presetDestination,
   onPackageCreated,
   onStatusChanged,
+  onSubmitted,
   onDeleted,
 }: Props) {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
+  const router = useLocalizedRouter();
   const [pending, setPending] = useState<string | null>(null);
 
-  const handlePublish = async (id: string) => {
+  // Agencies can't self-publish: they request admin approval. Admin approval auto-publishes.
+  const handleSubmit = async (id: string) => {
     setPending(id);
     try {
-      await publishPackageAction(id);
-      onStatusChanged(id, "PUBLISHED");
+      const res = await submitPackageAction(id);
+      if (res.ok) {
+        onSubmitted(id);
+        sileo.success({
+          title: t("tours.packages.toast.submitted"),
+          description: t("tours.packages.toast.submittedDesc"),
+        });
+      } else {
+        sileo.error({
+          title: t("tours.packages.toast.submitError"),
+          description: t("tours.packages.toast.submitErrorDesc"),
+        });
+      }
     } finally {
       setPending(null);
     }
@@ -72,32 +96,29 @@ export function PackagesPanel({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
+      {/* Page header */}
+      <div>
+        <h1
+          className="text-4xl font-black tracking-tight"
+          style={{ color: "var(--primary-lightskyblue)" }}
+        >
+          {t("tours.packages.pageTitle")}
+        </h1>
+        <p className="text-muted mt-1 text-sm">{t("tours.packages.pageSubtitle")}</p>
+      </div>
+
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold tracking-tight">{t("tours.packages.title")}</h2>
-        <Button variant="primary" size="sm" onPress={() => setFormOpen(!formOpen)}>
-          {formOpen ? (
-            <CloseCircle size={16} color="currentColor" />
-          ) : (
-            <Add size={16} color="currentColor" />
-          )}
+        <Button
+          variant="primary"
+          size="sm"
+          onPress={() => router.push("/agency/tours/new")}
+        >
+          <Add size={16} color="currentColor" />
           {t("tours.packages.new")}
         </Button>
       </div>
-
-      {formOpen ? (
-        <PackageForm
-          key={presetDestination?.id ?? "new"}
-          destinations={destinations}
-          agencyName={agencyName}
-          presetDestination={presetDestination}
-          onCreated={(pkg) => {
-            onPackageCreated(pkg);
-            setFormOpen(false);
-          }}
-          onCancel={() => setFormOpen(false)}
-        />
-      ) : null}
 
       {packages.length === 0 ? (
         <p className="text-muted py-8 text-center text-sm">{t("tours.packages.empty")}</p>
@@ -111,7 +132,7 @@ export function PackagesPanel({
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="truncate font-medium">{p.title}</p>
-                  <StatusChip status={p.status.toLowerCase()} />
+                  <StatusChip status={chipStatus(p)} />
                 </div>
                 <p className="text-muted mt-1 text-sm">
                   {t(`destinations.provinces.${p.province}`)} ·{" "}
@@ -119,19 +140,15 @@ export function PackagesPanel({
                   {t("landing.tours.from")}{" "}
                   {formatPrice(p.priceFrom ?? p.price, p.currency, lng)}
                 </p>
+                {p.approvalStatus?.toUpperCase() === "REJECTED" && p.rejectionReason ? (
+                  <p className="text-danger mt-1 text-xs">
+                    {t("tours.packages.rejectedReason", { reason: p.rejectionReason })}
+                  </p>
+                ) : null}
               </div>
 
               <div className="flex items-center gap-2">
-                {p.status === "DRAFT" ? (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    isPending={pending === p.id}
-                    onPress={() => handlePublish(p.id)}
-                  >
-                    {t("tours.packages.publish")}
-                  </Button>
-                ) : p.status === "PUBLISHED" ? (
+                {p.status === "PUBLISHED" ? (
                   <Button
                     variant="secondary"
                     size="sm"
@@ -139,6 +156,24 @@ export function PackagesPanel({
                     onPress={() => handleArchive(p.id)}
                   >
                     {t("tours.packages.archive")}
+                  </Button>
+                ) : p.status === "DRAFT" &&
+                  p.approvalStatus?.toUpperCase() === "PENDING" ? (
+                  <span className="text-warning text-sm font-medium">
+                    {t("tours.packages.awaiting")}
+                  </span>
+                ) : p.status === "DRAFT" ? (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    isPending={pending === p.id}
+                    onPress={() => handleSubmit(p.id)}
+                  >
+                    {t(
+                      p.approvalStatus?.toUpperCase() === "REJECTED"
+                        ? "tours.packages.resubmit"
+                        : "tours.packages.requestApproval",
+                    )}
                   </Button>
                 ) : null}
                 <Button

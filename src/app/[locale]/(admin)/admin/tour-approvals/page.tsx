@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 
-// Package approvals now live inside the Packages tab of the admin content page.
+// Package approvals now live inside the admin Requests page.
 export default async function AdminTourApprovalsPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  redirect(`/${locale}/admin/content?tab=packages`);
+  redirect(`/${locale}/admin/requests?tab=tourApprovals`);
 }

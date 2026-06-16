@@ -24,6 +24,7 @@ export interface TourPackageResponse {
   agencyId?: string;
   agencyName: string;
   title: string;
+  tagline?: string;
   description: string;
   province: Province;
   travelType: TravelType;
@@ -47,6 +48,11 @@ export interface TourPackageResponse {
   languages?: string | null;
   coverImageUrl: string;
   image: string;
+  groupSizeMax?: number;
+  cancellationPolicy?: string;
+  highlights?: string;
+  included?: string;
+  excluded?: string;
   status: TourPackageStatus;
   agenda: TourAgendaItemResponse[];
   activityCount?: number;
@@ -66,6 +72,7 @@ export interface TourPackageResponse {
 
 export interface TourPackageRequest {
   title: string;
+  tagline?: string;
   description?: string;
   province?: Province;
   travelType?: TravelType;
@@ -73,6 +80,12 @@ export interface TourPackageRequest {
   currency?: string;
   durationDays: number;
   coverImageUrl?: string;
+  groupSizeMax?: number;
+  languages?: string;
+  cancellationPolicy?: string;
+  highlights?: string;
+  included?: string;
+  excluded?: string;
 }
 
 export interface TourAgendaItemRequest {

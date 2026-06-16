@@ -249,6 +249,70 @@
   }
 }
 
+/* Mobile off-canvas sidebar (Radix Dialog): the panel slides in from the left
+ * and the backdrop fades. CSS animations (not transitions) are used so they run
+ * on mount — Radix also detects them to defer unmount for the exit animation. */
+@keyframes jalat-sheet-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes jalat-sheet-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes jalat-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes jalat-overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.sheet-content[data-state="open"] {
+  animation: jalat-sheet-in 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.sheet-content[data-state="closed"] {
+  animation: jalat-sheet-out 0.2s ease-in;
+}
+
+.sheet-overlay[data-state="open"] {
+  animation: jalat-overlay-in 0.3s ease-out;
+}
+
+.sheet-overlay[data-state="closed"] {
+  animation: jalat-overlay-out 0.2s ease-in;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-content[data-state="open"],
+  .sheet-content[data-state="closed"],
+  .sheet-overlay[data-state="open"],
+  .sheet-overlay[data-state="closed"] {
+    animation: none;
+  }
+}
+
 /* In-page navigation: header anchors and hash links smooth-scroll to sections,
  * and section tops clear the fixed 4rem marketing header (h-16). */
 html {
@@ -267,4 +331,15 @@ section[id] {
 /* DayFlow: offset the collapsed-sidebar panel so it clears the toggle rail. */
 [data-sidebar-collapsed="true"] {
   margin-left: calc(40px) !important;
+}
+
+.df-calendar-wrapper, .df-calendar-container{
+  border-width: 0px !important;
+  border-radius: 10px !important;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* DayFlow: hide the built-in "Calendars" sidebar header title. */
+.df-sidebar-header-title {
+  display: none !important;
 }

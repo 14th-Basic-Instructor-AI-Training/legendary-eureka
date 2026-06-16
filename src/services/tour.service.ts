@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api/client";
+import { IMAGE_PLACEHOLDER } from "@/lib/placeholder";
 import { TourPackagePageSchema, type TourPackageResponse } from "@/types/tour";
 import type { Result } from "@/features/destinations/data";
 import type { FeaturedTour, TravelType } from "@/features/destinations/schema";
@@ -26,7 +27,7 @@ export function mapFeaturedTour(t: TourPackageResponse): FeaturedTour {
     title: t.title,
     agencyName: t.agencyName ?? "",
     travelType: toTravelType(t.travelType),
-    image: t.coverImageUrl ?? t.image ?? "",
+    image: t.coverImageUrl || t.image || IMAGE_PLACEHOLDER,
     days: t.durationDays ?? t.days ?? 1,
     priceFrom: t.price ?? t.priceFrom ?? 0,
     currency: t.currency ?? "USD",

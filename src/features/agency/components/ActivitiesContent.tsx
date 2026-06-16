@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -53,6 +55,8 @@ import {
 // ---------------------------------------------------------------------------
 
 const ITEMS_PER_PAGE = 8;
+
+const FILLET = `radial-gradient(circle at SIDE bottom, transparent 14px, var(--bg-dashboard) 14px)`;
 
 const PROVINCES = [
   "Siem Reap",
@@ -917,11 +921,14 @@ export function ActivitiesContent() {
       {/* Header */}
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-primary text-2xl font-bold tracking-tight">
+          <h1
+            className="text-4xl font-black tracking-tight"
+            style={{ color: "var(--primary-lightskyblue)" }}
+          >
             {t("agency.activitiesPage.pageTitle")}
           </h1>
-          <p className="text-muted mt-1">
-            {t("agency.activitiesPage.totalCount", { count: activities.length })}
+          <p className="text-muted mt-1 text-sm">
+            {t("agency.activitiesPage.subtitle")}
           </p>
         </div>
         <Button variant="primary" onPress={() => setCreateOpen(true)}>
@@ -930,144 +937,177 @@ export function ActivitiesContent() {
         </Button>
       </header>
 
-      {/* Filter tabs */}
-      <div className="flex border-b border-border">
-        {TABS.map((tab) => {
-          const count =
-            tab.id === "all"
-              ? activities.length
-              : activities.filter((a) => a.category === tab.id).length;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => handleTabChange(tab.id)}
-              className={`flex shrink-0 items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
-                isActive
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted hover:text-foreground"
-              }`}
-              style={{ marginBottom: -1 }}
-            >
-              {t(tab.labelKey)}
-              <span
-                className={`rounded-full px-1.5 py-0.5 text-[10.5px] font-bold ${
-                  isActive ? "bg-primary text-white" : "bg-content2 text-muted"
-                }`}
+      {/* Folder-tab navigation */}
+      <div className="flex flex-col">
+        <div
+          role="tablist"
+          aria-label={t("agency.activitiesPage.pageTitle")}
+          className="relative z-10 flex shrink-0 gap-1"
+        >
+          {TABS.map((tab) => {
+            const count =
+              tab.id === "all"
+                ? activities.length
+                : activities.filter((a) => a.category === tab.id).length;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => handleTabChange(tab.id)}
+                className="relative cursor-pointer rounded-t-2xl px-5 pt-3 pb-4 text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               >
-                {count}
+                {isActive ? (
+                  <motion.span
+                    layoutId="activitiesTabNotch"
+                    aria-hidden="true"
+                    transition={{ type: "spring", stiffness: 480, damping: 38 }}
+                    className="absolute inset-0 -z-10 rounded-t-2xl bg-bg-dashboard"
+                  >
+                    <motion.span
+                      layout
+                      className="absolute bottom-0 left-0 h-[14px] w-[14px] -translate-x-full"
+                      style={{ background: FILLET.replace("SIDE", "left") }}
+                    />
+                    <motion.span
+                      layout
+                      className="absolute bottom-0 right-0 h-[14px] w-[14px] translate-x-full"
+                      style={{ background: FILLET.replace("SIDE", "right") }}
+                    />
+                  </motion.span>
+                ) : null}
+                <span
+                  className={cn(
+                    "relative flex items-center gap-1.5 transition-colors",
+                    isActive ? "text-primary" : "text-muted hover:text-foreground",
+                  )}
+                >
+                  {t(tab.labelKey)}
+                  <span
+                    className={cn(
+                      "rounded-full px-1.5 py-0.5 text-[10px] font-bold",
+                      isActive ? "bg-primary text-white" : "bg-content2 text-muted",
+                    )}
+                  >
+                    {count}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Panel — seamlessly connected to the active tab notch above */}
+        <div className="bg-bg-dashboard flex flex-col gap-4 rounded-t-3xl rounded-b-xl p-5 sm:p-6">
+          {/* Search */}
+          <SearchField
+            value={search}
+            onChange={handleSearchChange}
+            aria-label={t("agency.activitiesPage.search")}
+            className="max-w-sm"
+          >
+            <SearchField.Group>
+              <SearchField.SearchIcon />
+              <SearchField.Input placeholder={t("agency.activitiesPage.search")} />
+              <SearchField.ClearButton />
+            </SearchField.Group>
+          </SearchField>
+
+          {/* List */}
+          {loading ? (
+            <ul className="flex flex-col gap-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <li key={i} className="bg-surface border-border flex items-center gap-3 rounded-xl border p-4">
+                  <Skeleton className="h-14 w-14 flex-shrink-0 rounded-xl" />
+                  <div className="flex flex-1 flex-col gap-2">
+                    <Skeleton className="h-4 w-48 rounded" />
+                    <Skeleton className="h-3 w-64 rounded" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : loadError ? (
+            <div className="flex flex-col items-center gap-3 py-16 text-center">
+              <p className="text-foreground font-semibold">{t("common.error")}</p>
+              <Button variant="secondary" onPress={() => {
+                setLoadError(false);
+                setLoading(true);
+                getActivities().then((result) => {
+                  if (result.ok) {
+                    setActivities(result.data.activities);
+                    destByProvinceRef.current = result.data.destByProvince;
+                  } else {
+                    setLoadError(true);
+                  }
+                  setLoading(false);
+                });
+              }}>
+                {t("common.retry")}
+              </Button>
+            </div>
+          ) : paginated.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-16 text-center">
+              <span className="bg-content2 text-muted inline-flex h-14 w-14 items-center justify-center rounded-2xl">
+                <Category size={32} color="currentColor" />
               </span>
-            </button>
-          );
-        })}
-      </div>
+              <p className="text-foreground font-semibold">{t("agency.activitiesPage.emptyNoActivities")}</p>
+              <p className="text-muted max-w-xs text-sm">{t("agency.activitiesPage.emptyCreateFirst")}</p>
+              <Button variant="primary" onPress={() => setCreateOpen(true)}>
+                <Add size={16} color="currentColor" />
+                {t("agency.activitiesPage.createNewActivity")}
+              </Button>
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {paginated.map((a) => (
+                <ActivityRow
+                  key={a.id}
+                  activity={a}
+                  confirmingId={isDeleting === a.id ? a.id : confirmingId}
+                  onEdit={() => setEditActivity(a)}
+                  onDelete={() => setConfirmingId(a.id)}
+                  onConfirmDelete={() => handleConfirmDelete(a)}
+                  onCancelDelete={() => setConfirmingId(null)}
+                  onRequestEdit={() => setRequestEditTarget(a)}
+                />
+              ))}
+            </ul>
+          )}
 
-      {/* Search */}
-      <SearchField
-        value={search}
-        onChange={handleSearchChange}
-        aria-label={t("agency.activitiesPage.search")}
-        className="max-w-sm"
-      >
-        <SearchField.Group>
-          <SearchField.SearchIcon />
-          <SearchField.Input placeholder={t("agency.activitiesPage.search")} />
-          <SearchField.ClearButton />
-        </SearchField.Group>
-      </SearchField>
-
-      {/* List */}
-      {loading ? (
-        <ul className="flex flex-col gap-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <li key={i} className="bg-surface border-border flex items-center gap-3 rounded-xl border p-4">
-              <Skeleton className="h-14 w-14 flex-shrink-0 rounded-xl" />
-              <div className="flex flex-1 flex-col gap-2">
-                <Skeleton className="h-4 w-48 rounded" />
-                <Skeleton className="h-3 w-64 rounded" />
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between">
+              <p className="text-muted text-sm">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
+                {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="tertiary"
+                  size="sm"
+                  isDisabled={currentPage <= 1}
+                  onPress={() => setPage(currentPage - 1)}
+                >
+                  <ArrowLeft2 size={16} color="currentColor" />
+                  {t("agency.activitiesPage.prevPage")}
+                </Button>
+                <span className="text-muted text-sm">{currentPage} / {totalPages}</span>
+                <Button
+                  variant="tertiary"
+                  size="sm"
+                  isDisabled={currentPage >= totalPages}
+                  onPress={() => setPage(currentPage + 1)}
+                >
+                  {t("agency.activitiesPage.nextPage")}
+                  <ArrowRight2 size={16} color="currentColor" />
+                </Button>
               </div>
-            </li>
-          ))}
-        </ul>
-      ) : loadError ? (
-        <div className="flex flex-col items-center gap-3 py-16 text-center">
-          <p className="text-foreground font-semibold">{t("common.error")}</p>
-          <Button variant="secondary" onPress={() => {
-            setLoadError(false);
-            setLoading(true);
-            getActivities().then((result) => {
-              if (result.ok) {
-                setActivities(result.data.activities);
-                destByProvinceRef.current = result.data.destByProvince;
-              } else {
-                setLoadError(true);
-              }
-              setLoading(false);
-            });
-          }}>
-            {t("common.retry")}
-          </Button>
+            </div>
+          )}
         </div>
-      ) : paginated.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-16 text-center">
-          <span className="bg-content2 text-muted inline-flex h-14 w-14 items-center justify-center rounded-2xl">
-            <Category size={32} color="currentColor" />
-          </span>
-          <p className="text-foreground font-semibold">{t("agency.activitiesPage.emptyNoActivities")}</p>
-          <p className="text-muted max-w-xs text-sm">{t("agency.activitiesPage.emptyCreateFirst")}</p>
-          <Button variant="primary" onPress={() => setCreateOpen(true)}>
-            <Add size={16} color="currentColor" />
-            {t("agency.activitiesPage.createNewActivity")}
-          </Button>
-        </div>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {paginated.map((a) => (
-            <ActivityRow
-              key={a.id}
-              activity={a}
-              confirmingId={isDeleting === a.id ? a.id : confirmingId}
-              onEdit={() => setEditActivity(a)}
-              onDelete={() => setConfirmingId(a.id)}
-              onConfirmDelete={() => handleConfirmDelete(a)}
-              onCancelDelete={() => setConfirmingId(null)}
-              onRequestEdit={() => setRequestEditTarget(a)}
-            />
-          ))}
-        </ul>
-      )}
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-muted text-sm">
-            {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-            {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="tertiary"
-              size="sm"
-              isDisabled={currentPage <= 1}
-              onPress={() => setPage(currentPage - 1)}
-            >
-              <ArrowLeft2 size={16} color="currentColor" />
-              {t("agency.activitiesPage.prevPage")}
-            </Button>
-            <span className="text-muted text-sm">{currentPage} / {totalPages}</span>
-            <Button
-              variant="tertiary"
-              size="sm"
-              isDisabled={currentPage >= totalPages}
-              onPress={() => setPage(currentPage + 1)}
-            >
-              {t("agency.activitiesPage.nextPage")}
-              <ArrowRight2 size={16} color="currentColor" />
-            </Button>
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Create modal */}
       <ActivityFormModal

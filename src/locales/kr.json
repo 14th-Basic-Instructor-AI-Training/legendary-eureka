@@ -232,7 +232,8 @@
       "bookingDescription": "확정하면 여행자에게 알림이 전송됩니다."
     },
     "moreActions": "추가 작업",
-    "back": "뒤로"
+    "back": "뒤로",
+    "optional": "선택 사항"
   },
   "status": {
     "draft": "초안",
@@ -516,6 +517,17 @@
       "body": "Jalat 계정에 로그인하여 여행 계획을 만들고 좋아하는 장소를 저장하세요.",
       "login": "로그인",
       "cancel": "취소"
+    },
+    "agencyPending": {
+      "title": "승인 대기 중",
+      "body": "여행사 등록이 관리자 승인을 기다리고 있습니다. 관리자가 승인하면 작업 공간이 잠금 해제되어 여행지와 투어 패키지를 만들 수 있습니다.",
+      "gotIt": "확인"
+    },
+    "agencyApproved": {
+      "title": "에이전시가 승인되었습니다",
+      "body": "관리자가 방금 여행사 등록을 승인했습니다. 작업 공간이 잠금 해제되었습니다 — 여행지와 투어 패키지를 만들 수 있습니다.",
+      "goToWorkspace": "작업 공간으로 이동",
+      "dismiss": "나중에"
     },
     "hero": {
       "title": "아시아 전역에서 다음 여행을 발견하세요",
@@ -1060,7 +1072,27 @@
         "photos": "사진",
         "photosPlaceholder": "한 줄에 이미지 URL 하나 (또는 쉼표로 구분)",
         "featured": "추천",
-        "trending": "인기"
+        "trending": "인기",
+        "coverImage": "커버 이미지",
+        "uploadCta": "이미지 업로드",
+        "uploadHint": "JPG, PNG 또는 WEBP",
+        "changeImage": "이미지 변경",
+        "addPhotos": "사진 추가",
+        "photosHint": "최대 10장",
+        "removePhoto": "사진 삭제"
+      },
+      "upload": {
+        "cover": "커버 이미지 업로드 중",
+        "photos": "사진 업로드 중",
+        "create": "여행지 생성 중",
+        "save": "변경사항 저장 중",
+        "doneCreate": "여행지가 생성되었습니다",
+        "doneCreateDesc": "<b>{{name}}</b>이(가) 이제 여행지 목록에 추가되었습니다.",
+        "doneSave": "변경사항이 저장되었습니다",
+        "doneSaveDesc": "<b>{{name}}</b>에 대한 변경사항이 저장되었습니다.",
+        "error": "업로드 실패",
+        "dismiss": "닫기",
+        "stepOf": "{{total}}단계 중 {{current}}단계"
       },
       "sectionAdmin": "관리자 제공 여행지",
       "sectionYours": "내 여행지",
@@ -1071,7 +1103,11 @@
       "deleteTitle": "여행지 삭제",
       "deleteDescription": "\"{{name}}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
       "adminEmpty": "관리자 여행지가 없습니다.",
-      "noImage": "이미지 없음"
+      "noImage": "이미지 없음",
+      "pageTitle": "여행지",
+      "pageSubtitle": "등록된 여행지를 탐색하고 관리하세요",
+      "tabAdmin": "관리자 여행지",
+      "tabYours": "내 여행지"
     },
     "packages": {
       "title": "내 투어 패키지",
@@ -1081,6 +1117,15 @@
       "publish": "게시",
       "archive": "보관",
       "approvalSent": "승인 요청됨",
+      "awaiting": "승인 대기 중",
+      "resubmit": "다시 제출",
+      "rejectedReason": "사유: {{reason}}",
+      "toast": {
+        "submitted": "승인 요청을 보냈습니다",
+        "submittedDesc": "관리자가 곧 패키지를 검토합니다.",
+        "submitError": "승인 요청을 보내지 못했습니다",
+        "submitErrorDesc": "문제가 발생했습니다. 다시 시도해 주세요."
+      },
       "justNow": "방금 전",
       "byAgency": "{{name}} 제공",
       "days_one": "{{count}}일",
@@ -1094,7 +1139,50 @@
         "selectTravelType": "여행 유형 선택",
         "days": "일수",
         "price": "최저 가격 (USD)",
-        "submit": "패키지 생성"
+        "submit": "패키지 생성",
+        "tagline": "태그라인",
+        "taglinePlaceholder": "여행자에게 보여지는 짧은 소개",
+        "groupSizeMax": "최대 그룹 인원",
+        "cancellationPolicy": "취소 정책",
+        "cancellationFree": "무료 취소",
+        "cancellationNonRefundable": "환불 불가",
+        "languages": "언어",
+        "languagesPlaceholder": "예: 영어, 크메르어, 한국어",
+        "coverImageUrl": "커버 이미지 URL",
+        "description": "설명",
+        "descriptionPlaceholder": "여행 경험을 설명해 주세요...",
+        "highlights": "하이라이트",
+        "highlightsPlaceholder": "한 줄에 하나씩 입력",
+        "included": "포함 사항",
+        "includedPlaceholder": "한 줄에 하나씩 입력",
+        "excluded": "미포함 사항",
+        "excludedPlaceholder": "한 줄에 하나씩 입력",
+        "sections": {
+          "identity": {
+            "title": "패키지 기본 정보",
+            "description": "이름, 태그라인, 여행 위치"
+          },
+          "logistics": {
+            "title": "여행 세부 사항",
+            "description": "기간, 가격, 인원 제한, 정책"
+          },
+          "story": {
+            "title": "스토리 작성",
+            "description": "사진, 설명, 포함 및 제외 사항"
+          }
+        },
+        "dayUnit": "일",
+        "daysUnit": "일",
+        "peopleUnit": "명 최대",
+        "highlightsHint": "줄당 하나씩 — 투어 페이지에 목록으로 표시됩니다",
+        "listHint": "줄당 하나씩",
+        "draftNotice": "초안으로 저장됨 — 준비되면 게시하세요"
+      },
+      "pageTitle": "투어 패키지",
+      "pageSubtitle": "게시된 및 초안 투어 패키지를 만들고 관리하세요",
+      "newPage": {
+        "title": "투어 패키지 만들기",
+        "subtitle": "패키지 페이지에 표시될 정보를 입력하세요"
       }
     },
     "admin": {
@@ -1104,13 +1192,29 @@
         "new": "새 여행지",
         "empty": "아직 여행지가 없습니다.",
         "requestsEmpty": "아직 여행지 요청이 없습니다.",
+        "pendingEmpty": "승인 대기 중인 여행지가 없습니다.",
+        "pendingCount": "{{count}}건 승인 대기 중",
+        "search": "여행지 검색…",
         "menuLabel": "여행지 작업",
+        "approve": "승인",
+        "reject": "거부",
+        "toast": {
+          "approved": "여행지가 승인되었습니다",
+          "approveError": "여행지를 승인하지 못했습니다",
+          "rejected": "여행지가 거부되었습니다",
+          "rejectError": "여행지를 거부하지 못했습니다",
+          "deleted": "여행지가 삭제되었습니다",
+          "deletedDesc": "“{{name}}”이(가) 영구적으로 삭제되었습니다.",
+          "deleteError": "여행지를 삭제하지 못했습니다",
+          "deleteErrorDesc": "문제가 발생했습니다. 다시 시도해 주세요."
+        },
         "deleteConfirm": {
           "title": "이 여행지를 삭제하시겠습니까?",
           "description": "“{{name}}”이(가) 영구적으로 삭제됩니다. 되돌릴 수 없습니다."
         },
         "tabs": {
           "all": "모든 여행지",
+          "pending": "승인 대기",
           "requests": "생성 요청",
           "featured": "추천"
         }
@@ -1124,7 +1228,17 @@
         "statusFilter": "상태로 필터",
         "approve": "승인",
         "reject": "거절",
-        "search": "패키지 검색…"
+        "search": "패키지 검색…",
+        "toast": {
+          "approved": "패키지가 승인되었습니다",
+          "approvedDesc": "<b>{{name}}</b>이(가) 이제 여행자에게 공개됩니다.",
+          "approveError": "패키지를 승인하지 못했습니다",
+          "approveErrorDesc": "문제가 발생했습니다. 다시 시도해 주세요.",
+          "rejected": "패키지가 거절되었습니다",
+          "rejectedDesc": "<b>{{name}}</b>이(가) 거절되었으며 에이전시에 통보되었습니다.",
+          "rejectError": "패키지를 거절하지 못했습니다",
+          "rejectErrorDesc": "문제가 발생했습니다. 다시 시도해 주세요."
+        }
       }
     }
   },
@@ -1444,7 +1558,8 @@
         "totalReviews_one": "리뷰 {{count}}개",
         "totalReviews_other": "리뷰 {{count}}개",
         "empty": "아직 리뷰가 없습니다. 여행자들이 여행을 완료하면 여기에 리뷰가 표시됩니다."
-      }
+      },
+      "subtitle": "공개 여행사 프로필 및 연락처 정보를 관리하세요"
     }
   },
   "admin": {
@@ -1484,7 +1599,9 @@
       },
       "tabs": {
         "agencies": "여행사 온보딩",
-        "editRequests": "편집 요청"
+        "editRequests": "편집 요청",
+        "tourApprovals": "투어 패키지",
+        "destinations": "여행지"
       }
     },
     "editRequests": {
@@ -1520,6 +1637,8 @@
       "agencyCount": "이 여행사에 대한 신고 {{count}}건",
       "cardType": "여행자 신고",
       "reason": "사유",
+      "error": "신고를 불러올 수 없습니다. 백엔드가 실행 중인가요?",
+      "actionError": "신고를 업데이트할 수 없습니다. 다시 시도해 주세요.",
       "summary": {
         "open": "미처리",
         "highSeverity": "높은 심각도",
@@ -1595,6 +1714,20 @@
         "archive": "보관",
         "delete": "삭제",
         "confirmDelete": "예, 삭제"
+      },
+      "toast": {
+        "published": "패키지가 게시되었습니다",
+        "publishedDesc": "<b>{{name}}</b>이(가) 이제 여행자에게 공개됩니다.",
+        "publishError": "패키지를 게시하지 못했습니다",
+        "publishErrorDesc": "문제가 발생했습니다. 다시 시도해 주세요.",
+        "archived": "패키지가 보관되었습니다",
+        "archivedDesc": "<b>{{name}}</b>이(가) 이제 여행자에게 표시되지 않습니다. 언제든지 다시 게시할 수 있습니다.",
+        "archiveError": "패키지를 보관하지 못했습니다",
+        "archiveErrorDesc": "문제가 발생했습니다. 다시 시도해 주세요.",
+        "deleted": "패키지가 삭제되었습니다",
+        "deletedDesc": "<b>{{name}}</b> 및 일정이 영구적으로 삭제되었습니다.",
+        "deleteError": "패키지를 삭제하지 못했습니다",
+        "deleteErrorDesc": "문제가 발생했습니다. 다시 시도해 주세요."
       }
     },
     "users": {

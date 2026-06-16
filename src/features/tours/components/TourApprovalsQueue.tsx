@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { TickCircle, CloseCircle, Box1, SearchNormal1 } from "iconsax-reactjs";
+import { sileo } from "sileo";
 import { Button, Input, Pagination, StatusChip, useConfirm } from "@/ui";
 import { formatPrice } from "@/lib/format";
 import { sendRealtime, TOURS_CHANGED } from "@/lib/realtime";
@@ -94,13 +95,32 @@ export function TourApprovalsQueue({
   const paged = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   /** Run an approve/reject server action, emit the realtime frame, then refresh. */
-  const runAction = async (id: string, action: (id: string) => Promise<{ ok: boolean }>) => {
+  type ToastMessage = { title: string; description: ReactNode };
+  const runAction = async (
+    id: string,
+    action: (id: string) => Promise<{ ok: boolean }>,
+    messages?: { success: ToastMessage; error: ToastMessage },
+  ) => {
     setBusyId(id);
     const res = await action(id);
     setBusyId(null);
-    if (res?.ok) sendRealtime({ event: TOURS_CHANGED, data: { id } });
+    if (res?.ok) {
+      sendRealtime({ event: TOURS_CHANGED, data: { id } });
+      if (messages) sileo.success({ ...messages.success, position: "top-center" });
+    } else if (messages) {
+      sileo.error({ ...messages.error, position: "top-center" });
+    }
     router.refresh();
   };
+
+  /** Toast description with the package name rendered bold + a little larger. */
+  const nameDesc = (i18nKey: string, name: string): ReactNode => (
+    <Trans
+      i18nKey={i18nKey}
+      values={{ name }}
+      components={{ b: <span style={{ fontWeight: 700, fontSize: "1.05em" }} /> }}
+    />
+  );
 
   const onApprove = async (p: TourPackageResponse) => {
     const ok = await confirm({
@@ -108,7 +128,17 @@ export function TourApprovalsQueue({
       description: p.title,
       intent: "primary",
     });
-    if (ok) runAction(p.id, approvePackageAction);
+    if (ok)
+      runAction(p.id, approvePackageAction, {
+        success: {
+          title: t("tours.admin.approvals.toast.approved"),
+          description: nameDesc("tours.admin.approvals.toast.approvedDesc", p.title),
+        },
+        error: {
+          title: t("tours.admin.approvals.toast.approveError"),
+          description: t("tours.admin.approvals.toast.approveErrorDesc"),
+        },
+      });
   };
 
   const onReject = async (p: TourPackageResponse) => {
@@ -117,7 +147,17 @@ export function TourApprovalsQueue({
       description: p.title,
       intent: "danger",
     });
-    if (ok) runAction(p.id, (id) => rejectPackageAction(id));
+    if (ok)
+      runAction(p.id, (id) => rejectPackageAction(id), {
+        success: {
+          title: t("tours.admin.approvals.toast.rejected"),
+          description: nameDesc("tours.admin.approvals.toast.rejectedDesc", p.title),
+        },
+        error: {
+          title: t("tours.admin.approvals.toast.rejectError"),
+          description: t("tours.admin.approvals.toast.rejectErrorDesc"),
+        },
+      });
   };
 
   return (
