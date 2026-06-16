@@ -193,6 +193,8 @@ export interface AdminAgencyProfile {
   id: string;
   userId: string;
   agencyName: string;
+  /** The applicant's account email (the person who registered as an agency). */
+  email: string;
   description: string | null;
   logoUrl: string | null;
   status: AgencyStatus;

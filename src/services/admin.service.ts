@@ -2,6 +2,7 @@ import { apiFetch } from "@/lib/api/client";
 import type { PagedData, PageParams } from "@/lib/api/client";
 import type {
   AdminAgencyParams,
+  AdminAgencyProfile,
   AdminAgencyUpdateRequest,
   AdminEditRequestDecision,
   AdminEditRequestParams,
@@ -30,7 +31,7 @@ export function getAdminDashboard(): Promise<AdminDashboardResponse> {
 
 export function getAdminAgencies(
   params?: AdminAgencyParams,
-): Promise<PagedData<AgencyProfileResponse>> {
+): Promise<PagedData<AdminAgencyProfile>> {
   return apiFetch("/admin/agencies", { params });
 }
 

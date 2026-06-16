@@ -37,14 +37,33 @@ export const TOURS_CHANGED = "tours-changed";
 export const DESTINATIONS_CHANGED = "destinations-changed";
 
 /**
+ * Shared event tag for a brand-new agency registration. Emitted by the agency
+ * app right after the registrant verifies their account (OTP step); the admin
+ * requests page subscribes and refetches so the new pending agency appears in
+ * the queue live, no reload. Frame data: the registrant's `email` (informational).
+ */
+export const AGENCY_REGISTERED = "agency-registered";
+
+/**
  * Shared event tag for an agency registration being approved. Emitted by the
  * admin from the requests queue when a pending agency is confirmed; the public
  * surfaces (landing + explore, via the marketing header) subscribe and — for the
  * matching agency only — surface the "you're approved" modal so the agency can
  * jump straight to its workspace without reloading. Frame data: the approved
- * agency's `userId` (used to target the right account) plus its `agencyName`.
+ * agency's profile `agencyId` (matched against the agency's own `/agencies/me`
+ * id, since the admin list carries no user id) plus its `agencyName`.
  */
 export const AGENCY_APPROVED = "agency-approved";
+
+/**
+ * Shared event tag for an agency registration being rejected. Emitted by the
+ * admin from the requests queue; the backend downgrades the account to a plain
+ * Traveler, so the matching agency's landing/explore session surfaces a modal
+ * explaining the downgrade and prompts a re-login (its JWT still carries the old
+ * role until then). Frame data mirrors `AGENCY_APPROVED`: profile `agencyId` +
+ * `agencyName`.
+ */
+export const AGENCY_REJECTED = "agency-rejected";
 
 const ENDPOINT = "/api/realtime";
 

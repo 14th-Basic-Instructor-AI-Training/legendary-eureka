@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Chip, Tabs } from "@/ui";
 import { useLocalizedRouter } from "@/lib/locale";
+import { useRealtimeReload } from "@/lib/useRealtimeReload";
+import { AGENCY_REGISTERED } from "@/lib/realtime";
 import { AgencyRequestsQueue } from "./AgencyRequestsQueue";
 import { TourApprovalsQueue } from "@/features/tours/components/TourApprovalsQueue";
 import { DestinationApprovalsQueue } from "@/features/tours/components/DestinationApprovalsQueue";
@@ -38,7 +40,12 @@ export function RequestsPage({
   const params = useSearchParams();
   const tab = (params.get("tab") ?? "agencies") as RequestTab;
   const router = useLocalizedRouter();
+  const refreshRouter = useRouter();
   const [view, setView] = useState<View>("card");
+
+  // A newly-registered agency emits `AGENCY_REGISTERED`; refetch so it shows in
+  // the queue (and bumps the pending-count chip) live, without a manual reload.
+  useRealtimeReload(AGENCY_REGISTERED, () => refreshRouter.refresh());
 
   const pendingAgency = agencies.filter((r) => r.status === "PENDING").length;
   const pendingTour = tourApprovals.filter((p) => p.approvalStatus === "PENDING").length;

@@ -529,6 +529,11 @@
       "goToWorkspace": "Go to your workspace",
       "dismiss": "Later"
     },
+    "agencyRejected": {
+      "title": "Agency request rejected",
+      "body": "An admin reviewed your tour agency registration and could not approve it. Your account has been changed to a Traveler. Please sign in again to continue as a Traveler.",
+      "continue": "Sign in as Traveler"
+    },
     "hero": {
       "title": "Discover your next journey across Asia",
       "subtitle": "Hand-picked destinations, local experiences, and tours from trusted agencies — all in one place.",
@@ -1580,6 +1585,7 @@
       "pendingCount": "{{count}} pending",
       "searchPlaceholder": "Search by agency, applicant, or country…",
       "applicationNote": "Application note",
+      "contactEmail": "Contact email",
       "viewCard": "Card",
       "viewTable": "Table",
       "cardType": "Agency Request",

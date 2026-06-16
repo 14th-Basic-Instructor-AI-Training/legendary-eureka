@@ -15,6 +15,7 @@ import {
   forgotPasswordAction,
 } from "@/actions/auth";
 import { useAuthStore } from "@/features/auth/store";
+import { sendRealtime, AGENCY_REGISTERED } from "@/lib/realtime";
 import { AuthShell } from "./AuthShell";
 import { Field } from "./Field";
 
@@ -26,6 +27,7 @@ export function VerifyOtpForm() {
   const router = useLocalizedRouter();
   const pendingEmail = useAuthStore((s) => s.pendingEmail);
   const pendingPurpose = useAuthStore((s) => s.pendingPurpose);
+  const pendingAgencyRequest = useAuthStore((s) => s.pendingAgencyRequest);
   const setResetOtp = useAuthStore((s) => s.setResetOtp);
   const clearPending = useAuthStore((s) => s.clearPending);
   const isReset = pendingPurpose === "reset";
@@ -77,6 +79,11 @@ export function VerifyOtpForm() {
         result.error === "invalid_code" ? t("auth.otp.invalid") : t("auth.otp.serverError"),
       );
       return;
+    }
+    // A new tour-agency account is now fully created and pending approval — tell
+    // the admin requests queue so it appears in real time, without a reload.
+    if (pendingAgencyRequest) {
+      sendRealtime({ event: AGENCY_REGISTERED, data: { email: pendingEmail } });
     }
     // Account verified — the backend already issued login tokens, so sign the
     // user straight in (Path A of the Credentials provider) instead of bouncing

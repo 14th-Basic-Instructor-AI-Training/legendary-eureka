@@ -12,10 +12,11 @@ import { dashboardPathFor } from "@/lib/permissions";
 import { useLocalizedRouter } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 import { clientApiFetch } from "@/lib/api/client";
-import { onRealtime, AGENCY_APPROVED } from "@/lib/realtime";
+import { onRealtime, AGENCY_APPROVED, AGENCY_REJECTED } from "@/lib/realtime";
 import type { AgencyProfileResponse, AgencyStatus } from "@/lib/api/profile";
 import { AgencyApprovalPendingModal } from "./AgencyApprovalPendingModal";
 import { AgencyApprovedModal } from "./AgencyApprovedModal";
+import { AgencyRejectedModal } from "./AgencyRejectedModal";
 
 function initialsOf(name: string) {
   return name
@@ -51,8 +52,12 @@ export function MarketingHeader() {
   const [scrolled, setScrolled] = useState(false);
   // Agency-registration approval state (only fetched for agency accounts).
   const [agencyStatus, setAgencyStatus] = useState<AgencyStatus | null>(null);
+  // The agency's own profile id — used to match inbound approval frames to *this*
+  // agency (the admin list carries no user id, so we target by profile id).
+  const [agencyProfileId, setAgencyProfileId] = useState<string | null>(null);
   const [showPendingModal, setShowPendingModal] = useState(false);
   const [showApprovedModal, setShowApprovedModal] = useState(false);
+  const [showRejectedModal, setShowRejectedModal] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -68,7 +73,9 @@ export function MarketingHeader() {
     let active = true;
     clientApiFetch<AgencyProfileResponse>("/agencies/me")
       .then((profile) => {
-        if (active) setAgencyStatus(profile.status);
+        if (!active) return;
+        setAgencyStatus(profile.status);
+        setAgencyProfileId(profile.id);
       })
       .catch(() => {
         // On failure, leave the button navigating normally — don't block access.
@@ -79,19 +86,28 @@ export function MarketingHeader() {
     };
   }, [user?.role, user?.id]);
 
-  // Live approval: when an admin approves THIS agency, the requests queue emits an
-  // `AGENCY_APPROVED` frame. Unlock the workspace in place (clears the pending gate)
-  // and surface the success modal so the agency can jump straight in — no reload.
+  // Live status changes for THIS agency, emitted by the admin requests queue.
+  // Approval unlocks the workspace in place + shows the success modal; rejection
+  // (a downgrade to Traveler on the backend) shows the re-login modal. Both clear
+  // the pending gate — no reload needed.
   useEffect(() => {
-    if (user?.role !== "agency") return;
-    return onRealtime(AGENCY_APPROVED, (msg) => {
-      const data = msg.data as { userId?: string } | null;
-      if (data?.userId !== user.id) return;
-      setAgencyStatus("APPROVED");
-      setShowPendingModal(false);
-      setShowApprovedModal(true);
-    });
-  }, [user?.role, user?.id]);
+    if (user?.role !== "agency" || !agencyProfileId) return;
+    return onRealtime(
+      (e) => e === AGENCY_APPROVED || e === AGENCY_REJECTED,
+      (msg) => {
+        const data = msg.data as { agencyId?: string } | null;
+        if (data?.agencyId !== agencyProfileId) return;
+        setShowPendingModal(false);
+        if (msg.event === AGENCY_APPROVED) {
+          setAgencyStatus("APPROVED");
+          setShowApprovedModal(true);
+        } else {
+          setAgencyStatus("REJECTED");
+          setShowRejectedModal(true);
+        }
+      },
+    );
+  }, [user?.role, agencyProfileId]);
 
   const goToWorkspace = () => {
     if (!user) return;
@@ -99,10 +115,22 @@ export function MarketingHeader() {
     router.push(dashboardPathFor(user.role));
   };
 
+  // Rejection downgraded the account to Traveler on the backend; the session JWT
+  // still says `agency`, so sign out and send them to log in again as a Traveler.
+  const handleRejectedContinue = async () => {
+    setShowRejectedModal(false);
+    await signOut({ redirect: false });
+    router.replace("/login");
+  };
+
   const goToDashboard = () => {
     if (!user) return;
     if (user.role === "agency" && agencyStatus === "PENDING") {
       setShowPendingModal(true);
+      return;
+    }
+    if (user.role === "agency" && agencyStatus === "REJECTED") {
+      setShowRejectedModal(true);
       return;
     }
     router.push(dashboardPathFor(user.role));
@@ -219,6 +247,12 @@ export function MarketingHeader() {
       isOpen={showApprovedModal}
       onClose={() => setShowApprovedModal(false)}
       onGoToWorkspace={goToWorkspace}
+    />
+
+    <AgencyRejectedModal
+      isOpen={showRejectedModal}
+      onClose={() => setShowRejectedModal(false)}
+      onContinue={handleRejectedContinue}
     />
     </>
   );

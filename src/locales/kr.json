@@ -529,6 +529,11 @@
       "goToWorkspace": "작업 공간으로 이동",
       "dismiss": "나중에"
     },
+    "agencyRejected": {
+      "title": "에이전시 요청이 거부되었습니다",
+      "body": "관리자가 여행사 등록을 검토했으나 승인하지 못했습니다. 계정이 여행자로 변경되었습니다. 여행자로 계속하려면 다시 로그인하세요.",
+      "continue": "여행자로 로그인"
+    },
     "hero": {
       "title": "아시아 전역에서 다음 여행을 발견하세요",
       "subtitle": "엄선된 여행지, 현지 체험, 신뢰할 수 있는 여행사의 투어를 한 곳에서.",
@@ -1580,6 +1585,7 @@
       "pendingCount": "{{count}}건 대기 중",
       "searchPlaceholder": "여행사, 신청자 또는 국가로 검색…",
       "applicationNote": "신청 메모",
+      "contactEmail": "연락 이메일",
       "viewCard": "카드",
       "viewTable": "테이블",
       "cardType": "여행사 요청",

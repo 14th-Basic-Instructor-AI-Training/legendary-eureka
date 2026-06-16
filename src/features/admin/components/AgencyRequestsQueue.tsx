@@ -9,7 +9,7 @@ import { useSession } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 import { formatDate } from "@/lib/format";
 import { approveAgencyAction, rejectAgencyAction } from "@/actions/admin";
-import { sendRealtime, AGENCY_APPROVED } from "@/lib/realtime";
+import { sendRealtime, AGENCY_APPROVED, AGENCY_REJECTED } from "@/lib/realtime";
 import { cn } from "@/lib/utils";
 import type { AdminAgencyProfile, AgencyStatus } from "@/lib/api/admin";
 
@@ -46,23 +46,23 @@ export function AgencyRequestsQueue({ view, requests }: Props) {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   /**
-   * Run a mutation server action, then refresh the server-fetched list. On a
-   * successful approve, emit a realtime frame targeting the approved agency's
-   * `userId` so its landing/explore session unlocks the workspace live (see
-   * `MarketingHeader`) — no reload needed. Reject stays silent.
+   * Run a mutation server action, then refresh the server-fetched list. On
+   * success, emit a realtime frame (when `event` is given) targeting the agency's
+   * profile id so its landing/explore session reacts live (see `MarketingHeader`):
+   * approve unlocks the workspace, reject surfaces the downgrade modal — no reload.
    */
   const runAction = async (
     r: AdminAgencyProfile,
     action: (id: string) => Promise<{ ok: boolean }>,
-    approved = false,
+    event?: string,
   ) => {
     setBusyId(r.id);
     const res = await action(r.id);
     setBusyId(null);
-    if (res?.ok && approved) {
+    if (res?.ok && event) {
       sendRealtime({
-        event: AGENCY_APPROVED,
-        data: { userId: r.userId, agencyName: r.agencyName },
+        event,
+        data: { agencyId: r.id, agencyName: r.agencyName },
       });
     }
     router.refresh();
@@ -73,7 +73,7 @@ export function AgencyRequestsQueue({ view, requests }: Props) {
       title: t("admin.requests.approve"),
       description: r.agencyName,
       intent: "primary",
-      onConfirm: () => runAction(r, approveAgencyAction, true),
+      onConfirm: () => runAction(r, approveAgencyAction, AGENCY_APPROVED),
     });
 
   const onReject = (r: AdminAgencyProfile) =>
@@ -81,7 +81,7 @@ export function AgencyRequestsQueue({ view, requests }: Props) {
       title: t("admin.requests.reject"),
       description: r.agencyName,
       intent: "danger",
-      onConfirm: () => runAction(r, rejectAgencyAction),
+      onConfirm: () => runAction(r, rejectAgencyAction, AGENCY_REJECTED),
     });
 
   const [search, setSearch] = useState("");
@@ -316,10 +316,10 @@ function RouteCard({
           </div>
           <div className="min-w-0 max-w-[50%] text-right">
             <p className="text-muted text-[10px] uppercase tracking-wide">
-              {t("admin.requests.applicationNote")}
+              {t("admin.requests.contactEmail")}
             </p>
             <p className="text-text-primary truncate text-sm font-semibold">
-              {r.adminNote ?? "—"}
+              {r.email || "—"}
             </p>
           </div>
         </div>
@@ -378,7 +378,7 @@ function TableView({
         <Table.Content aria-label={t("admin.requests.tabs.agencies")} className="min-w-[640px]">
           <Table.Header>
             <Table.Column isRowHeader>{t("admin.requests.agencyLabel")}</Table.Column>
-            <Table.Column>{t("admin.requests.applicationNote")}</Table.Column>
+            <Table.Column>{t("admin.requests.contactEmail")}</Table.Column>
             <Table.Column>{t("admin.requests.submitted")}</Table.Column>
             <Table.Column>{t("status.pending")}</Table.Column>
             <Table.Column>{""}</Table.Column>
@@ -408,7 +408,7 @@ function TableView({
               </div>
             </Table.Cell>
             <Table.Cell className="text-text-secondary max-w-[220px]">
-              <p className="truncate">{r.adminNote ?? r.description ?? "—"}</p>
+              <p className="truncate">{r.email || "—"}</p>
             </Table.Cell>
             <Table.Cell className="text-text-secondary whitespace-nowrap">
               {formatDate(r.createdAt, lng)}
