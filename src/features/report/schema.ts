@@ -18,13 +18,10 @@ export const ReportReasonSchema = z.enum([
 export type ReportReason = z.infer<typeof ReportReasonSchema>;
 
 export const REPORT_MAX_DESCRIPTION = 1500;
-export const REPORT_MAX_EVIDENCE = 3;
 
 export const ReportFormSchema = z.object({
   reason: ReportReasonSchema,
   description: z.string().trim().min(1).max(REPORT_MAX_DESCRIPTION),
-  /** Attached file names (the static phase doesn't upload bytes). */
-  evidence: z.array(z.string()).max(REPORT_MAX_EVIDENCE).default([]),
 });
 export type ReportFormValues = z.input<typeof ReportFormSchema>;
 export type ReportFormInput = z.output<typeof ReportFormSchema>;

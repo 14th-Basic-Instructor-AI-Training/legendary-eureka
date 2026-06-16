@@ -1,4 +1,5 @@
 import { publicApiFetch, type PagedData } from "@/lib/api/client";
+import { IMAGE_PLACEHOLDER } from "@/lib/placeholder";
 import type { DestinationResponse } from "@/lib/api/destinations";
 import type { TourPackageResponse } from "@/lib/api/packages";
 import type { AgencyProfileResponse } from "@/lib/api/profile";
@@ -71,7 +72,7 @@ function mapDestination(d: DestinationResponse): Destination {
     category: categoryFromString(d.category),
     travelType: toFeatureTravelType(d.travelType),
     shortDescription: d.shortDescription || d.description?.slice(0, 140) || "",
-    heroImage: d.heroImage || d.coverImageUrl || "",
+    heroImage: d.heroImage || d.coverImageUrl || IMAGE_PLACEHOLDER,
     rating: d.rating ?? 0,
     reviewCount: d.reviewCount ?? 0,
     priceFrom: d.priceFrom ?? 0,
@@ -94,7 +95,7 @@ function mapFeaturedTour(t: TourPackageResponse): FeaturedTour {
     title: t.title,
     agencyName: t.agencyName || "",
     travelType: toFeatureTravelType(t.travelType),
-    image: t.coverImageUrl || "",
+    image: t.coverImageUrl || IMAGE_PLACEHOLDER,
     days: t.durationDays,
     priceFrom: t.price ?? t.priceFrom ?? 0,
     currency: t.currency || "USD",
@@ -110,7 +111,7 @@ function mapAgencyProfile(a: AgencyProfileResponse): AgencyProfile {
     slug: a.id,
     name: a.agencyName || "",
     owner: a.agencyName || "",
-    logo: a.avatarUrl || "",
+    logo: a.avatarUrl || IMAGE_PLACEHOLDER,
     province: a.address || "",
     status: a.status,
     rating: a.averageRating ?? 0,

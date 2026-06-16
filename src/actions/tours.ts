@@ -4,6 +4,8 @@ import {
   createDestination,
   updateDestination,
   deleteDestination,
+  approveDestination,
+  rejectDestination,
 } from "@/services/destinations.service";
 import type { CreateDestinationRequest, DestinationResponse } from "@/lib/api/destinations";
 import {
@@ -50,6 +52,26 @@ export async function updateDestinationAction(
 /** DELETE /destinations/{id} */
 export async function deleteDestinationAction(id: string): Promise<void> {
   return deleteDestination(id);
+}
+
+/** PUT /destinations/{id}/approve — admin approves a pending destination (makes it public). */
+export async function approveDestinationAction(id: string): Promise<ActionResult> {
+  try {
+    await approveDestination(id);
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** PUT /destinations/{id}/reject — admin rejects a pending destination. */
+export async function rejectDestinationAction(id: string): Promise<ActionResult> {
+  try {
+    await rejectDestination(id);
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
 }
 
 /** POST /tours — create a tour package. */

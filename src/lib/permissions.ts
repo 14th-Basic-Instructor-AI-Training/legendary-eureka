@@ -71,6 +71,7 @@ export type Action =
   | "viewAnalytics"
   | "manageEditRequests"
   | "reviewPackageApproval"
+  | "reviewDestinationApproval"
   | "configureSystem";
 
 const MATRIX: Record<Actor, Action[]> = {
@@ -109,6 +110,7 @@ const MATRIX: Record<Actor, Action[]> = {
     "managePackages",
     "createDestination",
     "reviewPackageApproval",
+    "reviewDestinationApproval",
     "configureSystem",
   ],
 };

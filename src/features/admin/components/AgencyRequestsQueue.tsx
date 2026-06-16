@@ -9,6 +9,7 @@ import { useSession } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 import { formatDate } from "@/lib/format";
 import { approveAgencyAction, rejectAgencyAction } from "@/actions/admin";
+import { sendRealtime, AGENCY_APPROVED } from "@/lib/realtime";
 import { cn } from "@/lib/utils";
 import type { AdminAgencyProfile, AgencyStatus } from "@/lib/api/admin";
 
@@ -44,11 +45,26 @@ export function AgencyRequestsQueue({ view, requests }: Props) {
 
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  /** Run a mutation server action, then refresh the server-fetched list. */
-  const runAction = async (id: string, action: (id: string) => Promise<{ ok: boolean }>) => {
-    setBusyId(id);
-    await action(id);
+  /**
+   * Run a mutation server action, then refresh the server-fetched list. On a
+   * successful approve, emit a realtime frame targeting the approved agency's
+   * `userId` so its landing/explore session unlocks the workspace live (see
+   * `MarketingHeader`) — no reload needed. Reject stays silent.
+   */
+  const runAction = async (
+    r: AdminAgencyProfile,
+    action: (id: string) => Promise<{ ok: boolean }>,
+    approved = false,
+  ) => {
+    setBusyId(r.id);
+    const res = await action(r.id);
     setBusyId(null);
+    if (res?.ok && approved) {
+      sendRealtime({
+        event: AGENCY_APPROVED,
+        data: { userId: r.userId, agencyName: r.agencyName },
+      });
+    }
     router.refresh();
   };
 
@@ -57,7 +73,7 @@ export function AgencyRequestsQueue({ view, requests }: Props) {
       title: t("admin.requests.approve"),
       description: r.agencyName,
       intent: "primary",
-      onConfirm: () => runAction(r.id, approveAgencyAction),
+      onConfirm: () => runAction(r, approveAgencyAction, true),
     });
 
   const onReject = (r: AdminAgencyProfile) =>
@@ -65,7 +81,7 @@ export function AgencyRequestsQueue({ view, requests }: Props) {
       title: t("admin.requests.reject"),
       description: r.agencyName,
       intent: "danger",
-      onConfirm: () => runAction(r.id, rejectAgencyAction),
+      onConfirm: () => runAction(r, rejectAgencyAction),
     });
 
   const [search, setSearch] = useState("");

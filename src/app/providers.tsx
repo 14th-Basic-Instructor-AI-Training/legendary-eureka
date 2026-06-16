@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { SessionProvider } from "next-auth/react";
 import { I18nextProvider } from "react-i18next";
+import { Toaster } from "sileo";
+import "sileo/styles.css";
 import i18n from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 import { ConfirmRoot } from "@/ui";
@@ -38,6 +40,8 @@ export function Providers({
         {children}
         {/* Single app-wide confirmation modal, driven imperatively by useConfirm(). */}
         <ConfirmRoot />
+        {/* App-wide Sileo toast host. */}
+        <Toaster position="top-center" theme="system" />
       </I18nextProvider>
     </SessionProvider>
   );

@@ -46,13 +46,19 @@ export async function registerAction(
 
 // ── OTP verification ──────────────────────────────────────────────────────────
 
-export type OtpVerifyResult =
+/** Simple success/error result for OTP steps that do not issue a session. */
+export type SimpleOtpResult =
   | { ok: true }
   | { ok: false; error: "invalid_code" | "server_error" };
 
+/** Register-OTP result: on success the backend issues login tokens (auto-login). */
+export type OtpVerifyResult =
+  | { ok: true; accessToken: string; refreshToken: string }
+  | { ok: false; error: "invalid_code" | "server_error" };
+
 /**
- * Verifies the OTP against the backend, activating the account. The caller then
- * sends the user to the login page to sign in.
+ * Verifies the OTP against the backend, activating the account. The backend
+ * responds with login tokens so the caller can sign the user straight in.
  */
 export async function verifyOtpAction(email: string, otp: string): Promise<OtpVerifyResult> {
   let res: Response;
@@ -70,7 +76,13 @@ export async function verifyOtpAction(email: string, otp: string): Promise<OtpVe
     return { ok: false, error: "invalid_code" };
   }
 
-  return { ok: true };
+  const body = await res.json().catch(() => ({}));
+  const data = body?.data ?? {};
+  return {
+    ok: true,
+    accessToken: String(data.accessToken ?? ""),
+    refreshToken: String(data.refreshToken ?? ""),
+  };
 }
 
 // ── Resend OTP ────────────────────────────────────────────────────────────────
@@ -108,7 +120,7 @@ export async function forgotPasswordAction(email: string): Promise<{ ok: boolean
 }
 
 /** Verify a password-reset OTP before the set-new-password step (does not consume it). */
-export async function verifyResetOtpAction(email: string, otp: string): Promise<OtpVerifyResult> {
+export async function verifyResetOtpAction(email: string, otp: string): Promise<SimpleOtpResult> {
   let res: Response;
   try {
     res = await fetch(`${API}/auth/verify-reset-otp`, {

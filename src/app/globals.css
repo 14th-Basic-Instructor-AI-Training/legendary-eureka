@@ -268,3 +268,14 @@ section[id] {
 [data-sidebar-collapsed="true"] {
   margin-left: calc(40px) !important;
 }
+
+.df-calendar-wrapper, .df-calendar-container{
+  border-width: 0px !important;
+  border-radius: 10px !important;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* DayFlow: hide the built-in "Calendars" sidebar header title. */
+.df-sidebar-header-title {
+  display: none !important;
+}

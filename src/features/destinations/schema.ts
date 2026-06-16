@@ -62,7 +62,9 @@ export const CAMBODIA_PROVINCE_CODES = [
   "PHNOM_PENH",
   "SIEM_REAP",
   "BATTAMBANG",
-  "PREAH_SIHANOUK",
+  // Must match the backend `Province` enum exactly — it uses SIHANOUKVILLE
+  // (there is no PREAH_SIHANOUK), or the create/update POST fails to deserialize.
+  "SIHANOUKVILLE",
   "KAMPOT",
   "KEP",
   "KOH_KONG",

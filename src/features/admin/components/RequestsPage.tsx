@@ -7,9 +7,12 @@ import dynamic from "next/dynamic";
 import { Chip, Tabs } from "@/ui";
 import { useLocalizedRouter } from "@/lib/locale";
 import { AgencyRequestsQueue } from "./AgencyRequestsQueue";
-import { EditRequestsQueue } from "./EditRequestsQueue";
+import { TourApprovalsQueue } from "@/features/tours/components/TourApprovalsQueue";
+import { DestinationApprovalsQueue } from "@/features/tours/components/DestinationApprovalsQueue";
 import { cn } from "@/lib/utils";
-import type { AdminAgencyProfile, AdminEditRequest } from "@/lib/api/admin";
+import type { AdminAgencyProfile } from "@/lib/api/admin";
+import type { TourPackageResponse } from "@/lib/api/packages";
+import type { DestinationResponse } from "@/lib/api/destinations";
 
 const RequestFlowPanel = dynamic(
   () =>
@@ -18,24 +21,39 @@ const RequestFlowPanel = dynamic(
 );
 
 type View = "card" | "table";
+type RequestTab = "agencies" | "tourApprovals" | "destinations";
 
 type Props = {
   agencies: AdminAgencyProfile[];
-  editRequests: AdminEditRequest[];
+  tourApprovals?: TourPackageResponse[];
+  pendingDestinations?: DestinationResponse[];
 };
 
-export function RequestsPage({ agencies, editRequests }: Props) {
+export function RequestsPage({
+  agencies,
+  tourApprovals = [],
+  pendingDestinations = [],
+}: Props) {
   const { t } = useTranslation();
   const params = useSearchParams();
-  const tab = (params.get("tab") ?? "agencies") as "agencies" | "editRequests";
+  const tab = (params.get("tab") ?? "agencies") as RequestTab;
   const router = useLocalizedRouter();
   const [view, setView] = useState<View>("card");
 
   const pendingAgency = agencies.filter((r) => r.status === "PENDING").length;
-  const pendingEdit = editRequests.filter((r) => r.status === "PENDING").length;
+  const pendingTour = tourApprovals.filter((p) => p.approvalStatus === "PENDING").length;
+  const pendingDestination = pendingDestinations.length;
+
+  // The React Flow lifecycle panel only models the agency onboarding flow.
+  const showFlow = tab === "agencies";
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-[7fr_3fr] gap-6 items-start">
+    <div
+      className={cn(
+        "grid grid-cols-1 gap-6 items-start",
+        showFlow && "xl:grid-cols-[7fr_3fr]",
+      )}
+    >
       {/* ── left column ── */}
       <div className="flex flex-col gap-6">
         {/* page header */}
@@ -105,12 +123,23 @@ export function RequestsPage({ agencies, editRequests }: Props) {
                 </span>
                 <Tabs.Indicator />
               </Tabs.Tab>
-              <Tabs.Tab id="editRequests">
+              <Tabs.Tab id="tourApprovals">
                 <span className="flex items-center gap-2 whitespace-nowrap">
-                  {t("admin.requests.tabs.editRequests")}
-                  {pendingEdit > 0 ? (
-                    <Chip color="accent" variant="soft" size="sm">
-                      {pendingEdit}
+                  {t("admin.requests.tabs.tourApprovals")}
+                  {pendingTour > 0 ? (
+                    <Chip color="warning" variant="soft" size="sm">
+                      {pendingTour}
+                    </Chip>
+                  ) : null}
+                </span>
+                <Tabs.Indicator />
+              </Tabs.Tab>
+              <Tabs.Tab id="destinations">
+                <span className="flex items-center gap-2 whitespace-nowrap">
+                  {t("admin.requests.tabs.destinations")}
+                  {pendingDestination > 0 ? (
+                    <Chip color="warning" variant="soft" size="sm">
+                      {pendingDestination}
                     </Chip>
                   ) : null}
                 </span>
@@ -119,35 +148,32 @@ export function RequestsPage({ agencies, editRequests }: Props) {
             </Tabs.List>
             </Tabs.ListContainer>
 
-            {tab === "agencies"
-              ? pendingAgency > 0 && (
-                  <div className="bg-warning/10 border-warning/30 flex w-fit shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5">
-                    <span className="text-warning text-sm font-medium">
-                      {t("admin.requests.pendingCount", { count: pendingAgency })}
-                    </span>
-                  </div>
-                )
-              : pendingEdit > 0 && (
-                  <div className="bg-primary/8 border-primary/20 flex w-fit shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5">
-                    <span className="text-primary text-sm font-medium">
-                      {t("admin.editRequests.pendingCount", { count: pendingEdit })}
-                    </span>
-                  </div>
-                )}
+            {tab === "agencies" && pendingAgency > 0 ? (
+              <div className="bg-warning/10 border-warning/30 flex w-fit shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5">
+                <span className="text-warning text-sm font-medium">
+                  {t("admin.requests.pendingCount", { count: pendingAgency })}
+                </span>
+              </div>
+            ) : null}
           </div>
           <Tabs.Panel id="agencies" className="pt-5">
             <AgencyRequestsQueue view={view} requests={agencies} />
           </Tabs.Panel>
-          <Tabs.Panel id="editRequests" className="pt-5">
-            <EditRequestsQueue view={view} />
+          <Tabs.Panel id="tourApprovals" className="pt-5">
+            <TourApprovalsQueue packages={tourApprovals} />
+          </Tabs.Panel>
+          <Tabs.Panel id="destinations" className="pt-5">
+            <DestinationApprovalsQueue destinations={pendingDestinations} />
           </Tabs.Panel>
         </Tabs>
       </div>
 
-      {/* ── right column: React Flow panel ── */}
-      <div className="hidden xl:block">
-        <RequestFlowPanel tab={tab} agencies={agencies} editRequests={editRequests} />
-      </div>
+      {/* ── right column: React Flow panel (agency onboarding flow only) ── */}
+      {showFlow ? (
+        <div className="hidden xl:block">
+          <RequestFlowPanel tab="agencies" agencies={agencies} editRequests={[]} />
+        </div>
+      ) : null}
     </div>
   );
 }

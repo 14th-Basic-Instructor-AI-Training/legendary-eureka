@@ -125,7 +125,7 @@ export function Calendar({ className, version, ...props }: UICalendarProps) {
   return (
     <div
       className={cn(
-        "border-border bg-surface h-fit min-h-fit w-full overflow-hidden rounded-xl border",
+        "border-border bg-surface h-fit min-h-fit w-full rounded-xl",
         className,
       )}
     >

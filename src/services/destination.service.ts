@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api/client";
+import { IMAGE_PLACEHOLDER } from "@/lib/placeholder";
 import { DestinationPageSchema, type DestinationResponse } from "@/types/destination";
 import type { Result } from "@/features/destinations/data";
 import type {
@@ -52,7 +53,7 @@ export function mapDestination(d: DestinationResponse): Destination {
     category: toCategory(d.category),
     travelType: toTravelType(d.travelType),
     shortDescription: d.shortDescription ?? d.description?.slice(0, 140) ?? "",
-    heroImage: d.heroImage ?? d.coverImageUrl ?? "",
+    heroImage: d.heroImage || d.coverImageUrl || IMAGE_PLACEHOLDER,
     rating: d.rating,
     reviewCount: d.reviewCount,
     priceFrom: d.priceFrom ?? 0,

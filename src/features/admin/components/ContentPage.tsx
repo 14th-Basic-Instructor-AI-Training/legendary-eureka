@@ -19,12 +19,10 @@ type ContentTab = "destinations" | "packages";
 export function ContentPage({
   destinations,
   packages,
-  approvals = [],
   loadError = false,
 }: {
   destinations: DestinationResponse[];
   packages: TourPackageResponse[];
-  approvals?: TourPackageResponse[];
   loadError?: boolean;
 }) {
   const { t } = useTranslation();
@@ -106,11 +104,11 @@ export function ContentPage({
           </div>
 
           {/* Panel — replaces the dark background from the reference with bg-dashboard. */}
-          <div className="bg-bg-dashboard flex min-h-0 flex-1 flex-col rounded-t-3xl rounded-b-xl p-5 sm:p-6">
+          <div className="bg-bg-dashboard flex min-h-0 flex-1 flex-col rounded-t-3xl rounded-b-2xl p-5 sm:p-6">
             {tab === "destinations" ? (
               <AdminDestinationsManager destinations={destinations} />
             ) : (
-              <PackagesAdmin packages={packages} approvals={approvals} />
+              <PackagesAdmin packages={packages} />
             )}
           </div>
         </div>

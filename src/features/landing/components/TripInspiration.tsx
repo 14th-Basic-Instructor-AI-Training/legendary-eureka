@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { ArrowRight } from "iconsax-reactjs";
 import { Reveal } from "@/ui";
 import { LocaleLink } from "@/components/LocaleLink";
+import { IMAGE_PLACEHOLDER } from "@/lib/placeholder";
 import { useExploreStore } from "@/features/explore/store";
 import {
   ActivityFocusSchema,
@@ -57,7 +58,7 @@ export function TripInspiration({ result }: { result: Result<TripInspirationResp
                   >
                     <div className="relative aspect-[3/4] w-full overflow-hidden rounded-3xl">
                       <Image
-                        src={item.imageUrl}
+                        src={item.imageUrl || IMAGE_PLACEHOLDER}
                         alt=""
                         fill
                         sizes="(max-width: 768px) 100vw, 25vw"

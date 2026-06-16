@@ -1,7 +1,19 @@
 import { getAgencyById } from "@/features/tours/data";
 import { assertCan, PermissionError, type Actor } from "@/lib/permissions";
-import { ReportFormSchema, type ReportFormInput } from "./schema";
+import { submitReportAction } from "@/actions/reports";
+import { ApiError } from "@/lib/api/client";
+import type { ReportReason as ApiReportReason } from "@/lib/api/reports";
+import { ReportFormSchema, type ReportFormInput, type ReportReason } from "./schema";
 import type { ReportTarget } from "./types";
+
+/** Map the form's reason onto the backend `ReportReason` enum. */
+const REASON_TO_API: Record<ReportReason, ApiReportReason> = {
+  fraud: "FRAUD",
+  misleading: "MISLEADING",
+  safety: "SAFETY",
+  conduct: "CONDUCT",
+  other: "OTHER",
+};
 
 /**
  * The ONE data seam for agency reports. `getReportTarget` resolves the agency
@@ -22,7 +34,12 @@ export async function getReportTarget(
   return { ok: true, data: { agencyId, agencyName: res.data.name } };
 }
 
-/** Submit a report (mock). Re-checks permission + validates against the schema. */
+/**
+ * Submit a report against an agency. Re-checks the `reportAgency` permission
+ * (defense in depth) and validates against the schema, then posts to the backend
+ * via the server action. `agencyId` is the agency-profile UUID the backend's
+ * `AGENCY` target resolves against. Returns typed results, never throws to the UI.
+ */
 export async function submitReport(
   actor: Actor | null,
   agencyId: string,
@@ -37,6 +54,17 @@ export async function submitReport(
   }
   const parsed = ReportFormSchema.safeParse(form);
   if (!parsed.success) return { ok: false, error: "invalid" };
-  // Static phase: no transport. The real impl posts to the moderation queue.
-  return { ok: true, data: { agencyId } };
+
+  try {
+    await submitReportAction({
+      targetType: "AGENCY",
+      targetId: agencyId,
+      reason: REASON_TO_API[parsed.data.reason],
+      description: parsed.data.description,
+    });
+    return { ok: true, data: { agencyId } };
+  } catch (err) {
+    if (err instanceof ApiError) return { ok: false, error: "load_failed" };
+    throw err;
+  }
 }

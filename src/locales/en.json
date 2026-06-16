@@ -517,6 +517,17 @@
       "login": "Log in",
       "cancel": "Cancel"
     },
+    "agencyPending": {
+      "title": "Approval pending",
+      "body": "Your tour agency registration is awaiting admin approval. Once an admin confirms it, your workspace will be unlocked and you can start creating destinations and tour packages.",
+      "gotIt": "Got it"
+    },
+    "agencyApproved": {
+      "title": "Your agency is approved",
+      "body": "An admin just approved your tour agency registration. Your workspace is now unlocked — you can start creating destinations and tour packages.",
+      "goToWorkspace": "Go to your workspace",
+      "dismiss": "Later"
+    },
     "hero": {
       "title": "Discover your next journey across Asia",
       "subtitle": "Hand-picked destinations, local experiences, and tours from trusted agencies — all in one place.",
@@ -1060,7 +1071,27 @@
         "photos": "Photos",
         "photosPlaceholder": "One image URL per line (or comma-separated)",
         "featured": "Featured",
-        "trending": "Trending"
+        "trending": "Trending",
+        "coverImage": "Cover image",
+        "uploadCta": "Upload an image",
+        "uploadHint": "JPG, PNG or WEBP",
+        "changeImage": "Change image",
+        "addPhotos": "Add photos",
+        "photosHint": "Up to 10 images",
+        "removePhoto": "Remove photo"
+      },
+      "upload": {
+        "cover": "Uploading cover image",
+        "photos": "Uploading photos",
+        "create": "Creating destination",
+        "save": "Saving changes",
+        "doneCreate": "Destination created",
+        "doneCreateDesc": "<b>{{name}}</b> is now in your destinations catalog.",
+        "doneSave": "Changes saved",
+        "doneSaveDesc": "Your changes to <b>{{name}}</b> have been saved.",
+        "error": "Upload failed",
+        "dismiss": "Dismiss",
+        "stepOf": "Step {{current}} of {{total}}"
       },
       "sectionAdmin": "Destinations from Admin",
       "sectionYours": "Your Destinations",
@@ -1081,6 +1112,15 @@
       "publish": "Publish",
       "archive": "Archive",
       "approvalSent": "Approval requested",
+      "awaiting": "Awaiting approval",
+      "resubmit": "Resubmit",
+      "rejectedReason": "Reason: {{reason}}",
+      "toast": {
+        "submitted": "Sent for approval",
+        "submittedDesc": "An admin will review your package shortly.",
+        "submitError": "Couldn't submit for approval",
+        "submitErrorDesc": "Something went wrong. Please try again."
+      },
       "justNow": "Just now",
       "byAgency": "by {{name}}",
       "days_one": "{{count}} day",
@@ -1104,13 +1144,29 @@
         "new": "New destination",
         "empty": "No destinations yet.",
         "requestsEmpty": "No destination requests yet.",
+        "pendingEmpty": "No destinations awaiting approval.",
+        "pendingCount": "{{count}} awaiting approval",
+        "search": "Search destinations…",
         "menuLabel": "Destination actions",
+        "approve": "Approve",
+        "reject": "Reject",
+        "toast": {
+          "approved": "Destination approved",
+          "approveError": "Couldn't approve the destination",
+          "rejected": "Destination rejected",
+          "rejectError": "Couldn't reject the destination",
+          "deleted": "Destination deleted",
+          "deletedDesc": "“{{name}}” was permanently removed.",
+          "deleteError": "Couldn't delete the destination",
+          "deleteErrorDesc": "Something went wrong. Please try again."
+        },
         "deleteConfirm": {
           "title": "Delete this destination?",
           "description": "“{{name}}” will be permanently removed. This can't be undone."
         },
         "tabs": {
           "all": "All destinations",
+          "pending": "Pending approval",
           "requests": "Create requests",
           "featured": "Featured"
         }
@@ -1124,7 +1180,17 @@
         "statusFilter": "Filter by status",
         "approve": "Approve",
         "reject": "Reject",
-        "search": "Search packages…"
+        "search": "Search packages…",
+        "toast": {
+          "approved": "Package approved",
+          "approvedDesc": "<b>{{name}}</b> is now live for travelers.",
+          "approveError": "Couldn't approve the package",
+          "approveErrorDesc": "Something went wrong. Please try again.",
+          "rejected": "Package rejected",
+          "rejectedDesc": "<b>{{name}}</b> was rejected and the agency has been notified.",
+          "rejectError": "Couldn't reject the package",
+          "rejectErrorDesc": "Something went wrong. Please try again."
+        }
       }
     }
   },
@@ -1479,7 +1545,9 @@
       },
       "tabs": {
         "agencies": "Agency onboarding",
-        "editRequests": "Edit requests"
+        "editRequests": "Edit requests",
+        "tourApprovals": "Tour packages",
+        "destinations": "Destinations"
       }
     },
     "editRequests": {
@@ -1515,6 +1583,8 @@
       "agencyCount": "{{count}} reports against this agency",
       "cardType": "Traveler report",
       "reason": "Reason",
+      "error": "Couldn't load reports. Is the backend running?",
+      "actionError": "Couldn't update the report. Please try again.",
       "summary": {
         "open": "Open",
         "highSeverity": "High severity",
@@ -1590,6 +1660,20 @@
         "archive": "Archive",
         "delete": "Delete",
         "confirmDelete": "Yes, delete"
+      },
+      "toast": {
+        "published": "Package published",
+        "publishedDesc": "<b>{{name}}</b> is now live for travelers.",
+        "publishError": "Couldn't publish the package",
+        "publishErrorDesc": "Something went wrong. Please try again.",
+        "archived": "Package archived",
+        "archivedDesc": "<b>{{name}}</b> is now hidden from travelers. You can republish it anytime.",
+        "archiveError": "Couldn't archive the package",
+        "archiveErrorDesc": "Something went wrong. Please try again.",
+        "deleted": "Package deleted",
+        "deletedDesc": "<b>{{name}}</b> and its agenda were permanently removed.",
+        "deleteError": "Couldn't delete the package",
+        "deleteErrorDesc": "Something went wrong. Please try again."
       }
     },
     "users": {

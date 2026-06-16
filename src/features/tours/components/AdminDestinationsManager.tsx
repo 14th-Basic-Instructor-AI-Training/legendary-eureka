@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { sileo } from "sileo";
 import { Add, Location, More, Edit2, Trash } from "iconsax-reactjs";
 import { Button, Chip, Dropdown, Tabs, useConfirm } from "@/ui";
 import { CardImage } from "@/ui/CardImage";
@@ -26,7 +27,8 @@ function prettyEnum(value: string): string {
  * Admin: the platform destination catalog (GET /destinations) with a
  * New Destination button that creates via POST /destinations. Destinations are
  * fetched by the server component and passed in; after a create the modal
- * triggers a refresh.
+ * triggers a refresh. (Approval of agency-submitted destinations lives in the
+ * admin Requests page.)
  */
 export function AdminDestinationsManager({
   destinations,
@@ -56,9 +58,21 @@ export function AdminDestinationsManager({
       intent: "danger",
       confirmLabel: t("common.delete"),
       onConfirm: async () => {
-        await deleteDestinationAction(d.id);
-        sendRealtime({ event: DESTINATIONS_CHANGED, data: { id: d.id } });
-        router.refresh();
+        try {
+          await deleteDestinationAction(d.id);
+          sendRealtime({ event: DESTINATIONS_CHANGED, data: { id: d.id } });
+          // Red (error-styled) toast to flag the destructive delete action.
+          sileo.error({
+            title: t("tours.admin.destinations.toast.deleted"),
+            description: t("tours.admin.destinations.toast.deletedDesc", { name: d.name }),
+          });
+          router.refresh();
+        } catch {
+          sileo.error({
+            title: t("tours.admin.destinations.toast.deleteError"),
+            description: t("tours.admin.destinations.toast.deleteErrorDesc"),
+          });
+        }
       },
     });
 
@@ -92,7 +106,10 @@ export function AdminDestinationsManager({
       <DestinationForm
         isOpen={showForm}
         onClose={() => setShowForm(false)}
-        onCreated={() => router.refresh()}
+        onCreated={() => {
+          sendRealtime({ event: DESTINATIONS_CHANGED });
+          router.refresh();
+        }}
       />
 
       <DestinationForm
@@ -171,7 +188,7 @@ export function AdminDestinationsManager({
                         <Dropdown.Item
                           id="delete"
                           variant="danger"
-                          className="flex items-center gap-2"
+                          className="text-danger flex items-center gap-2 data-[hovered]:bg-red/10! data-[hovered]:text-red!"
                         >
                           <Trash size={16} color="currentColor" />
                           {t("common.delete")}

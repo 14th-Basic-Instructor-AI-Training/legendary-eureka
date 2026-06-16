@@ -517,6 +517,17 @@
       "login": "로그인",
       "cancel": "취소"
     },
+    "agencyPending": {
+      "title": "승인 대기 중",
+      "body": "여행사 등록이 관리자 승인을 기다리고 있습니다. 관리자가 승인하면 작업 공간이 잠금 해제되어 여행지와 투어 패키지를 만들 수 있습니다.",
+      "gotIt": "확인"
+    },
+    "agencyApproved": {
+      "title": "에이전시가 승인되었습니다",
+      "body": "관리자가 방금 여행사 등록을 승인했습니다. 작업 공간이 잠금 해제되었습니다 — 여행지와 투어 패키지를 만들 수 있습니다.",
+      "goToWorkspace": "작업 공간으로 이동",
+      "dismiss": "나중에"
+    },
     "hero": {
       "title": "아시아 전역에서 다음 여행을 발견하세요",
       "subtitle": "엄선된 여행지, 현지 체험, 신뢰할 수 있는 여행사의 투어를 한 곳에서.",
@@ -1060,7 +1071,27 @@
         "photos": "사진",
         "photosPlaceholder": "한 줄에 이미지 URL 하나 (또는 쉼표로 구분)",
         "featured": "추천",
-        "trending": "인기"
+        "trending": "인기",
+        "coverImage": "커버 이미지",
+        "uploadCta": "이미지 업로드",
+        "uploadHint": "JPG, PNG 또는 WEBP",
+        "changeImage": "이미지 변경",
+        "addPhotos": "사진 추가",
+        "photosHint": "최대 10장",
+        "removePhoto": "사진 삭제"
+      },
+      "upload": {
+        "cover": "커버 이미지 업로드 중",
+        "photos": "사진 업로드 중",
+        "create": "여행지 생성 중",
+        "save": "변경사항 저장 중",
+        "doneCreate": "여행지가 생성되었습니다",
+        "doneCreateDesc": "<b>{{name}}</b>이(가) 이제 여행지 목록에 추가되었습니다.",
+        "doneSave": "변경사항이 저장되었습니다",
+        "doneSaveDesc": "<b>{{name}}</b>에 대한 변경사항이 저장되었습니다.",
+        "error": "업로드 실패",
+        "dismiss": "닫기",
+        "stepOf": "{{total}}단계 중 {{current}}단계"
       },
       "sectionAdmin": "관리자 제공 여행지",
       "sectionYours": "내 여행지",
@@ -1081,6 +1112,15 @@
       "publish": "게시",
       "archive": "보관",
       "approvalSent": "승인 요청됨",
+      "awaiting": "승인 대기 중",
+      "resubmit": "다시 제출",
+      "rejectedReason": "사유: {{reason}}",
+      "toast": {
+        "submitted": "승인 요청을 보냈습니다",
+        "submittedDesc": "관리자가 곧 패키지를 검토합니다.",
+        "submitError": "승인 요청을 보내지 못했습니다",
+        "submitErrorDesc": "문제가 발생했습니다. 다시 시도해 주세요."
+      },
       "justNow": "방금 전",
       "byAgency": "{{name}} 제공",
       "days_one": "{{count}}일",
@@ -1104,13 +1144,29 @@
         "new": "새 여행지",
         "empty": "아직 여행지가 없습니다.",
         "requestsEmpty": "아직 여행지 요청이 없습니다.",
+        "pendingEmpty": "승인 대기 중인 여행지가 없습니다.",
+        "pendingCount": "{{count}}건 승인 대기 중",
+        "search": "여행지 검색…",
         "menuLabel": "여행지 작업",
+        "approve": "승인",
+        "reject": "거부",
+        "toast": {
+          "approved": "여행지가 승인되었습니다",
+          "approveError": "여행지를 승인하지 못했습니다",
+          "rejected": "여행지가 거부되었습니다",
+          "rejectError": "여행지를 거부하지 못했습니다",
+          "deleted": "여행지가 삭제되었습니다",
+          "deletedDesc": "“{{name}}”이(가) 영구적으로 삭제되었습니다.",
+          "deleteError": "여행지를 삭제하지 못했습니다",
+          "deleteErrorDesc": "문제가 발생했습니다. 다시 시도해 주세요."
+        },
         "deleteConfirm": {
           "title": "이 여행지를 삭제하시겠습니까?",
           "description": "“{{name}}”이(가) 영구적으로 삭제됩니다. 되돌릴 수 없습니다."
         },
         "tabs": {
           "all": "모든 여행지",
+          "pending": "승인 대기",
           "requests": "생성 요청",
           "featured": "추천"
         }
@@ -1124,7 +1180,17 @@
         "statusFilter": "상태로 필터",
         "approve": "승인",
         "reject": "거절",
-        "search": "패키지 검색…"
+        "search": "패키지 검색…",
+        "toast": {
+          "approved": "패키지가 승인되었습니다",
+          "approvedDesc": "<b>{{name}}</b>이(가) 이제 여행자에게 공개됩니다.",
+          "approveError": "패키지를 승인하지 못했습니다",
+          "approveErrorDesc": "문제가 발생했습니다. 다시 시도해 주세요.",
+          "rejected": "패키지가 거절되었습니다",
+          "rejectedDesc": "<b>{{name}}</b>이(가) 거절되었으며 에이전시에 통보되었습니다.",
+          "rejectError": "패키지를 거절하지 못했습니다",
+          "rejectErrorDesc": "문제가 발생했습니다. 다시 시도해 주세요."
+        }
       }
     }
   },
@@ -1479,7 +1545,9 @@
       },
       "tabs": {
         "agencies": "여행사 온보딩",
-        "editRequests": "편집 요청"
+        "editRequests": "편집 요청",
+        "tourApprovals": "투어 패키지",
+        "destinations": "여행지"
       }
     },
     "editRequests": {
@@ -1515,6 +1583,8 @@
       "agencyCount": "이 여행사에 대한 신고 {{count}}건",
       "cardType": "여행자 신고",
       "reason": "사유",
+      "error": "신고를 불러올 수 없습니다. 백엔드가 실행 중인가요?",
+      "actionError": "신고를 업데이트할 수 없습니다. 다시 시도해 주세요.",
       "summary": {
         "open": "미처리",
         "highSeverity": "높은 심각도",
@@ -1590,6 +1660,20 @@
         "archive": "보관",
         "delete": "삭제",
         "confirmDelete": "예, 삭제"
+      },
+      "toast": {
+        "published": "패키지가 게시되었습니다",
+        "publishedDesc": "<b>{{name}}</b>이(가) 이제 여행자에게 공개됩니다.",
+        "publishError": "패키지를 게시하지 못했습니다",
+        "publishErrorDesc": "문제가 발생했습니다. 다시 시도해 주세요.",
+        "archived": "패키지가 보관되었습니다",
+        "archivedDesc": "<b>{{name}}</b>이(가) 이제 여행자에게 표시되지 않습니다. 언제든지 다시 게시할 수 있습니다.",
+        "archiveError": "패키지를 보관하지 못했습니다",
+        "archiveErrorDesc": "문제가 발생했습니다. 다시 시도해 주세요.",
+        "deleted": "패키지가 삭제되었습니다",
+        "deletedDesc": "<b>{{name}}</b> 및 일정이 영구적으로 삭제되었습니다.",
+        "deleteError": "패키지를 삭제하지 못했습니다",
+        "deleteErrorDesc": "문제가 발생했습니다. 다시 시도해 주세요."
       }
     },
     "users": {

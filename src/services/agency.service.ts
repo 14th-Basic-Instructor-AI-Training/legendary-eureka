@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api/client";
+import { IMAGE_PLACEHOLDER } from "@/lib/placeholder";
 import { AgencyProfilePageSchema, type AgencyProfileResponse } from "@/types/agency";
 import type { Result } from "@/features/destinations/data";
 import type { AgencyProfile, AgencyStatus } from "@/features/destinations/schema";
@@ -22,7 +23,7 @@ export function mapAgencyProfile(a: AgencyProfileResponse): AgencyProfile {
     slug: a.slug ?? a.id,
     name: a.agencyName ?? "",
     owner: a.agencyName ?? "",
-    logo: a.avatarUrl ?? "",
+    logo: a.avatarUrl || IMAGE_PLACEHOLDER,
     province: a.address ?? "",
     status: toStatus(a.status),
     rating: a.averageRating,

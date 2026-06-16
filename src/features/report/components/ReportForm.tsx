@@ -3,7 +3,6 @@
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
-import { DocumentUpload, Trash } from "iconsax-reactjs";
 import { Button, Form, Label, TextArea } from "@/ui";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/auth";
@@ -13,7 +12,6 @@ import {
   ReportFormSchema,
   ReportReasonSchema,
   REPORT_MAX_DESCRIPTION,
-  REPORT_MAX_EVIDENCE,
   type ReportFormValues,
 } from "../schema";
 
@@ -44,7 +42,7 @@ export function ReportForm({
     formState: { errors, isSubmitting },
   } = useForm<ReportFormValues>({
     resolver: zodResolver(ReportFormSchema),
-    defaultValues: { reason: undefined, description: "", evidence: [] },
+    defaultValues: { reason: undefined, description: "" },
   });
 
   const description = useWatch({ control, name: "description" }) ?? "";
@@ -160,71 +158,6 @@ export function ReportForm({
           }
         />
       </div>
-
-      {/* Evidence */}
-      <Controller
-        control={control}
-        name="evidence"
-        render={({ field }) => {
-          const files = field.value ?? [];
-          const addFiles = (list: FileList | null) => {
-            if (!list) return;
-            const names = Array.from(list).map((f) => f.name);
-            field.onChange([...files, ...names].slice(0, REPORT_MAX_EVIDENCE));
-          };
-          return (
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="report-evidence">
-                {t("report.evidence.label")}{" "}
-                <span className="text-muted font-normal">
-                  · {t("report.evidence.optional")}
-                </span>
-              </Label>
-              <label className="border-border hover:border-primary-lightskyblue/50 flex cursor-pointer items-center gap-2 rounded-xl border border-dashed px-4 py-3 text-sm transition-colors">
-                <DocumentUpload
-                  size={18}
-                  color="currentColor"
-                  className="text-muted"
-                />
-                <span className="text-muted">{t("report.evidence.hint")}</span>
-                <input
-                  id="report-evidence"
-                  type="file"
-                  multiple
-                  className="sr-only"
-                  disabled={files.length >= REPORT_MAX_EVIDENCE}
-                  onChange={(e) => {
-                    addFiles(e.target.files);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-              {files.length > 0 ? (
-                <ul className="flex flex-col gap-1.5">
-                  {files.map((name, i) => (
-                    <li
-                      key={`${name}-${i}`}
-                      className="bg-surface flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-sm"
-                    >
-                      <span className="truncate">{name}</span>
-                      <button
-                        type="button"
-                        aria-label={t("report.evidence.remove")}
-                        onClick={() =>
-                          field.onChange(files.filter((_, x) => x !== i))
-                        }
-                        className="text-muted hover:text-danger transition-colors"
-                      >
-                        <Trash size={16} color="currentColor" />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-          );
-        }}
-      />
 
       <div className="flex flex-wrap justify-end gap-3">
         <Button

@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { sileo } from "sileo";
 import { TickCircle, CloseCircle, Flag } from "iconsax-reactjs";
 import { Button, Chip, StatusChip } from "@/ui";
 import { useSession } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { resolveReportAction } from "@/actions/reports";
 import { useAdminStore } from "../store";
 import type { Report, ReportSeverity } from "../schema";
 
@@ -26,15 +28,29 @@ function ResolvePanel({ report }: { report: Report }) {
 
   const [note, setNote] = useState(report.adminNote ?? "");
   const [showNote, setShowNote] = useState(false);
+  const [pending, setPending] = useState(false);
 
-  const handleResolve = () => {
-    if (note.trim()) addReportNote(role, report.id, note.trim());
-    resolveReport(role, report.id);
-  };
-
-  const handleDismiss = () => {
-    if (note.trim()) addReportNote(role, report.id, note.trim());
-    dismissReport(role, report.id);
+  // Persist the decision via the API first, then reflect it locally. The store
+  // actions re-check `manageReports` (defense in depth).
+  const act = async (status: "RESOLVED" | "DISMISSED") => {
+    const trimmed = note.trim();
+    setPending(true);
+    const res = await resolveReportAction(report.id, {
+      status,
+      adminNote: trimmed || undefined,
+    });
+    setPending(false);
+    if (!res.ok) {
+      sileo.error({
+        title: t("admin.reports.actionError"),
+        description: res.error,
+        position: "top-center",
+      });
+      return;
+    }
+    if (trimmed) addReportNote(role, report.id, trimmed);
+    if (status === "RESOLVED") resolveReport(role, report.id);
+    else dismissReport(role, report.id);
   };
 
   return (
@@ -57,11 +73,17 @@ function ResolvePanel({ report }: { report: Report }) {
         </button>
       )}
       <div className="flex justify-end gap-2">
-        <Button variant="tertiary" size="sm" className="text-danger" onPress={handleDismiss}>
+        <Button
+          variant="tertiary"
+          size="sm"
+          className="text-danger"
+          isDisabled={pending}
+          onPress={() => act("DISMISSED")}
+        >
           <CloseCircle size={15} color="currentColor" />
           {t("admin.reports.dismiss")}
         </Button>
-        <Button variant="primary" size="sm" onPress={handleResolve}>
+        <Button variant="primary" size="sm" isPending={pending} onPress={() => act("RESOLVED")}>
           <TickCircle size={15} color="currentColor" />
           {t("admin.reports.resolve")}
         </Button>

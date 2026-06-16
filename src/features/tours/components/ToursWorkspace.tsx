@@ -85,6 +85,11 @@ export function ToursWorkspace({ initialPackages, initialDestinations, publicDes
             onStatusChanged={(id, status) =>
               setPackages((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)))
             }
+            onSubmitted={(id) =>
+              setPackages((prev) =>
+                prev.map((p) => (p.id === id ? { ...p, approvalStatus: "PENDING" } : p)),
+              )
+            }
             onDeleted={(id) => setPackages((prev) => prev.filter((p) => p.id !== id))}
           />
         </Tabs.Panel>
