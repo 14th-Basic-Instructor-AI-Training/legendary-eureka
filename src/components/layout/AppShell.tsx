@@ -6,8 +6,18 @@ import { Avatar, Spinner } from "@/ui";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/sidebar/sidebar";
+import { NotificationBell } from "@/features/notifications/components/NotificationBell";
 import { useRequireRole, useSession } from "@/lib/auth";
 import type { Role } from "@/features/auth/schema";
+
+/**
+ * Per-role notifications inbox route. Only roles with a page get a header bell;
+ * extend this as agency/admin inboxes are added.
+ */
+const NOTIFICATIONS_HREF: Partial<Record<Role, string>> = {
+  traveler: "/traveler/notifications",
+  agency: "/agency/notifications",
+};
 
 function initialsOf(name: string) {
   return name
@@ -42,6 +52,8 @@ export function AppShell({ role, children }: { role: Role; children: React.React
     return <LoadingScreen label={t("common.loading")} />;
   }
 
+  const notificationsHref = NOTIFICATIONS_HREF[role];
+
   return (
     <Suspense fallback={<LoadingScreen label={t("common.loading")} />}>
       <SidebarProvider>
@@ -72,6 +84,9 @@ export function AppShell({ role, children }: { role: Role; children: React.React
                 <SidebarTrigger />
               </span>
               <div className="flex flex-1 items-center justify-end gap-3">
+                {notificationsHref ? (
+                  <NotificationBell href={notificationsHref} />
+                ) : null}
                 <LanguageSwitcher />
                 <div className="hidden text-right sm:block">
                   <p className="text-sm leading-tight font-medium">{user.name}</p>
