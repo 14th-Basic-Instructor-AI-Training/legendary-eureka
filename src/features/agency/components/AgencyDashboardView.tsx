@@ -326,36 +326,6 @@ function ReviewCard({ review }: { review: AgencyReviewResponse }) {
   );
 }
 
-// ── Quick actions — require "use client" (useLocalizedRouter wraps useRouter) ──
-
-function QuickActions() {
-  const { t } = useTranslation();
-  const router = useLocalizedRouter();
-  return (
-    <Panel title={t("agency.dashboard.quickActions")}>
-      <p className="text-muted mb-5 text-sm">{t("agency.dashboard.quickActionsSub")}</p>
-      <div className="grid grid-cols-2 gap-4">
-        <button
-          onClick={() => router.push("/agency/activities")}
-          className="flex flex-col items-center justify-center gap-3 rounded-2xl py-8 font-bold text-base text-white transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
-          style={{ backgroundColor: "var(--primary-lightskyblue)" }}
-        >
-          <Add size={28} variant="Bold" />
-          {t("agency.dashboard.createActivity")}
-        </button>
-        <button
-          onClick={() => router.push("/agency/packages")}
-          className="flex flex-col items-center justify-center gap-3 rounded-2xl py-8 font-bold text-base text-white transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
-          style={{ backgroundColor: "var(--primary-lightskyblue)" }}
-        >
-          <Bag size={28} variant="Bold" />
-          {t("agency.dashboard.createPackage")}
-        </button>
-      </div>
-    </Panel>
-  );
-}
-
 // ── Root view component ───────────────────────────────────────────────────────
 
 export default function AgencyDashboardView({
@@ -423,9 +393,6 @@ export default function AgencyDashboardView({
           )}
         </div>
       </div>
-
-      {/* Quick actions */}
-      <QuickActions />
     </div>
   );
 }

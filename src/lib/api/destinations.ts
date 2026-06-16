@@ -29,6 +29,7 @@ export interface DestinationResponse {
   ownerId: string;
   createdAt: string;
   photos: string[];
+  approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
 }
 
 // ── Request bodies ────────────────────────────────────────────────────────────

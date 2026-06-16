@@ -9,15 +9,15 @@ import { useLocalizedRouter } from "@/lib/locale";
 import type { TourPackageResponse } from "@/lib/api/packages";
 import type { DestinationResponse } from "@/lib/api/destinations";
 import { DestinationsPanel } from "./DestinationsPanel";
-import { FlowGuide } from "./FlowGuide";
 import { PackagesPanel } from "./PackagesPanel";
 
 interface Props {
   initialPackages: TourPackageResponse[];
   initialDestinations: DestinationResponse[];
+  publicDestinations: DestinationResponse[];
 }
 
-export function ToursWorkspace({ initialPackages, initialDestinations }: Props) {
+export function ToursWorkspace({ initialPackages, initialDestinations, publicDestinations }: Props) {
   const { t } = useTranslation();
   const { user } = useSession();
   const params = useSearchParams();
@@ -32,7 +32,9 @@ export function ToursWorkspace({ initialPackages, initialDestinations }: Props) 
   const [presetDestination, setPresetDestination] = useState<DestinationResponse | undefined>();
 
   const handleBuildPackage = (destinationId: string) => {
-    const dest = destinations.find((d) => d.id === destinationId);
+    const dest =
+      publicDestinations.find((d) => d.id === destinationId) ??
+      destinations.find((d) => d.id === destinationId && d.approvalStatus === "APPROVED");
     setPresetDestination(dest);
     setPackageFormOpen(true);
     router.replace("/agency/tours?tab=packages");
@@ -44,8 +46,6 @@ export function ToursWorkspace({ initialPackages, initialDestinations }: Props) 
         <h1 className="text-primary text-2xl font-bold tracking-tight">{t("tours.agency.title")}</h1>
         <p className="text-muted mt-1">{t("tours.agency.subtitle")}</p>
       </header>
-
-    
 
       <Tabs
         selectedKey={tab}
@@ -59,6 +59,7 @@ export function ToursWorkspace({ initialPackages, initialDestinations }: Props) 
         <Tabs.Panel id="destinations" className="pt-5">
           <DestinationsPanel
             destinations={destinations}
+            publicDestinations={publicDestinations}
             agencyName={agencyName}
             onBuildPackage={handleBuildPackage}
             onCreated={(dest) => setDestinations((prev) => [dest, ...prev])}
@@ -68,7 +69,14 @@ export function ToursWorkspace({ initialPackages, initialDestinations }: Props) 
         <Tabs.Panel id="packages" className="pt-5">
           <PackagesPanel
             packages={packages}
-            destinations={destinations}
+            destinations={[
+              ...publicDestinations,
+              ...destinations.filter(
+                (d) =>
+                  d.approvalStatus === "APPROVED" &&
+                  !publicDestinations.some((p) => p.id === d.id),
+              ),
+            ]}
             agencyName={agencyName}
             formOpen={packageFormOpen}
             setFormOpen={setPackageFormOpen}

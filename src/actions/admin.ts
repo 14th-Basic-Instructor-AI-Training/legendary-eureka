@@ -5,6 +5,10 @@ import {
   rejectEditRequest,
   updateAdminAgency,
 } from "@/services/admin.service";
+import {
+  approveDestination,
+  rejectDestination,
+} from "@/services/destinations.service";
 import { ApiError } from "@/lib/api/client";
 
 /**
@@ -53,6 +57,26 @@ export async function approveEditRequestAction(id: string): Promise<ActionResult
 export async function rejectEditRequestAction(id: string): Promise<ActionResult> {
   try {
     await rejectEditRequest(id);
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** PUT /destinations/{id}/approve — admin approves a pending agency destination. */
+export async function approveDestinationAction(id: string): Promise<ActionResult> {
+  try {
+    await approveDestination(id);
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** PUT /destinations/{id}/reject — admin rejects a pending agency destination. */
+export async function rejectDestinationAction(id: string): Promise<ActionResult> {
+  try {
+    await rejectDestination(id);
     return { ok: true };
   } catch (e) {
     return fail(e);

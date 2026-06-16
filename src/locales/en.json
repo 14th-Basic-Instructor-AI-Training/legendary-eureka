@@ -1061,7 +1061,17 @@
         "photosPlaceholder": "One image URL per line (or comma-separated)",
         "featured": "Featured",
         "trending": "Trending"
-      }
+      },
+      "sectionAdmin": "Destinations from Admin",
+      "sectionYours": "Your Destinations",
+      "pendingNotice": "Your destinations are awaiting admin approval before they can be used in tour packages.",
+      "statusPending": "Pending",
+      "statusApproved": "Approved",
+      "statusRejected": "Rejected",
+      "deleteTitle": "Delete destination",
+      "deleteDescription": "Are you sure you want to delete \"{{name}}\"? This cannot be undone.",
+      "adminEmpty": "No admin destinations available yet.",
+      "noImage": "No image"
     },
     "packages": {
       "title": "Your tour packages",
@@ -1148,6 +1158,12 @@
     },
     "title": "Agency Workspace",
     "subtitle": "Manage your activities, build tour packages, and confirm bookings.",
+    "nav": {
+      "groups": {
+        "content": "Content",
+        "operations": "Operations"
+      }
+    },
     "tabs": {
       "activities": "Activities",
       "packages": "Packages",

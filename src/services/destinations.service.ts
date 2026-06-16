@@ -34,3 +34,15 @@ export function updateDestination(
 export function deleteDestination(id: string): Promise<void> {
   return apiFetch(`/destinations/${id}`, { method: "DELETE" });
 }
+
+export function getPendingDestinations(params?: PageParams): Promise<PagedData<DestinationResponse>> {
+  return apiFetch("/destinations/pending", { params });
+}
+
+export function approveDestination(id: string): Promise<DestinationResponse> {
+  return apiFetch(`/destinations/${id}/approve`, { method: "PUT" });
+}
+
+export function rejectDestination(id: string): Promise<DestinationResponse> {
+  return apiFetch(`/destinations/${id}/reject`, { method: "PUT" });
+}
