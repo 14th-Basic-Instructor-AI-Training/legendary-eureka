@@ -8,6 +8,7 @@ import { useSession } from "@/lib/auth";
 import { useLocalizedRouter } from "@/lib/locale";
 import type { TourPackageResponse } from "@/lib/api/packages";
 import type { DestinationResponse } from "@/lib/api/destinations";
+
 import { DestinationsPanel } from "./DestinationsPanel";
 import { PackagesPanel } from "./PackagesPanel";
 
@@ -28,16 +29,8 @@ export function ToursWorkspace({ initialPackages, initialDestinations, publicDes
   const [destinations, setDestinations] = useState(initialDestinations);
   const agencyName = user?.name ?? "";
 
-  const [packageFormOpen, setPackageFormOpen] = useState(false);
-  const [presetDestination, setPresetDestination] = useState<DestinationResponse | undefined>();
-
   const handleBuildPackage = (destinationId: string) => {
-    const dest =
-      publicDestinations.find((d) => d.id === destinationId) ??
-      destinations.find((d) => d.id === destinationId && d.approvalStatus === "APPROVED");
-    setPresetDestination(dest);
-    setPackageFormOpen(true);
-    router.replace("/agency/tours?tab=packages");
+    router.push(`/agency/tours/new?from=${destinationId}`);
   };
 
   return (
@@ -69,19 +62,6 @@ export function ToursWorkspace({ initialPackages, initialDestinations, publicDes
         <Tabs.Panel id="packages" className="pt-5">
           <PackagesPanel
             packages={packages}
-            destinations={[
-              ...publicDestinations,
-              ...destinations.filter(
-                (d) =>
-                  d.approvalStatus === "APPROVED" &&
-                  !publicDestinations.some((p) => p.id === d.id),
-              ),
-            ]}
-            agencyName={agencyName}
-            formOpen={packageFormOpen}
-            setFormOpen={setPackageFormOpen}
-            presetDestination={presetDestination}
-            onPackageCreated={(pkg) => setPackages((prev) => [pkg, ...prev])}
             onStatusChanged={(id, status) =>
               setPackages((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)))
             }

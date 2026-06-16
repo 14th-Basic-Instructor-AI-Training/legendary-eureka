@@ -245,14 +245,21 @@ export type TourPackage = z.infer<typeof TourPackageSchema>;
 /** Create-package form shape. Matches the backend TourPackageRequest. */
 export const NewPackageSchema = z.object({
   title: z.string().min(1, "Title is required"),
+  tagline: z.string().max(220).optional(),
   destinationId: z.string().optional(),
   province: ProvinceSchema.optional(),
   travelType: TravelTypeSchema.optional(),
   days: z.coerce.number().int().min(1, "At least 1 day"),
   priceFrom: z.coerce.number().min(0, "Enter a price"),
   currency: z.string().min(1).max(8).default("USD"),
+  groupSizeMax: z.coerce.number().int().positive().optional().or(z.literal("")),
+  cancellationPolicy: z.enum(["free", "nonRefundable"]).default("free"),
+  languages: z.string().optional(),
   description: z.string().optional(),
   coverImageUrl: z.string().url("Enter a valid image URL").optional().or(z.literal("")),
+  highlights: z.string().optional(),
+  included: z.string().optional(),
+  excluded: z.string().optional(),
 });
 export type NewPackageInput = z.output<typeof NewPackageSchema>;
 export type NewPackageFormValues = z.input<typeof NewPackageSchema>;

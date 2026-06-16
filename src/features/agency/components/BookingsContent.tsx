@@ -725,17 +725,14 @@ export function BookingsContent({ bookings }: { bookings: BookingRequest[] }) {
   return (
     <div className="flex min-h-full flex-col">
       {/* Page header */}
-      <div
-        className="flex-shrink-0 border-b bg-white px-7 py-6"
-        style={{ borderColor: "#E1E6EC" }}
-      >
+      <div className="flex-shrink-0 border-b border-border px-7 py-6">
         <h1
-          className="text-[24px] font-extrabold tracking-tight leading-tight"
-          style={{ color: "#0D233A" }}
+          className="text-4xl font-black tracking-tight"
+          style={{ color: "var(--primary-lightskyblue)" }}
         >
           {t("agency.bookings.pageTitle")}
         </h1>
-        <p className="mt-1 text-[13px]" style={{ color: "#9BA8B5" }}>
+        <p className="text-muted mt-1 text-sm">
           {t("agency.bookings.pageSubtitle")}
         </p>
       </div>
