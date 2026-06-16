@@ -12,12 +12,20 @@ import {
   approvePackage,
   archivePackage,
   createPackage,
+  updatePackage,
   deletePackage,
   publishPackage,
   rejectPackage,
   submitPackage,
+  addAgendaItem,
+  updateAgendaItem,
+  removeAgendaItem,
 } from "@/services/packages.service";
-import type { TourPackageRequest, TourPackageResponse } from "@/lib/api/packages";
+import type {
+  TourAgendaItemRequest,
+  TourPackageRequest,
+  TourPackageResponse,
+} from "@/lib/api/packages";
 import { ApiError } from "@/lib/api/client";
 
 /**
@@ -81,6 +89,14 @@ export async function createPackageAction(
   return createPackage(body);
 }
 
+/** PUT /tours/{id} — update a draft tour package. */
+export async function updatePackageAction(
+  id: string,
+  body: TourPackageRequest,
+): Promise<TourPackageResponse> {
+  return updatePackage(id, body);
+}
+
 /** PUT /tours/{id}/publish */
 export async function publishPackageAction(id: string): Promise<ActionResult> {
   try {
@@ -135,6 +151,36 @@ export async function approvePackageAction(id: string): Promise<ActionResult> {
 export async function rejectPackageAction(id: string, reason?: string): Promise<ActionResult> {
   try {
     await rejectPackage(id, reason);
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** POST /tours/{id}/agenda — add a day to the tour itinerary. */
+export async function addAgendaDayAction(
+  tourId: string,
+  body: TourAgendaItemRequest,
+): Promise<TourPackageResponse> {
+  return addAgendaItem(tourId, body);
+}
+
+/** PUT /tours/{id}/agenda/{itemId} — update an existing agenda day. */
+export async function updateAgendaDayAction(
+  tourId: string,
+  itemId: string,
+  body: TourAgendaItemRequest,
+): Promise<TourPackageResponse> {
+  return updateAgendaItem(tourId, itemId, body);
+}
+
+/** DELETE /tours/{id}/agenda/{itemId} — remove an agenda day. */
+export async function removeAgendaDayAction(
+  tourId: string,
+  itemId: string,
+): Promise<ActionResult> {
+  try {
+    await removeAgendaItem(tourId, itemId);
     return { ok: true };
   } catch (e) {
     return fail(e);

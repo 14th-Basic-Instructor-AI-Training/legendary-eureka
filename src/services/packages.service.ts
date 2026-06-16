@@ -12,8 +12,14 @@ export function getPackages(params?: PageParams): Promise<PagedData<TourPackageR
   return apiFetch("/tours", { auth: false, params });
 }
 
+/** Public — only returns PUBLISHED packages. */
 export function getPackage(id: string): Promise<TourPackageResponse> {
   return apiFetch(`/tours/${id}`, { auth: false });
+}
+
+/** Authenticated — returns any package (draft/archived) the caller owns or is admin. */
+export function getMyPackage(id: string): Promise<TourPackageResponse> {
+  return apiFetch(`/tours/${id}`);
 }
 
 export function getMyPackages(params?: PageParams): Promise<PagedData<TourPackageResponse>> {

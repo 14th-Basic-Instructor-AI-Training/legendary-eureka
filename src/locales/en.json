@@ -1186,13 +1186,31 @@
         "peopleUnit": "people max",
         "highlightsHint": "One per line — these appear as bullet points on the tour page",
         "listHint": "One per line",
-        "draftNotice": "Saved as a draft — publish when ready"
+        "draftNotice": "Saved as a draft — publish when ready",
+        "steps": {
+          "identity": "Identity",
+          "logistics": "Logistics",
+          "story": "Story",
+          "review": "Review"
+        },
+        "continue": "Continue",
+        "stepCounter": "Step {{current}} of {{total}}",
+        "reviewTitle": "Ready to create?",
+        "reviewDesc": "Check your package details before creating.",
+        "update": "Save changes",
+        "editReviewTitle": "Ready to save?",
+        "editReviewDesc": "Review your changes before saving."
       },
       "pageTitle": "Tour Packages",
       "pageSubtitle": "Create and manage your published and draft tour packages",
       "newPage": {
         "title": "Create Tour Package",
-        "subtitle": "Fill in the details travelers will see on the package page"
+        "subtitle": "Fill in the details travelers will see on the package page",
+        "step1": "Package details",
+        "step2": "Build itinerary",
+        "createdTitle": "Package saved!",
+        "createdHint": "Now build your day-by-day itinerary below, or skip and finish later.",
+        "viewPackage": "Done — view package"
       },
       "detail": {
         "back": "Back to packages",
@@ -1220,7 +1238,8 @@
           "SEVEN_PLUS_DAYS": "7+ days"
         },
         "actions": {
-          "title": "Manage"
+          "title": "Manage",
+          "edit": "Edit package"
         },
         "stats": {
           "title": "Performance",
@@ -1236,6 +1255,43 @@
           "submitted": "Submitted",
           "reviewed": "Reviewed"
         }
+      },
+      "agenda": {
+        "title": "Build Itinerary",
+        "subtitle": "Add a day-by-day schedule for your {{count}}-day package",
+        "addDay": "Add Day",
+        "addDayTitle": "Add Day {{day}}",
+        "editDay": "Edit Day {{day}}",
+        "dayNumber": "Day",
+        "dayTitle": "Day title",
+        "dayTitlePlaceholder": "e.g. Angkor Wat & Bayon Temple",
+        "dayDescription": "Day notes",
+        "dayDescPlaceholder": "Optional — what travelers should know about this day",
+        "activities": "Activities for this day",
+        "activitiesSearch": "Search activities...",
+        "noActivities": "No activities yet — create some in the Activities tab first",
+        "saveDay": "Save day",
+        "deleteDay": "Remove day",
+        "deleteConfirm": "Remove Day {{day}}?",
+        "deleteBody": "This day and its activities will be removed from the itinerary.",
+        "empty": "No itinerary yet — add your first day to get started",
+        "toastAdded": "Day {{day}} added",
+        "toastUpdated": "Day {{day}} updated",
+        "toastRemoved": "Day {{day}} removed",
+        "toastError": "Could not save — please try again",
+        "selectedOne": "activity selected",
+        "selectedMany": "activities selected",
+        "categories": {
+          "destination": "Destination",
+          "thingToDo": "Thing to do",
+          "food": "Food and restaurant",
+          "stay": "Accommodation"
+        }
+      },
+      "editPage": {
+        "title": "Edit package",
+        "pageTitle": "Edit tour package",
+        "step1": "Details"
       }
     },
     "admin": {
