@@ -4,6 +4,7 @@ import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ArrowRight2,
+  Calendar,
   Clock,
   CloseCircle,
   Flag,
@@ -28,12 +29,27 @@ const META: Record<
   NotificationType,
   { Icon: IconType; tint: string; bg: string }
 > = {
+  "booking-requested": {
+    Icon: Calendar,
+    tint: "text-primary-lightskyblue",
+    bg: "bg-primary-lightskyblue/10",
+  },
   "booking-approved": {
     Icon: TickCircle,
     tint: "text-success",
     bg: "bg-success/10",
   },
   "booking-rejected": {
+    Icon: CloseCircle,
+    tint: "text-danger",
+    bg: "bg-danger/10",
+  },
+  "booking-completed": {
+    Icon: TickCircle,
+    tint: "text-success",
+    bg: "bg-success/10",
+  },
+  "booking-cancelled": {
     Icon: CloseCircle,
     tint: "text-danger",
     bg: "bg-danger/10",

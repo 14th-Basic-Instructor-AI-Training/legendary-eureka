@@ -9,8 +9,11 @@ import { z } from "zod";
 
 /** What happened — drives the card icon + color. */
 export const NotificationTypeSchema = z.enum([
+  "booking-requested",
   "booking-approved",
   "booking-rejected",
+  "booking-completed",
+  "booking-cancelled",
   "reminder",
   "comment",
   "reply",

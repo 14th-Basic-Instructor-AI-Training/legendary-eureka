@@ -4,21 +4,21 @@ import { useTranslation } from "react-i18next";
 import { Notification as BellIcon } from "iconsax-reactjs";
 import { cn } from "@/lib/utils";
 import { useLocalizedRouter } from "@/lib/locale";
-import { useNotificationsStore } from "../store";
 import { KNOCK_ENABLED } from "../knock-config";
 import { useKnockFeed } from "../useKnockFeed";
+import { useApiInbox } from "../useApiInbox";
 
 /**
  * Header bell with a live unread badge, linking to the notifications inbox.
  * Same data-source split as the inbox: Knock feed when configured (real-time
- * count), otherwise the local fixture store. `KNOCK_ENABLED` is a build-time
- * constant so exactly one branch component mounts (rules of hooks hold).
+ * count), otherwise the REST inbox via `useApiInbox`. `KNOCK_ENABLED` is a
+ * build-time constant so exactly one branch component mounts (rules of hooks hold).
  */
 export function NotificationBell({ href }: { href: string }) {
   return KNOCK_ENABLED ? (
     <KnockBell href={href} />
   ) : (
-    <StoreBell href={href} />
+    <ApiBell href={href} />
   );
 }
 
@@ -27,10 +27,8 @@ function KnockBell({ href }: { href: string }) {
   return <BellButton href={href} unread={unread} />;
 }
 
-function StoreBell({ href }: { href: string }) {
-  const unread = useNotificationsStore(
-    (s) => s.notifications.filter((n) => !n.read).length,
-  );
+function ApiBell({ href }: { href: string }) {
+  const { unread } = useApiInbox();
   return <BellButton href={href} unread={unread} />;
 }
 
