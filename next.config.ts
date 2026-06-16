@@ -37,6 +37,14 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "**" },
     ],
   },
+  experimental: {
+    // Avatar/cover uploads stream the image file through a Server Action; the
+    // default 1 MB Server Action body cap rejects normal photos. Raise it so
+    // profile image uploads succeed (storage itself goes to RustFS/S3).
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
+  },
 };
 
 export default nextConfig;
