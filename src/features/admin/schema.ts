@@ -275,22 +275,25 @@ export type AdminBooking = z.infer<typeof AdminBookingSchema>;
 
 export const SystemSettingsSchema = z.object({
   commissionRate: z.number().min(0).max(100),
-  maxPackageDays: z.number().int().positive(),
-  minActivityPriceUsd: z.number().nonnegative(),
   /** Platform feature flags — toggled live by admin. */
   registrationOpen: z.boolean().default(true),
   bookingEnabled: z.boolean().default(true),
   maintenanceMode: z.boolean().default(false),
+  /** Content-moderation switches — gate agency content + traveler reports. */
+  destinationCreationEnabled: z.boolean().default(true),
+  tourCreationEnabled: z.boolean().default(true),
+  reportingEnabled: z.boolean().default(true),
 });
 export type SystemSettings = z.infer<typeof SystemSettingsSchema>;
 
 export const SystemSettingsFormSchema = z.object({
   commissionRate: z.coerce.number().min(0, "Must be ≥ 0").max(100, "Must be ≤ 100"),
-  maxPackageDays: z.coerce.number().int().min(1, "Must be at least 1 day"),
-  minActivityPriceUsd: z.coerce.number().min(0, "Must be ≥ 0"),
   registrationOpen: z.boolean(),
   bookingEnabled: z.boolean(),
   maintenanceMode: z.boolean(),
+  destinationCreationEnabled: z.boolean(),
+  tourCreationEnabled: z.boolean(),
+  reportingEnabled: z.boolean(),
 });
 export type SystemSettingsFormValues = z.input<typeof SystemSettingsFormSchema>;
 

@@ -8,7 +8,6 @@ import type {
   EditRequest,
   PlatformActivity,
   Report,
-  SystemSettings,
   UserSummary,
 } from "./schema";
 
@@ -74,15 +73,4 @@ export function initialAdminPackages(): AdminPackage[] {
 
 export function initialAdminBookings(): AdminBooking[] {
   return [];
-}
-
-export function initialSystemSettings(): SystemSettings {
-  return {
-    commissionRate: 0,
-    maxPackageDays: 30,
-    minActivityPriceUsd: 0,
-    registrationOpen: true,
-    bookingEnabled: true,
-    maintenanceMode: false,
-  };
 }

@@ -4,12 +4,14 @@ import {
   approveEditRequest,
   rejectEditRequest,
   updateAdminAgency,
+  updateSystemSettings,
 } from "@/services/admin.service";
 import {
   approveDestination,
   rejectDestination,
 } from "@/services/destinations.service";
 import { ApiError } from "@/lib/api/client";
+import type { UpdateSystemSettingsRequest } from "@/lib/api/admin";
 
 /**
  * Server actions for admin request moderation. These run on the server (so they
@@ -77,6 +79,18 @@ export async function approveDestinationAction(id: string): Promise<ActionResult
 export async function rejectDestinationAction(id: string): Promise<ActionResult> {
   try {
     await rejectDestination(id);
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** PUT /admin/settings — update platform-wide system settings. */
+export async function updateSettingsAction(
+  patch: UpdateSystemSettingsRequest,
+): Promise<ActionResult> {
+  try {
+    await updateSystemSettings(patch);
     return { ok: true };
   } catch (e) {
     return fail(e);

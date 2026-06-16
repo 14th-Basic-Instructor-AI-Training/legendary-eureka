@@ -107,9 +107,9 @@ export function AgencyRequestsQueue({ view, requests }: Props) {
   const lng = i18n.language;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       {/* search + filters */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex shrink-0 flex-wrap items-center gap-3">
         <div className="relative min-w-48 flex-1">
           <SearchNormal1
             size={16}
@@ -160,37 +160,39 @@ export function AgencyRequestsQueue({ view, requests }: Props) {
         </div>
       ) : (
         <>
-          {view === "table" ? (
-            <TableView
-              filtered={paged}
-              canManage={canManage}
-              busyId={busyId}
-              onApprove={onApprove}
-              onReject={onReject}
-              t={t}
-              lng={lng}
-            />
-          ) : (
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
-              {paged.map((r) => (
-                <RouteCard
-                  key={r.id}
-                  request={r}
-                  canManage={canManage}
-                  busyId={busyId}
-                  onApprove={onApprove}
-                  onReject={onReject}
-                  t={t}
-                  lng={lng}
-                />
-              ))}
-            </div>
-          )}
+          <div className="-mr-2 min-h-0 flex-1 overflow-y-auto pr-2">
+            {view === "table" ? (
+              <TableView
+                filtered={paged}
+                canManage={canManage}
+                busyId={busyId}
+                onApprove={onApprove}
+                onReject={onReject}
+                t={t}
+                lng={lng}
+              />
+            ) : (
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                {paged.map((r) => (
+                  <RouteCard
+                    key={r.id}
+                    request={r}
+                    canManage={canManage}
+                    busyId={busyId}
+                    onApprove={onApprove}
+                    onReject={onReject}
+                    t={t}
+                    lng={lng}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
           <Pagination
             page={currentPage}
             total={pageCount}
             onChange={setPage}
-            className="mt-2"
+            className="mt-2 shrink-0"
           />
         </>
       )}

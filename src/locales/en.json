@@ -534,6 +534,11 @@
       "body": "An admin reviewed your tour agency registration and could not approve it. Your account has been changed to a Traveler. Please sign in again to continue as a Traveler.",
       "continue": "Sign in as Traveler"
     },
+    "maintenance": {
+      "title": "Platform under maintenance",
+      "body": "The platform is temporarily in maintenance mode, so your workspace isn't available right now. Please check back shortly — we'll have it back up soon.",
+      "gotIt": "Got it"
+    },
     "hero": {
       "title": "Discover your next journey across Asia",
       "subtitle": "Hand-picked destinations, local experiences, and tours from trusted agencies — all in one place.",
@@ -1636,13 +1641,23 @@
       "contactEmail": "Contact email",
       "viewCard": "Card",
       "viewTable": "Table",
+      "viewFlow": "Flow",
       "cardType": "Agency Request",
       "applicant": "Applicant",
       "agencyLabel": "Agency",
       "submitted": "Submitted",
+      "statusLabel": "Status",
+      "colPackage": "Package",
+      "colDestination": "Destination",
+      "colProvince": "Province",
       "flow": {
         "agencyTitle": "Agency Onboarding Flow",
         "agencySub": "Applicant → agency request",
+        "byDaySub": "Grouped by submission day",
+        "tourTitle": "Tour Package Approvals",
+        "destinationTitle": "Destination Approvals",
+        "total": "Total",
+        "approvalRate": "Approval rate",
         "editTitle": "Edit Request Flow",
         "editSub": "Agency → activity edit request"
       },
@@ -1940,24 +1955,32 @@
     "settings": {
       "title": "System settings",
       "saved": "Settings saved.",
+      "saveError": "Couldn't save settings. Please try again.",
+      "loadError": "Couldn't load settings.",
+      "confirmTitle": "Save platform settings?",
+      "confirmDescription": "These changes apply platform-wide and take effect immediately.",
       "sections": {
         "pricingFees": "Pricing & Fees",
-        "pricingFeesDesc": "Set the platform commission and minimum pricing.",
-        "contentPolicy": "Content Policy",
-        "contentPolicyDesc": "Limits on what agencies can create and publish.",
+        "pricingFeesDesc": "Set the platform commission rate.",
         "platformFeatures": "Platform Features",
-        "platformFeaturesDesc": "Toggle platform-wide capabilities."
+        "platformFeaturesDesc": "Toggle platform-wide capabilities.",
+        "contentModeration": "Content Moderation",
+        "contentModerationDesc": "Control what agencies and travelers can contribute."
       },
       "fields": {
         "commissionRate": "Platform commission rate (%)",
-        "maxPackageDays": "Max tour package duration (days)",
-        "minActivityPriceUsd": "Minimum activity price (USD)",
         "registrationOpen": "Open registration",
         "registrationOpenDesc": "Allow new travelers and agencies to sign up.",
         "bookingEnabled": "Booking enabled",
         "bookingEnabledDesc": "Allow travelers to request and book tours.",
         "maintenanceMode": "Maintenance mode",
-        "maintenanceModeDesc": "Take the platform offline for all non-admin users."
+        "maintenanceModeDesc": "Take the platform offline for all non-admin users.",
+        "destinationCreationEnabled": "Destination creation",
+        "destinationCreationEnabledDesc": "Allow agencies to create destinations. Admins are always allowed.",
+        "tourCreationEnabled": "Tour package creation",
+        "tourCreationEnabledDesc": "Allow agencies to create tour packages. Admins are always allowed.",
+        "reportingEnabled": "Reporting",
+        "reportingEnabledDesc": "Allow travelers to submit reports. Agencies are always allowed."
       },
       "maintenanceWarning": "Enabling maintenance mode will make the platform inaccessible to all travelers and agencies.",
       "save": "Save settings"

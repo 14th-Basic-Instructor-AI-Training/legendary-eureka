@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { LogoutCurve } from "iconsax-reactjs";
 import { Avatar, Button, useConfirm } from "@/ui";
@@ -11,12 +12,14 @@ import { signOut } from "next-auth/react";
 import { dashboardPathFor } from "@/lib/permissions";
 import { useLocalizedRouter } from "@/lib/locale";
 import { cn } from "@/lib/utils";
-import { clientApiFetch } from "@/lib/api/client";
+import { clientApiFetch, publicApiFetch } from "@/lib/api/client";
 import { onRealtime, AGENCY_APPROVED, AGENCY_REJECTED } from "@/lib/realtime";
 import type { AgencyProfileResponse, AgencyStatus } from "@/lib/api/profile";
+import type { PublicSettings } from "@/lib/api/settings";
 import { AgencyApprovalPendingModal } from "./AgencyApprovalPendingModal";
 import { AgencyApprovedModal } from "./AgencyApprovedModal";
 import { AgencyRejectedModal } from "./AgencyRejectedModal";
+import { MaintenanceModal } from "./MaintenanceModal";
 
 function initialsOf(name: string) {
   return name
@@ -47,6 +50,9 @@ const NAV_ITEMS = [
 export function MarketingHeader() {
   const { t } = useTranslation();
   const router = useLocalizedRouter();
+  const pathname = usePathname() ?? "";
+  // Pathname carries the locale prefix (e.g. /en/explore); match the explore route.
+  const exploreActive = pathname.endsWith("/explore");
   const { user } = useSession();
   const confirm = useConfirm();
   const [scrolled, setScrolled] = useState(false);
@@ -58,6 +64,10 @@ export function MarketingHeader() {
   const [showPendingModal, setShowPendingModal] = useState(false);
   const [showApprovedModal, setShowApprovedModal] = useState(false);
   const [showRejectedModal, setShowRejectedModal] = useState(false);
+  // Platform maintenance flag (read from the public settings endpoint). Admins
+  // bypass maintenance, so it only gates agency/traveler workspace access.
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -85,6 +95,24 @@ export function MarketingHeader() {
       active = false;
     };
   }, [user?.role, user?.id]);
+
+  // Read the platform maintenance flag so the workspace button can warn instead
+  // of dropping non-admins into an area the backend will reject with 503.
+  useEffect(() => {
+    if (!user?.id) return;
+    let active = true;
+    publicApiFetch<PublicSettings>("/settings/public")
+      .then((s) => {
+        if (active) setMaintenanceMode(s.maintenanceMode);
+      })
+      .catch(() => {
+        // Don't block access on a settings read failure.
+        if (active) setMaintenanceMode(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [user?.id]);
 
   // Live status changes for THIS agency, emitted by the admin requests queue.
   // Approval unlocks the workspace in place + shows the success modal; rejection
@@ -125,6 +153,12 @@ export function MarketingHeader() {
 
   const goToDashboard = () => {
     if (!user) return;
+    // Admins bypass maintenance; everyone else is told instead of being dropped
+    // into a workspace the backend will reject.
+    if (maintenanceMode && user.role !== "admin") {
+      setShowMaintenanceModal(true);
+      return;
+    }
     if (user.role === "agency" && agencyStatus === "PENDING") {
       setShowPendingModal(true);
       return;
@@ -168,15 +202,6 @@ export function MarketingHeader() {
             </span>
           </LocaleLink>
           <nav className="hidden items-center gap-1 lg:flex">
-            <LocaleLink
-              href="/explore"
-              className="group text-muted hover:text-foreground relative rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200"
-            >
-              <span className="transition-transform duration-200 group-hover:-translate-y-px inline-block">
-                {t("explore.navLabel")}
-              </span>
-              <span className="bg-primary pointer-events-none absolute inset-x-3 bottom-1 h-0.5 origin-left scale-x-0 rounded-full transition-transform duration-300 ease-out group-hover:scale-x-100" />
-            </LocaleLink>
             {NAV_ITEMS.map(({ key, hash }) => (
               <LocaleLink
                 key={key}
@@ -194,6 +219,26 @@ export function MarketingHeader() {
                 />
               </LocaleLink>
             ))}
+            <LocaleLink
+              href="/explore"
+              aria-current={exploreActive ? "page" : undefined}
+              className={cn(
+                "group relative rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200",
+                exploreActive
+                  ? "text-primary"
+                  : "text-muted hover:text-foreground",
+              )}
+            >
+              <span className="transition-transform duration-200 group-hover:-translate-y-px inline-block">
+                {t("explore.navLabel")}
+              </span>
+              <span
+                className={cn(
+                  "bg-primary pointer-events-none absolute inset-x-3 bottom-1 h-0.5 origin-left rounded-full transition-transform duration-300 ease-out group-hover:scale-x-100",
+                  exploreActive ? "scale-x-100" : "scale-x-0",
+                )}
+              />
+            </LocaleLink>
           </nav>
         </div>
 
@@ -253,6 +298,11 @@ export function MarketingHeader() {
       isOpen={showRejectedModal}
       onClose={() => setShowRejectedModal(false)}
       onContinue={handleRejectedContinue}
+    />
+
+    <MaintenanceModal
+      isOpen={showMaintenanceModal}
+      onClose={() => setShowMaintenanceModal(false)}
     />
     </>
   );

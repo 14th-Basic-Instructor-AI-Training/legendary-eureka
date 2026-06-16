@@ -39,6 +39,11 @@ export function getPendingDestinations(params?: PageParams): Promise<PagedData<D
   return apiFetch("/destinations/pending", { params });
 }
 
+/** Admin approval queue: agency-submitted destinations of all statuses (pending/approved/rejected). */
+export function getDestinationApprovals(params?: PageParams): Promise<PagedData<DestinationResponse>> {
+  return apiFetch("/destinations/approvals", { params });
+}
+
 export function approveDestination(id: string): Promise<DestinationResponse> {
   return apiFetch(`/destinations/${id}/approve`, { method: "PUT" });
 }

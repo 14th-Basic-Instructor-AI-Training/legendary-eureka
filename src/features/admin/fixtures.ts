@@ -6,7 +6,6 @@ import {
   EditRequestSchema,
   PlatformActivitySchema,
   ReportSchema,
-  SystemSettingsSchema,
   UserSummarySchema,
   type AdminBooking,
   type AdminDashboard,
@@ -15,7 +14,6 @@ import {
   type EditRequest,
   type PlatformActivity,
   type Report,
-  type SystemSettings,
   type UserSummary,
 } from "./schema";
 
@@ -384,15 +382,6 @@ export const ADMIN_BOOKINGS: AdminBooking[] = [
     requestedAtLabel: "4 days ago",
   },
 ].map((b) => AdminBookingSchema.parse(b));
-
-export const INITIAL_SYSTEM_SETTINGS: SystemSettings = SystemSettingsSchema.parse({
-  commissionRate: 10,
-  maxPackageDays: 30,
-  minActivityPriceUsd: 0,
-  registrationOpen: true,
-  bookingEnabled: true,
-  maintenanceMode: false,
-});
 
 /** Mock analytics for the admin overview dashboard. Replaced by aggregation later. */
 export const ADMIN_DASHBOARD: AdminDashboard = AdminDashboardSchema.parse({

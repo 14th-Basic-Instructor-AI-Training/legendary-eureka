@@ -534,6 +534,11 @@
       "body": "관리자가 여행사 등록을 검토했으나 승인하지 못했습니다. 계정이 여행자로 변경되었습니다. 여행자로 계속하려면 다시 로그인하세요.",
       "continue": "여행자로 로그인"
     },
+    "maintenance": {
+      "title": "플랫폼 점검 중",
+      "body": "플랫폼이 일시적으로 점검 모드입니다. 현재 작업 공간을 사용할 수 없습니다. 곧 복구될 예정이니 잠시 후 다시 확인해 주세요.",
+      "gotIt": "확인"
+    },
     "hero": {
       "title": "아시아 전역에서 다음 여행을 발견하세요",
       "subtitle": "엄선된 여행지, 현지 체험, 신뢰할 수 있는 여행사의 투어를 한 곳에서.",
@@ -1636,13 +1641,23 @@
       "contactEmail": "연락 이메일",
       "viewCard": "카드",
       "viewTable": "테이블",
+      "viewFlow": "흐름",
       "cardType": "여행사 요청",
       "applicant": "신청자",
       "agencyLabel": "여행사",
       "submitted": "제출됨",
+      "statusLabel": "상태",
+      "colPackage": "투어 패키지",
+      "colDestination": "여행지",
+      "colProvince": "지역",
       "flow": {
         "agencyTitle": "여행사 온보딩 흐름",
         "agencySub": "신청자 → 여행사 요청",
+        "byDaySub": "제출일별 그룹화",
+        "tourTitle": "투어 패키지 승인",
+        "destinationTitle": "여행지 승인",
+        "total": "전체",
+        "approvalRate": "승인율",
         "editTitle": "편집 요청 흐름",
         "editSub": "여행사 → 활동 편집 요청"
       },
@@ -1952,24 +1967,32 @@
     "settings": {
       "title": "시스템 설정",
       "saved": "설정이 저장되었습니다.",
+      "saveError": "설정을 저장하지 못했습니다. 다시 시도해 주세요.",
+      "loadError": "설정을 불러오지 못했습니다.",
+      "confirmTitle": "플랫폼 설정을 저장하시겠습니까?",
+      "confirmDescription": "이 변경 사항은 플랫폼 전체에 적용되며 즉시 적용됩니다.",
       "sections": {
         "pricingFees": "가격 및 수수료",
-        "pricingFeesDesc": "플랫폼 수수료 및 최소 가격을 설정합니다.",
-        "contentPolicy": "콘텐츠 정책",
-        "contentPolicyDesc": "여행사가 생성하고 게시할 수 있는 항목에 대한 제한입니다.",
+        "pricingFeesDesc": "플랫폼 수수료율을 설정합니다.",
         "platformFeatures": "플랫폼 기능",
-        "platformFeaturesDesc": "플랫폼 전체 기능을 켜거나 끕니다."
+        "platformFeaturesDesc": "플랫폼 전체 기능을 켜거나 끕니다.",
+        "contentModeration": "콘텐츠 관리",
+        "contentModerationDesc": "여행사와 여행자가 기여할 수 있는 항목을 제어합니다."
       },
       "fields": {
         "commissionRate": "플랫폼 수수료율 (%)",
-        "maxPackageDays": "최대 투어 패키지 기간 (일)",
-        "minActivityPriceUsd": "최소 활동 가격 (USD)",
         "registrationOpen": "회원가입 허용",
         "registrationOpenDesc": "새 여행자와 여행사의 가입을 허용합니다.",
         "bookingEnabled": "예약 허용",
         "bookingEnabledDesc": "여행자가 투어를 요청하고 예약할 수 있도록 합니다.",
         "maintenanceMode": "유지보수 모드",
-        "maintenanceModeDesc": "관리자가 아닌 모든 사용자에게 플랫폼을 오프라인으로 전환합니다."
+        "maintenanceModeDesc": "관리자가 아닌 모든 사용자에게 플랫폼을 오프라인으로 전환합니다.",
+        "destinationCreationEnabled": "여행지 생성",
+        "destinationCreationEnabledDesc": "여행사가 여행지를 생성할 수 있도록 합니다. 관리자는 항상 허용됩니다.",
+        "tourCreationEnabled": "투어 패키지 생성",
+        "tourCreationEnabledDesc": "여행사가 투어 패키지를 생성할 수 있도록 합니다. 관리자는 항상 허용됩니다.",
+        "reportingEnabled": "신고",
+        "reportingEnabledDesc": "여행자가 신고를 제출할 수 있도록 합니다. 여행사는 항상 허용됩니다."
       },
       "maintenanceWarning": "유지보수 모드를 활성화하면 모든 여행자와 여행사가 플랫폼에 접근할 수 없게 됩니다.",
       "save": "설정 저장"

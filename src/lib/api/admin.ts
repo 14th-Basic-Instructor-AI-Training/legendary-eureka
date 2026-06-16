@@ -66,11 +66,12 @@ export interface ReportResponse {
 
 export interface SystemSettingsResponse {
   commissionRate: number;
-  maxPackageDays: number;
-  minActivityPriceUsd: number;
   registrationOpen: boolean;
   bookingEnabled: boolean;
   maintenanceMode: boolean;
+  destinationCreationEnabled: boolean;
+  tourCreationEnabled: boolean;
+  reportingEnabled: boolean;
 }
 
 // ── Request bodies ────────────────────────────────────────────────────────────
@@ -91,11 +92,12 @@ export interface AdminReportDecision {
 
 export interface UpdateSystemSettingsRequest {
   commissionRate?: number;
-  maxPackageDays?: number;
-  minActivityPriceUsd?: number;
   registrationOpen?: boolean;
   bookingEnabled?: boolean;
   maintenanceMode?: boolean;
+  destinationCreationEnabled?: boolean;
+  tourCreationEnabled?: boolean;
+  reportingEnabled?: boolean;
 }
 
 // ── List params ───────────────────────────────────────────────────────────────

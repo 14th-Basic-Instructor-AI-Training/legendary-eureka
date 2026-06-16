@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import { Trans, useTranslation } from "react-i18next";
 import { TickCircle, CloseCircle, Box1, SearchNormal1 } from "iconsax-reactjs";
 import { sileo } from "sileo";
-import { Button, Input, Pagination, StatusChip, useConfirm } from "@/ui";
+import { Button, Input, Pagination, StatusChip, Tabs, useConfirm } from "@/ui";
 import { formatPrice } from "@/lib/format";
 import { sendRealtime, TOURS_CHANGED } from "@/lib/realtime";
 import { approvePackageAction, rejectPackageAction } from "@/actions/tours";
 import type { PackageApprovalStatus } from "../schema";
+import { ApprovalsTable } from "./ApprovalsTable";
 import type { TourPackageResponse } from "@/lib/api/packages";
 
 /** Cards per page. */
@@ -29,6 +30,14 @@ function approvalKey(p: TourPackageResponse): PackageApprovalStatus {
   return (p.approvalStatus?.toLowerCase() as PackageApprovalStatus) ?? "pending";
 }
 
+/** Status filter tabs shown when the host doesn't own the filter. */
+const STATUS_FILTERS: Array<{ value: "all" | PackageApprovalStatus; labelKey: string }> = [
+  { value: "all", labelKey: "common.all" },
+  { value: "pending", labelKey: "status.pending" },
+  { value: "approved", labelKey: "status.approved" },
+  { value: "rejected", labelKey: "status.rejected" },
+];
+
 /**
  * Admin: review tour packages agencies submitted for approval. Reuses the
  * Requests-queue look (search + status tabs + card grid + approve/reject).
@@ -44,13 +53,16 @@ type Props = {
   statusFilter?: "all" | PackageApprovalStatus;
   /** When provided, the host owns the search box; the queue hides its own. */
   search?: string;
+  /** Card grid (default) or table layout. */
+  view?: "card" | "table";
 };
 
 export function TourApprovalsQueue({
   packages,
   hidePendingBanner = false,
-  statusFilter = "all",
+  statusFilter: statusFilterProp,
   search: searchProp,
+  view = "card",
 }: Props) {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
@@ -61,6 +73,10 @@ export function TourApprovalsQueue({
   // When the host passes `search`, it owns the input and we hide our own.
   const ownsSearch = searchProp === undefined;
   const search = searchProp ?? internalSearch;
+  const [internalStatus, setInternalStatus] = useState<"all" | PackageApprovalStatus>("all");
+  // When the host passes `statusFilter`, it owns the filter and we hide our own tabs.
+  const ownsStatus = statusFilterProp === undefined;
+  const statusFilter = statusFilterProp ?? internalStatus;
   const [page, setPage] = useState(1);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -161,35 +177,60 @@ export function TourApprovalsQueue({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       {!hidePendingBanner && pendingCount > 0 ? (
-        <div className="bg-warning/10 border-warning/30 flex w-fit items-center gap-2 rounded-xl border px-4 py-2.5">
+        <div className="bg-warning/10 border-warning/30 flex w-fit shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5">
           <span className="text-warning text-sm font-medium">
             {t("tours.admin.approvals.pendingCount", { count: pendingCount })}
           </span>
         </div>
       ) : null}
 
-      {/* search (status filter is the host's dropdown in the package row) */}
-      {ownsSearch ? (
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative min-w-48 flex-1">
-            <SearchNormal1
-              size={16}
-              color="currentColor"
-              className="text-muted pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
-            />
-            <Input
-              aria-label={t("tours.admin.approvals.search")}
-              placeholder={t("tours.admin.approvals.search")}
-              value={search}
-              onChange={(e) => {
-                setInternalSearch(e.target.value);
+      {/* search + status tabs (hidden when the host owns these filters) */}
+      {ownsSearch || ownsStatus ? (
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
+          {ownsSearch ? (
+            <div className="relative min-w-48 flex-1">
+              <SearchNormal1
+                size={16}
+                color="currentColor"
+                className="text-muted pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
+              />
+              <Input
+                aria-label={t("tours.admin.approvals.search")}
+                placeholder={t("tours.admin.approvals.search")}
+                value={search}
+                onChange={(e) => {
+                  setInternalSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="pl-9"
+              />
+            </div>
+          ) : null}
+          {ownsStatus ? (
+            <Tabs
+              selectedKey={statusFilter}
+              onSelectionChange={(key) => {
+                setInternalStatus(key as "all" | PackageApprovalStatus);
                 setPage(1);
               }}
-              className="pl-9"
-            />
-          </div>
+            >
+              <Tabs.ListContainer>
+                <Tabs.List
+                  aria-label={t("tours.admin.approvals.search")}
+                  className="bg-primary/15!"
+                >
+                  {STATUS_FILTERS.map((f) => (
+                    <Tabs.Tab key={f.value} id={f.value}>
+                      {t(f.labelKey)}
+                      <Tabs.Indicator />
+                    </Tabs.Tab>
+                  ))}
+                </Tabs.List>
+              </Tabs.ListContainer>
+            </Tabs>
+          ) : null}
         </div>
       ) : null}
 
@@ -200,8 +241,37 @@ export function TourApprovalsQueue({
           </span>
           <p className="text-muted text-sm">{t("tours.admin.approvals.empty")}</p>
         </div>
+      ) : view === "table" ? (
+        <>
+          <div className="-mr-2 min-h-0 flex-1 overflow-y-auto pr-2">
+            <ApprovalsTable
+              rows={paged.map((p) => ({
+                id: p.id,
+                title: p.title,
+                sub: p.agencyName,
+                status: p.approvalStatus ?? "PENDING",
+                createdAt: p.createdAt,
+              }))}
+              canReview
+              busyId={busyId}
+              onApprove={(id) => {
+                const p = packages.find((x) => x.id === id);
+                if (p) onApprove(p);
+              }}
+              onReject={(id) => {
+                const p = packages.find((x) => x.id === id);
+                if (p) onReject(p);
+              }}
+              titleHeader={t("admin.requests.colPackage")}
+              subHeader={t("admin.requests.agencyLabel")}
+              ariaLabel={t("admin.requests.tabs.tourApprovals")}
+            />
+          </div>
+          <Pagination page={currentPage} total={pageCount} onChange={setPage} className="mt-2 shrink-0" />
+        </>
       ) : (
         <>
+          <div className="-mr-2 min-h-0 flex-1 overflow-y-auto pr-2">
           <ul className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
             {paged.map((p) => {
               const status = approvalKey(p);
@@ -253,7 +323,8 @@ export function TourApprovalsQueue({
               );
             })}
           </ul>
-          <Pagination page={currentPage} total={pageCount} onChange={setPage} className="mt-2" />
+          </div>
+          <Pagination page={currentPage} total={pageCount} onChange={setPage} className="mt-2 shrink-0" />
         </>
       )}
     </div>

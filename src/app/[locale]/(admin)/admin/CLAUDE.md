@@ -21,7 +21,7 @@ files.
 | `/[locale]/admin/content` | `content/page.tsx` | Destinations + tour-packages moderation — see content note below |
 | `/[locale]/admin/bookings` | `bookings/page.tsx` | Platform-wide booking monitoring — fetches all trips + monthly trend |
 | `/[locale]/admin/users` | `users/page.tsx` | User management (suspend / ban) — composes `<AdminQueuePage>` + `<UsersPanel>` |
-| `/[locale]/admin/settings` | `settings/page.tsx` | Platform settings — delegates to `features/settings/components/SettingsPage` (cross-role feature) |
+| `/[locale]/admin/settings` | `settings/page.tsx` | Platform system settings — server-fetches `getSystemSettings()` and renders `features/admin/components/SystemSettings` wired to `GET/PUT /admin/settings` |
 | `/[locale]/admin/calendar` | `calendar/page.tsx` | Admin calendar view — delegates to `features/calendar/components/RoleCalendar role="admin"` |
 | `/[locale]/admin/destinations` | `destinations/page.tsx` | **Redirect stub** → `/[locale]/admin/content?tab=destinations` |
 | `/[locale]/admin/tour-approvals` | `tour-approvals/page.tsx` | **Redirect stub** → `/[locale]/admin/content?tab=packages` |
@@ -54,6 +54,7 @@ All data fetching is done server-side in the page file (Server Component). Servi
 | `services/admin.service` | `getAdminDestinations` | `content/page.tsx` |
 | `services/packages.service` | `getPackages`, `getArchivedPackages` | `content/page.tsx` |
 | `services/bookings.service` | `getAllTrips`, `getAdminMonthlyBookings` | `bookings/page.tsx` |
+| `services/admin.service` | `getSystemSettings` | `settings/page.tsx` |
 
 ## Adapter pattern (`requests/page.tsx`)
 
@@ -81,11 +82,16 @@ backwards-compatibility with old links. Do not remove them. Destinations managem
 approvals now live as tabs inside the content page (`/admin/content?tab=destinations` and
 `?tab=packages`).
 
-## Settings note
+## Settings page (`settings/page.tsx`)
 
-`settings/page.tsx` renders `<SettingsPage>` from `features/settings` — a cross-role feature (also
-used by agency and traveler areas). Do not add admin-only guards inside `SettingsPage` itself;
-the admin-only guard is already enforced by this area's `layout.tsx`.
+Server-fetches `getSystemSettings()` and renders `features/admin/components/SystemSettings` (wired to
+`GET/PUT /api/v1/admin/settings`). The settings surface is intentionally minimal — commission rate +
+three enforced toggles (`registrationOpen`, `bookingEnabled`, `maintenanceMode`); the inert
+`maxPackageDays`/`minActivityPriceUsd` were dropped. A fetch failure passes `initial={null}` and the
+component renders a localized error state with a retry. Saves go through `updateSettingsAction` (in
+`src/actions/admin.ts`) followed by `router.refresh()`. The admin-only guard is enforced by this
+area's `layout.tsx` — no inline role check belongs in the page. Note: the cross-role
+`features/settings/SettingsPage` is a separate traveler/agency surface and is no longer used here.
 
 ## What belongs here vs. the feature folder
 

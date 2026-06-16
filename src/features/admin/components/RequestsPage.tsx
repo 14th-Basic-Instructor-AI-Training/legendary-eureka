@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useSearchParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { Hierarchy } from "iconsax-reactjs";
 import { Chip } from "@/ui";
 import { useLocalizedRouter } from "@/lib/locale";
 import { useRealtimeReload } from "@/lib/useRealtimeReload";
@@ -13,6 +14,7 @@ import { AgencyRequestsQueue } from "./AgencyRequestsQueue";
 import { TourApprovalsQueue } from "@/features/tours/components/TourApprovalsQueue";
 import { DestinationApprovalsQueue } from "@/features/tours/components/DestinationApprovalsQueue";
 import { cn } from "@/lib/utils";
+import type { FlowItem } from "./RequestFlowPanel";
 import type { AdminAgencyProfile } from "@/lib/api/admin";
 import type { TourPackageResponse } from "@/lib/api/packages";
 import type { DestinationResponse } from "@/lib/api/destinations";
@@ -26,7 +28,7 @@ const RequestFlowPanel = dynamic(
   { ssr: false },
 );
 
-type View = "card" | "table";
+type View = "card" | "table" | "flow";
 type RequestTab = "agencies" | "tourApprovals" | "destinations";
 
 type Props = {
@@ -53,7 +55,9 @@ export function RequestsPage({
 
   const pendingAgency = agencies.filter((r) => r.status === "PENDING").length;
   const pendingTour = tourApprovals.filter((p) => p.approvalStatus === "PENDING").length;
-  const pendingDestination = pendingDestinations.length;
+  const pendingDestination = pendingDestinations.filter(
+    (d) => d.approvalStatus === "PENDING",
+  ).length;
 
   const tabs: Array<{ id: RequestTab; label: string; count: number }> = [
     { id: "agencies", label: t("admin.requests.tabs.agencies"), count: pendingAgency },
@@ -61,20 +65,43 @@ export function RequestsPage({
     { id: "destinations", label: t("admin.requests.tabs.destinations"), count: pendingDestination },
   ];
 
-  // The React Flow lifecycle panel only models the agency onboarding flow.
-  const showFlow = tab === "agencies";
+  // The flow view groups the active tab's items by submission day. Each tab maps
+  // its own data into the shared FlowItem shape.
+  const flowItems: FlowItem[] =
+    tab === "agencies"
+      ? agencies.map((a) => ({
+          id: a.id,
+          title: a.agencyName,
+          sub: a.email,
+          status: a.status,
+          createdAt: a.createdAt,
+        }))
+      : tab === "tourApprovals"
+        ? tourApprovals.map((p) => ({
+            id: p.id,
+            title: p.title,
+            sub: p.agencyName,
+            status: p.approvalStatus ?? "PENDING",
+            createdAt: p.createdAt,
+          }))
+        : pendingDestinations.map((d) => ({
+            id: d.id,
+            title: d.name,
+            sub: d.province,
+            status: d.approvalStatus,
+            createdAt: d.createdAt,
+          }));
+  const flowTitle =
+    tab === "agencies"
+      ? t("admin.requests.flow.agencyTitle")
+      : tab === "tourApprovals"
+        ? t("admin.requests.flow.tourTitle")
+        : t("admin.requests.flow.destinationTitle");
 
   return (
-    <div
-      className={cn(
-        "grid grid-cols-1 gap-6 items-start",
-        showFlow && "xl:grid-cols-[7fr_3fr]",
-      )}
-    >
-      {/* ── left column ── */}
-      <div className="flex flex-col gap-6">
+    <div className="flex h-full min-h-0 flex-col gap-6">
         {/* page header */}
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex shrink-0 items-start justify-between gap-4">
           <div>
             <h1 className="text-primary text-2xl font-bold tracking-tight">
               {t("admin.nav.requests")}
@@ -82,7 +109,7 @@ export function RequestsPage({
             <p className="text-muted mt-1 text-sm">{t("admin.pages.requests.subtitle")}</p>
           </div>
 
-          {/* view toggle */}
+          {/* view toggle — card / table / flow, available on every tab */}
           <div className="flex items-center gap-1 rounded-lg border border-border bg-bg-ghostwhite p-0.5 shrink-0">
             <button
               type="button"
@@ -115,6 +142,19 @@ export function RequestsPage({
                 <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/>
                 <line x1="3" y1="18" x2="21" y2="18"/>
               </svg>
+            </button>
+            <button
+              type="button"
+              aria-label={t("admin.requests.viewFlow")}
+              onClick={() => setView("flow")}
+              className={cn(
+                "rounded-md p-1.5 transition-colors",
+                view === "flow"
+                  ? "bg-white text-primary shadow-primary"
+                  : "text-muted hover:text-foreground",
+              )}
+            >
+              <Hierarchy size={16} color="currentColor" />
             </button>
           </div>
         </div>
@@ -179,8 +219,14 @@ export function RequestsPage({
 
           {/* Panel — same bg-dashboard fill the active notch connects into. */}
           <div className="bg-bg-dashboard flex min-h-0 flex-1 flex-col rounded-t-3xl rounded-b-2xl p-5 sm:p-6">
-            {tab === "agencies" ? (
-              <div className="flex flex-col gap-4">
+            {view === "flow" ? (
+              <RequestFlowPanel
+                items={flowItems}
+                title={flowTitle}
+                subtitle={t("admin.requests.flow.byDaySub")}
+              />
+            ) : tab === "agencies" ? (
+              <div className="flex min-h-0 flex-1 flex-col gap-4">
                 {pendingAgency > 0 ? (
                   <div className="bg-warning/10 border-warning/30 flex w-fit shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5">
                     <span className="text-warning text-sm font-medium">
@@ -191,20 +237,12 @@ export function RequestsPage({
                 <AgencyRequestsQueue view={view} requests={agencies} />
               </div>
             ) : tab === "tourApprovals" ? (
-              <TourApprovalsQueue packages={tourApprovals} />
+              <TourApprovalsQueue packages={tourApprovals} view={view} />
             ) : (
-              <DestinationApprovalsQueue destinations={pendingDestinations} />
+              <DestinationApprovalsQueue destinations={pendingDestinations} view={view} />
             )}
           </div>
         </div>
-      </div>
-
-      {/* ── right column: React Flow panel (agency onboarding flow only) ── */}
-      {showFlow ? (
-        <div className="hidden xl:block">
-          <RequestFlowPanel tab="agencies" agencies={agencies} editRequests={[]} />
-        </div>
-      ) : null}
     </div>
   );
 }

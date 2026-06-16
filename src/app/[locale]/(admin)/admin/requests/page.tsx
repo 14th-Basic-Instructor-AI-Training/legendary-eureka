@@ -1,14 +1,14 @@
 import { RequestsPage } from "@/features/admin/components/RequestsPage";
 import { getAdminAgencies } from "@/services/admin.service";
 import { getApprovalPackages } from "@/services/packages.service";
-import { getPendingDestinations } from "@/services/destinations.service";
+import { getDestinationApprovals } from "@/services/destinations.service";
 
 export default async function AdminRequestsPage() {
-  const [agencies, tourApprovalsPage, pendingDestinationsPage] = await Promise.all([
+  const [agencies, tourApprovalsPage, destinationApprovalsPage] = await Promise.all([
     getAdminAgencies({ size: 100 }),
-    // Tour packages + destinations agencies submitted for admin approval.
+    // Tour packages + destinations agencies submitted for admin approval (all statuses).
     getApprovalPackages({ size: 100 }),
-    getPendingDestinations({ size: 100 }),
+    getDestinationApprovals({ size: 100 }),
   ]);
 
   // `getAdminAgencies` already returns the `AdminAgencyProfile` shape the UI
@@ -17,7 +17,7 @@ export default async function AdminRequestsPage() {
     <RequestsPage
       agencies={agencies.content}
       tourApprovals={tourApprovalsPage.content}
-      pendingDestinations={pendingDestinationsPage.content}
+      pendingDestinations={destinationApprovalsPage.content}
     />
   );
 }

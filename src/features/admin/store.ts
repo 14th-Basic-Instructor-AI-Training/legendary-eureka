@@ -7,7 +7,6 @@ import {
   initialAgencyRequests,
   initialEditRequests,
   initialReports,
-  initialSystemSettings,
   initialUsers,
 } from "./data";
 import type { Role } from "@/features/auth/schema";
@@ -23,7 +22,6 @@ import type {
   EditRequest,
   PlatformActivity,
   Report,
-  SystemSettings,
   UserStatus,
   UserSummary,
 } from "./schema";
@@ -36,7 +34,6 @@ interface AdminState {
   editRequests: EditRequest[];
   adminPackages: AdminPackage[];
   adminBookings: AdminBooking[];
-  settings: SystemSettings;
   /** Confirm a traveler's become-an-agency request (agency-onboarding flow). */
   approveAgency: (actor: Actor | null, id: string) => boolean;
   rejectAgency: (actor: Actor | null, id: string) => boolean;
@@ -67,8 +64,6 @@ interface AdminState {
   /** Package moderation — admin can publish, archive, or delete any package. */
   setPackageStatus: (actor: Actor | null, id: string, status: AdminPackageStatus) => boolean;
   deletePackage: (actor: Actor | null, id: string) => boolean;
-  /** System settings — platform-wide config. */
-  updateSettings: (actor: Actor | null, patch: Partial<SystemSettings>) => boolean;
   /** Reports — attach an admin note explaining the resolution. */
   addReportNote: (actor: Actor | null, id: string, note: string) => boolean;
   /** Users — change a user's role (e.g. downgrade agency → traveler). */
@@ -103,7 +98,6 @@ export const useAdminStore = create<AdminState>((set) => ({
   editRequests: initialEditRequests(),
   adminPackages: initialAdminPackages(),
   adminBookings: initialAdminBookings(),
-  settings: initialSystemSettings(),
 
   approveAgency: (actor, id) => {
     if (!can(actor, "manageAgencyRequests")) return false;
@@ -206,12 +200,6 @@ export const useAdminStore = create<AdminState>((set) => ({
   deletePackage: (actor, id) => {
     if (!can(actor, "managePackages")) return false;
     set((s) => ({ adminPackages: s.adminPackages.filter((p) => p.id !== id) }));
-    return true;
-  },
-
-  updateSettings: (actor, patch) => {
-    if (!can(actor, "configureSystem")) return false;
-    set((s) => ({ settings: { ...s.settings, ...patch } }));
     return true;
   },
 
