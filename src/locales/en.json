@@ -1428,6 +1428,7 @@
       "location": {
         "mapPlaceholder": "No location set yet — edit to drop a pin",
         "dropPinHint": "Click the map or drag the pin to set your location",
+        "lookingUpAddress": "Looking up address…",
         "currentAddress": "Current Address",
         "noAddress": "No address set yet",
         "editLocation": "Edit Location",

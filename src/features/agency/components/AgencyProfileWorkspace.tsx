@@ -39,6 +39,43 @@ const PROVINCE_OPTIONS: { id: string; label: string }[] = [
   { id: "TAKEO", label: "Takeo" },
 ];
 
+/** Match a Nominatim region name (e.g. "Siem Reap Province") to a Province enum id. */
+function provinceIdFromRegion(region?: string): string | undefined {
+  if (!region) return undefined;
+  const norm = region.replace(/\s*province$/i, "").trim().toLowerCase();
+  return PROVINCE_OPTIONS.find((p) => p.label.toLowerCase() === norm)?.id;
+}
+
+/**
+ * Reverse-geocode coordinates → a human address + province, so dropping a pin
+ * fills the address fields (not just lat/lng). Uses the free, no-key OpenStreetMap
+ * Nominatim service to match the free MapLibre tiles. Best-effort: returns {} on
+ * any failure (the agency can still type the address manually).
+ *
+ * Note: Nominatim's usage policy is fine for low-volume/dev use; a production
+ * deployment should swap in a keyed geocoder (or self-hosted Nominatim).
+ */
+async function reverseGeocode(
+  lat: number,
+  lng: number,
+): Promise<{ address?: string; province?: string }> {
+  try {
+    const url =
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=en`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) return {};
+    const data = (await res.json()) as {
+      display_name?: string;
+      address?: Record<string, string>;
+    };
+    const a = data.address ?? {};
+    const region = a.state || a.province || a.region || a.county;
+    return { address: data.display_name, province: provinceIdFromRegion(region) };
+  } catch {
+    return {};
+  }
+}
+
 // ── Initials avatar (replaces HeroUI Avatar whose typings are too narrow) ────
 
 function InitialsAvatar({
@@ -357,6 +394,7 @@ function LocationTab({
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
   const [form, setForm] = useState({
     // `address` is a single free-form line (the backend has no separate city field).
     streetAddress: profile.streetAddress ?? "",
@@ -364,6 +402,23 @@ function LocationTab({
     latitude: profile.lat !== undefined ? String(profile.lat) : "",
     longitude: profile.lng !== undefined ? String(profile.lng) : "",
   });
+
+  // Drop/drag a pin → set coords immediately, then reverse-geocode to fill the
+  // address + province so the whole location updates, not just lat/lng.
+  function handlePin(la: number, ln: number) {
+    setForm((f) => ({ ...f, latitude: la.toFixed(6), longitude: ln.toFixed(6) }));
+    setGeocoding(true);
+    void reverseGeocode(la, ln).then((r) => {
+      setGeocoding(false);
+      if (r.address || r.province) {
+        setForm((f) => ({
+          ...f,
+          streetAddress: r.address ?? f.streetAddress,
+          province: r.province ?? f.province,
+        }));
+      }
+    });
+  }
 
   const provinceLabel =
     PROVINCE_OPTIONS.find((p) => p.id === profile.province)?.label ?? profile.province ?? "";
@@ -414,13 +469,13 @@ function LocationTab({
             lng={Number.isFinite(formLng) ? formLng : 0}
             label={profile.name}
             interactive
-            onPositionChange={(la, ln) =>
-              setForm((f) => ({ ...f, latitude: la.toFixed(6), longitude: ln.toFixed(6) }))
-            }
+            onPositionChange={handlePin}
           />
           <p className="text-muted flex items-center gap-1.5 text-xs">
             <Location size={13} variant="Linear" color="currentColor" />
-            {t("agency.profile.location.dropPinHint")}
+            {geocoding
+              ? t("agency.profile.location.lookingUpAddress")
+              : t("agency.profile.location.dropPinHint")}
           </p>
         </div>
       ) : savedHasPin ? (
