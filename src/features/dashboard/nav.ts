@@ -77,11 +77,20 @@ export const SIDEBAR_NAV: Record<Role, NavGroup[]> = {
     {
       items: [
         { labelKey: "nav.dashboard", Icon: Element3, href: "/agency/dashboard" },
+      ],
+    },
+    {
+      labelKey: "agency.nav.groups.content",
+      items: [
         { labelKey: "tours.nav.tours", Icon: Location, href: "/agency/tours" },
+        { labelKey: "agency.tabs.activities", Icon: Category, href: "/agency/activities" },
+      ],
+    },
+    {
+      labelKey: "agency.nav.groups.operations",
+      items: [
         { labelKey: "agency.tabs.bookings", Icon: ClipboardText, href: "/agency/bookings" },
         { labelKey: "calendar.nav.title", Icon: Calendar, href: "/agency/calendar" },
-        { labelKey: "agency.tabs.activities", Icon: Category, href: "/agency/activities" },
-        { labelKey: "agency.tabs.packages", Icon: Calendar, href: "/agency/packages" },
       ],
     },
   ],
