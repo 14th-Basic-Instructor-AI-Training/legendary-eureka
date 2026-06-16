@@ -1314,6 +1314,7 @@
       "basePrice_other": "기본 가격 × {{count}}명",
       "total": "합계",
       "cancelBooking": "예약 취소",
+      "markCompleted": "완료로 표시",
       "close": "닫기",
       "statTotal": "총 예약",
       "statTotalSub_one": "{{count}}건 승인됨",

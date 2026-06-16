@@ -1312,6 +1312,7 @@
       "basePrice_other": "តម្លៃមូលដ្ឋាន × {{count}} នាក់",
       "total": "សរុប",
       "cancelBooking": "លុបចោលការកក់",
+      "markCompleted": "សម្គាល់ថាបានបញ្ចប់",
       "close": "បិទ",
       "statTotal": "ការកក់សរុប",
       "statTotalSub_one": "{{count}} បានអនុម័ត",

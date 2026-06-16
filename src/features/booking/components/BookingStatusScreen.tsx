@@ -1,33 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Calendar, Profile2User, ShieldTick } from "iconsax-reactjs";
 import { Button, Card, StatusChip } from "@/ui";
 import { LocaleLink } from "@/components/LocaleLink";
-import { useSession } from "@/lib/auth";
 import { useLocalizedRouter } from "@/lib/locale";
 import { formatDate, formatPrice } from "@/lib/format";
-import { useTravelerStore } from "@/features/traveler/store";
+import { cancelBookingAction } from "@/actions/booking";
+import type { BookingHistory } from "@/features/traveler/schema";
 import { ConfirmDialog } from "@/features/traveler/components/ConfirmDialog";
 import { BookingTimeline } from "./BookingTimeline";
 
 /**
- * Booking status — reads the booking from the traveler store (the live source of
- * truth shared with Booking History, so freshly-created bookings resolve here).
- * Shows the lifecycle timeline, tour + agency summary, and a guarded cancel.
+ * Booking status — renders the trip server-fetched by the page (`GET /trips/{id}`).
+ * Shows the lifecycle timeline, tour + agency summary, and a real cancel
+ * (`PUT /trips/{id}/cancel`) that re-pulls the page on success.
  */
-export function BookingStatusScreen({ bookingId }: { bookingId: string }) {
+export function BookingStatusScreen({ booking }: { booking: BookingHistory | null }) {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
-  const { role } = useSession();
   const router = useLocalizedRouter();
-  const bookings = useTravelerStore((s) => s.bookings);
-  const cancelBooking = useTravelerStore((s) => s.cancelBooking);
+  const refreshRouter = useRouter();
   const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const booking = bookings.find((b) => b.id === bookingId);
+  const [isPending, startTransition] = useTransition();
 
   if (!booking) {
     return (
@@ -75,6 +73,7 @@ export function BookingStatusScreen({ bookingId }: { bookingId: string }) {
           <Button
             variant="tertiary"
             className="text-danger"
+            isDisabled={isPending}
             onPress={() => setConfirmOpen(true)}
           >
             {t("bookings.actions.cancel")}
@@ -152,8 +151,11 @@ export function BookingStatusScreen({ bookingId }: { bookingId: string }) {
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={() => {
-          cancelBooking(role, booking.id);
           setConfirmOpen(false);
+          startTransition(async () => {
+            const res = await cancelBookingAction(booking.id);
+            if (res.ok) refreshRouter.refresh();
+          });
         }}
         title={t("bookings.cancelConfirm.title")}
         description={t("bookings.cancelConfirm.description", {

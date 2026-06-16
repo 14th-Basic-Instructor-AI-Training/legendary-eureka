@@ -1314,6 +1314,7 @@
       "basePrice_other": "Base price × {{count}} travellers",
       "total": "Total",
       "cancelBooking": "Cancel Booking",
+      "markCompleted": "Mark as Completed",
       "close": "Close",
       "statTotal": "Total Bookings",
       "statTotalSub_one": "{{count}} approved",
