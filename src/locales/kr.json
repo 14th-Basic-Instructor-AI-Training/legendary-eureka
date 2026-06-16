@@ -1183,6 +1183,49 @@
       "newPage": {
         "title": "투어 패키지 만들기",
         "subtitle": "패키지 페이지에 표시될 정보를 입력하세요"
+      },
+      "detail": {
+        "back": "패키지로 돌아가기",
+        "viewPublic": "공개 페이지 보기",
+        "viewLabel": "{{title}} 보기",
+        "familyFriendly": "가족 친화적",
+        "facts": {
+          "title": "주요 정보",
+          "province": "지역",
+          "travelType": "여행 유형",
+          "duration": "기간",
+          "price": "최저 가격",
+          "groupSize": "그룹 규모",
+          "groupSizeValue": "최대 {{count}}명",
+          "languages": "언어",
+          "durationCategory": "여행 길이",
+          "cancellation": "취소 정책",
+          "activityTypes": "액티비티 유형"
+        },
+        "durationCategories": {
+          "HALF_DAY": "반나절",
+          "FULL_DAY": "종일",
+          "TWO_TO_THREE_DAYS": "2~3일",
+          "FOUR_TO_SEVEN_DAYS": "4~7일",
+          "SEVEN_PLUS_DAYS": "7일 이상"
+        },
+        "actions": {
+          "title": "관리"
+        },
+        "stats": {
+          "title": "실적",
+          "rating": "평점",
+          "reviews": "리뷰",
+          "bookings": "예약",
+          "activities": "액티비티"
+        },
+        "timeline": {
+          "title": "타임라인",
+          "created": "생성됨",
+          "updated": "최종 수정",
+          "submitted": "제출됨",
+          "reviewed": "검토됨"
+        }
       }
     },
     "admin": {
