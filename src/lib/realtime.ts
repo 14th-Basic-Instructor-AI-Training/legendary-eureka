@@ -17,7 +17,8 @@
 export interface RealtimeMessage<T = unknown> {
   /** Event tag, e.g. "tours-changed" or "agency-report-<uuid>". */
   event: string;
-  data: T;
+  /** Optional payload — many events are bare signals (e.g. "refetch now"). */
+  data?: T;
 }
 
 type Handler = (msg: RealtimeMessage) => void;

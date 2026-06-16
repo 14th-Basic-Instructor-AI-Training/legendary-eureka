@@ -207,7 +207,7 @@ function BookingsTrendChart({ data }: { data: MonthlyBookingResponse[] }) {
           <YAxis {...axisProps} allowDecimals={false} tickCount={5} />
           <Tooltip
             {...tooltipProps}
-            formatter={(value: number) => [`${value} bookings`, ""]}
+            formatter={(value) => [`${value} bookings`, ""]}
           />
           <Bar dataKey="bookings" radius={[4, 4, 0, 0]}>
             {normalized.map((entry) => {
