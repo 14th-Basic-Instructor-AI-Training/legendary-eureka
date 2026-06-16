@@ -1,23 +1,42 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { TickCircle, CloseCircle, Box1, SearchNormal1 } from "iconsax-reactjs";
 import { Button, Input, Pagination, StatusChip, useConfirm } from "@/ui";
 import { formatPrice } from "@/lib/format";
-import { useSession } from "@/lib/auth";
-import { useToursStore } from "../store";
-import type { PackageApprovalStatus, TourPackage } from "../schema";
+import { sendRealtime, TOURS_CHANGED } from "@/lib/realtime";
+import { approvePackageAction, rejectPackageAction } from "@/actions/tours";
+import type { PackageApprovalStatus } from "../schema";
+import type { TourPackageResponse } from "@/lib/api/packages";
 
 /** Cards per page. */
 const PAGE_SIZE = 9;
 
+/** UPPER_SNAKE enum → "Title Case" (province label). */
+function prettyEnum(value: string): string {
+  return value
+    .toLowerCase()
+    .split("_")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+/** Wire approval status (UPPER) → the lowercase keys the UI + StatusChip use. */
+function approvalKey(p: TourPackageResponse): PackageApprovalStatus {
+  return (p.approvalStatus?.toLowerCase() as PackageApprovalStatus) ?? "pending";
+}
+
 /**
  * Admin: review tour packages agencies submitted for approval. Reuses the
  * Requests-queue look (search + status tabs + card grid + approve/reject).
- * Draft packages aren't shown — only those submitted for review.
+ * Data comes from `GET /tours/approvals` (fetched server-side and passed in);
+ * approve / reject call server actions, then the page refreshes.
  */
 type Props = {
+  /** Packages submitted for approval (any approval status). */
+  packages: TourPackageResponse[];
   /** Hide the "{n} awaiting approval" banner (e.g. when the host shows its own). */
   hidePendingBanner?: boolean;
   /** Status filter, owned by the host (a dropdown in the package-filter row). */
@@ -27,16 +46,14 @@ type Props = {
 };
 
 export function TourApprovalsQueue({
+  packages,
   hidePendingBanner = false,
   statusFilter = "all",
   search: searchProp,
 }: Props) {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
-  const { role } = useSession();
-  const packages = useToursStore((s) => s.packages);
-  const approvePackage = useToursStore((s) => s.approvePackage);
-  const rejectPackage = useToursStore((s) => s.rejectPackage);
+  const router = useRouter();
   const confirm = useConfirm();
 
   const [internalSearch, setInternalSearch] = useState("");
@@ -44,43 +61,64 @@ export function TourApprovalsQueue({
   const ownsSearch = searchProp === undefined;
   const search = searchProp ?? internalSearch;
   const [page, setPage] = useState(1);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  const submitted = packages.filter((p) => p.status !== "draft");
-  const filtered = submitted.filter((p) => {
-    const matchesStatus = statusFilter === "all" || p.status === statusFilter;
+  const filtered = packages.filter((p) => {
+    const status = approvalKey(p);
+    const matchesStatus = statusFilter === "all" || status === statusFilter;
     const q = search.toLowerCase();
     const matchesSearch =
       !q ||
       p.title.toLowerCase().includes(q) ||
       p.agencyName.toLowerCase().includes(q) ||
-      p.destinationName.toLowerCase().includes(q);
+      (p.province?.toLowerCase().includes(q) ?? false);
     return matchesStatus && matchesSearch;
   });
 
-  const pendingCount = submitted.filter((p) => p.status === "pending").length;
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const currentPage = Math.min(page, pageCount);
-  const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const pendingCount = packages.filter((p) => p.approvalStatus === "PENDING").length;
 
-  const onApprove = (p: TourPackage) =>
-    confirm({
+  // Pending (request-approval) cards first, then approved, then rejected — so the
+  // requests needing action stay at the top-left. Stable within each group.
+  const STATUS_ORDER: Record<PackageApprovalStatus, number> = {
+    pending: 0,
+    approved: 1,
+    rejected: 2,
+    draft: 3,
+  };
+  const sorted = [...filtered].sort(
+    (a, b) => (STATUS_ORDER[approvalKey(a)] ?? 9) - (STATUS_ORDER[approvalKey(b)] ?? 9),
+  );
+
+  const pageCount = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const paged = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  /** Run an approve/reject server action, emit the realtime frame, then refresh. */
+  const runAction = async (id: string, action: (id: string) => Promise<{ ok: boolean }>) => {
+    setBusyId(id);
+    const res = await action(id);
+    setBusyId(null);
+    if (res?.ok) sendRealtime({ event: TOURS_CHANGED, data: { id } });
+    router.refresh();
+  };
+
+  const onApprove = async (p: TourPackageResponse) => {
+    const ok = await confirm({
       title: t("tours.admin.approvals.approve"),
       description: p.title,
       intent: "primary",
-      onConfirm: () => {
-        approvePackage(role, p.id);
-      },
     });
+    if (ok) runAction(p.id, approvePackageAction);
+  };
 
-  const onReject = (p: TourPackage) =>
-    confirm({
+  const onReject = async (p: TourPackageResponse) => {
+    const ok = await confirm({
       title: t("tours.admin.approvals.reject"),
       description: p.title,
       intent: "danger",
-      onConfirm: () => {
-        rejectPackage(role, p.id);
-      },
     });
+    if (ok) runAction(p.id, (id) => rejectPackageAction(id));
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -125,45 +163,55 @@ export function TourApprovalsQueue({
       ) : (
         <>
           <ul className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
-            {paged.map((p) => (
-              <li
-                key={p.id}
-                className="bg-surface flex flex-col gap-3 rounded-2xl p-4 shadow-primary"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold">{p.title}</p>
-                    <p className="text-muted mt-0.5 truncate text-xs">
-                      {t("tours.packages.byAgency", { name: p.agencyName })}
-                    </p>
+            {paged.map((p) => {
+              const status = approvalKey(p);
+              return (
+                <li
+                  key={p.id}
+                  className="bg-surface flex flex-col gap-3 rounded-2xl p-4 shadow-primary"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold">{p.title}</p>
+                      <p className="text-muted mt-0.5 truncate text-xs">
+                        {t("tours.packages.byAgency", { name: p.agencyName })}
+                      </p>
+                    </div>
+                    <StatusChip status={status} />
                   </div>
-                  <StatusChip status={p.status} />
-                </div>
 
-                <p className="text-muted text-sm">
-                  {p.destinationName} · {t("tours.packages.days", { count: p.days })} ·{" "}
-                  {t("landing.tours.from")} {formatPrice(p.priceFrom, p.currency, lng)}
-                </p>
+                  <p className="text-muted text-sm">
+                    {p.province ? `${prettyEnum(p.province)} · ` : ""}
+                    {t("tours.packages.days", { count: p.durationDays })} ·{" "}
+                    {t("landing.tours.from")} {formatPrice(p.price, p.currency, lng)}
+                  </p>
 
-                {p.status === "pending" ? (
-                  <div className="border-border mt-auto flex items-center justify-end gap-2 border-t pt-3">
-                    <Button
-                      variant="tertiary"
-                      size="sm"
-                      className="text-danger"
-                      onPress={() => onReject(p)}
-                    >
-                      <CloseCircle size={15} color="currentColor" />
-                      {t("tours.admin.approvals.reject")}
-                    </Button>
-                    <Button variant="primary" size="sm" onPress={() => onApprove(p)}>
-                      <TickCircle size={15} color="currentColor" />
-                      {t("tours.admin.approvals.approve")}
-                    </Button>
-                  </div>
-                ) : null}
-              </li>
-            ))}
+                  {status === "pending" ? (
+                    <div className="border-border mt-auto flex items-center justify-between gap-2 border-t pt-3">
+                      <Button
+                        variant="tertiary"
+                        size="sm"
+                        className="text-danger"
+                        isPending={busyId === p.id}
+                        onPress={() => onReject(p)}
+                      >
+                        <CloseCircle size={15} color="currentColor" />
+                        {t("tours.admin.approvals.reject")}
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        isPending={busyId === p.id}
+                        onPress={() => onApprove(p)}
+                      >
+                        <TickCircle size={15} color="currentColor" />
+                        {t("tours.admin.approvals.approve")}
+                      </Button>
+                    </div>
+                  ) : null}
+                </li>
+              );
+            })}
           </ul>
           <Pagination page={currentPage} total={pageCount} onChange={setPage} className="mt-2" />
         </>

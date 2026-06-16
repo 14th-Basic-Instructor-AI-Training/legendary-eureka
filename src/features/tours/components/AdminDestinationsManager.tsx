@@ -6,13 +6,12 @@ import { useTranslation } from "react-i18next";
 import { Add, Location, More, Edit2, Trash } from "iconsax-reactjs";
 import { Button, Chip, Dropdown, Tabs, useConfirm } from "@/ui";
 import { CardImage } from "@/ui/CardImage";
+import { useLocalizedRouter } from "@/lib/locale";
 import { formatPrice } from "@/lib/format";
 import { sendRealtime, DESTINATIONS_CHANGED } from "@/lib/realtime";
 import { DestinationForm } from "./DestinationForm";
 import { deleteDestinationAction } from "@/actions/tours";
 import type { DestinationResponse } from "@/lib/api/destinations";
-
-type DestinationTab = "all" | "mine";
 
 /** UPPER_SNAKE enum → "Title Case" (province / travel-type labels). */
 function prettyEnum(value: string): string {
@@ -37,13 +36,18 @@ export function AdminDestinationsManager({
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
   const router = useRouter();
+  const localizedRouter = useLocalizedRouter();
   const confirm = useConfirm();
+
+  const openDetail = (id: string) => localizedRouter.push(`/admin/content/destinations/${id}`);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<DestinationResponse | null>(null);
-  const [tab, setTab] = useState<DestinationTab>("all");
+  const [tab, setTab] = useState<string>("all");
 
-  const featured = destinations.filter((d) => d.featured);
-  const shown = tab === "mine" ? featured : destinations;
+  // Distinct travel types present in the payload — each becomes a tab beside "All".
+  const travelTypes = Array.from(new Set(destinations.map((d) => d.travelType))).sort();
+  const shown =
+    tab === "all" ? destinations : destinations.filter((d) => d.travelType === tab);
 
   const handleDelete = (d: DestinationResponse) =>
     confirm({
@@ -59,9 +63,9 @@ export function AdminDestinationsManager({
     });
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       {/* sub-tabs + New Destination button, same container */}
-      <Tabs selectedKey={tab} onSelectionChange={(key) => setTab(key as DestinationTab)}>
+      <Tabs selectedKey={tab} onSelectionChange={(key) => setTab(String(key))}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Tabs.ListContainer>
             <Tabs.List aria-label={t("tours.admin.destinations.title")} className="bg-primary/15!">
@@ -69,17 +73,12 @@ export function AdminDestinationsManager({
                 <span className="whitespace-nowrap">{t("tours.admin.destinations.tabs.all")}</span>
                 <Tabs.Indicator />
               </Tabs.Tab>
-              <Tabs.Tab id="mine">
-                <span className="flex items-center gap-1.5 whitespace-nowrap">
-                  {t("tours.admin.destinations.tabs.featured")}
-                  {featured.length > 0 ? (
-                    <Chip color="warning" variant="soft" size="sm">
-                      {featured.length}
-                    </Chip>
-                  ) : null}
-                </span>
-                <Tabs.Indicator />
-              </Tabs.Tab>
+              {travelTypes.map((type) => (
+                <Tabs.Tab key={type} id={type}>
+                  <span className="whitespace-nowrap">{prettyEnum(type)}</span>
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              ))}
             </Tabs.List>
           </Tabs.ListContainer>
 
@@ -107,12 +106,26 @@ export function AdminDestinationsManager({
         }}
       />
 
+      {/* Only the card list scrolls — the sub-tabs above stay fixed. */}
+      <div className="-mr-2 min-h-0 flex-1 overflow-y-auto pr-2">
       {shown.length === 0 ? (
         <p className="text-muted py-8 text-center text-sm">{t("tours.admin.destinations.empty")}</p>
       ) : (
         <ul className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
           {shown.map((d) => (
-            <li key={d.id} className="bg-surface flex flex-col gap-3 rounded-2xl p-4 shadow-primary">
+            <li
+              key={d.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => openDetail(d.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  openDetail(d.id);
+                }
+              }}
+              className="bg-surface shadow-primary hover:ring-primary/30 flex cursor-pointer flex-col gap-3 rounded-2xl p-4 transition hover:ring-1"
+            >
               <div className="relative -mx-4 -mt-4 mb-1 aspect-[16/9] overflow-hidden rounded-t-2xl">
                 <CardImage
                   src={d.coverImageUrl || d.heroImage}
@@ -128,7 +141,10 @@ export function AdminDestinationsManager({
                     {prettyEnum(d.province)} · {prettyEnum(d.travelType)}
                   </p>
                 </div>
-                <div className="flex shrink-0 items-center gap-1.5">
+                <div
+                  className="flex shrink-0 items-center gap-1.5"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {d.featured ? (
                     <Chip color="accent" variant="soft" size="sm">
                       {t("tours.admin.destinations.tabs.featured")}
@@ -180,6 +196,7 @@ export function AdminDestinationsManager({
           ))}
         </ul>
       )}
+      </div>
     </div>
   );
 }

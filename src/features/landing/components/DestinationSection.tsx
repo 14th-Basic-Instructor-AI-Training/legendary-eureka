@@ -2,38 +2,23 @@
 
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Reveal, Skeleton } from "@/ui";
+import { Reveal } from "@/ui";
 import { PopularDestinationCard } from "@/features/destinations/components/PopularDestinationCard";
-import { useResource } from "@/features/destinations/hooks";
 import type { Result } from "@/features/destinations/data";
 import type { Destination } from "@/features/destinations/schema";
-import { DESTINATIONS_CHANGED } from "@/lib/realtime";
-import { useRealtimeReload } from "@/lib/useRealtimeReload";
 import { SectionHeading } from "./SectionHeading";
 
-function CardSkeleton() {
-  return (
-    <div className="bg-background shadow-primary overflow-hidden rounded-2xl">
-      <Skeleton className="aspect-[4/3] w-full rounded-none" />
-      <div className="flex flex-col gap-2 p-4">
-        <Skeleton className="h-4 w-2/3" />
-        <Skeleton className="h-3 w-1/2" />
-        <Skeleton className="h-3 w-full" />
-      </div>
-    </div>
-  );
-}
-
 /**
- * A titled section that loads destinations from a `data.ts` getter and renders
- * loading / error / empty / success states. Reused for featured, things-to-do,
- * and recommended rows by swapping the fetcher + copy.
+ * A titled destinations row, rendered from a server-fetched `Result`. Branches on
+ * error / empty / success (data arrives with the server render, so there is no loading
+ * state). Reused for the "Popular destinations" row; pass a custom `renderCard` to vary
+ * the card.
  */
 export function DestinationSection({
   id,
   title,
   subtitle,
-  fetcher,
+  result,
   actionLabel,
   actionHref,
   onAction,
@@ -42,16 +27,14 @@ export function DestinationSection({
   id: string;
   title: string;
   subtitle?: string;
-  fetcher: () => Promise<Result<Destination[]>>;
+  result: Result<Destination[]>;
   actionLabel?: string;
   actionHref?: string;
   onAction?: () => void;
   renderCard?: (destination: Destination) => ReactNode;
 }) {
   const { t } = useTranslation();
-  const { status, data, reload } = useResource(fetcher);
-
-  useRealtimeReload(DESTINATIONS_CHANGED, reload);
+  const data = result.ok ? result.data : null;
 
   return (
     <section id={id} className="mx-auto max-w-7xl px-4 py-12 md:px-8 md:py-16">
@@ -63,18 +46,9 @@ export function DestinationSection({
         onAction={onAction}
       />
 
-      {status === "loading" ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <CardSkeleton key={i} />
-          ))}
-        </div>
-      ) : status === "error" ? (
-        <div className="border-border flex flex-col items-center gap-3 rounded-2xl border border-dashed py-12 text-center">
+      {!result.ok ? (
+        <div className="border-border rounded-2xl border border-dashed py-12 text-center">
           <p className="text-muted text-sm">{t("destinations.states.error")}</p>
-          <Button variant="secondary" size="sm" onPress={reload}>
-            {t("common.retry")}
-          </Button>
         </div>
       ) : !data || data.length === 0 ? (
         <div className="border-border rounded-2xl border border-dashed py-12 text-center">

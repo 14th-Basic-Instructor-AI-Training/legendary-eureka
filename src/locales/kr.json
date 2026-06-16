@@ -231,7 +231,8 @@
       "bookingTitle": "이 예약을 확정하시겠습니까?",
       "bookingDescription": "확정하면 여행자에게 알림이 전송됩니다."
     },
-    "moreActions": "추가 작업"
+    "moreActions": "추가 작업",
+    "back": "뒤로"
   },
   "status": {
     "draft": "초안",
@@ -1796,6 +1797,48 @@
       },
       "error": "콘텐츠를 불러오지 못했습니다. 백엔드가 실행 중인가요?",
       "empty": "아직 콘텐츠가 없습니다."
+    },
+    "destinationDetail": {
+      "back": "콘텐츠로 돌아가기",
+      "description": "설명",
+      "noDescription": "설명이 없습니다.",
+      "details": "세부 정보",
+      "province": "지역",
+      "city": "도시",
+      "country": "국가",
+      "category": "카테고리",
+      "travelType": "여행 유형",
+      "priceFrom": "최저 가격",
+      "rating": "평점",
+      "reviews_one": "리뷰 {{count}}개",
+      "reviews_other": "리뷰 {{count}}개",
+      "tags": "태그",
+      "featured": "추천",
+      "trending": "인기",
+      "created": "생성일",
+      "coordinates": "좌표",
+      "photos": "사진",
+      "notFound": "여행지를 찾을 수 없습니다."
+    },
+    "packageDetail": {
+      "back": "콘텐츠로 돌아가기",
+      "agency": "여행사",
+      "status": "상태",
+      "price": "가격",
+      "duration": "기간",
+      "agenda": "일정",
+      "day": "{{day}}일차",
+      "noAgenda": "아직 일정이 없습니다.",
+      "description": "설명",
+      "noDescription": "설명이 없습니다.",
+      "details": "세부 정보",
+      "province": "지역",
+      "travelType": "여행 유형",
+      "rating": "평점",
+      "reviews_one": "리뷰 {{count}}개",
+      "reviews_other": "리뷰 {{count}}개",
+      "created": "생성일",
+      "notFound": "패키지를 찾을 수 없습니다."
     }
   },
   "dashboard": {
@@ -2175,6 +2218,9 @@
       "bookings": "예약된 투어",
       "personal": "개인 일정"
     },
+    "calendars": {
+      "untitled": "제목 없는 캘린더"
+    },
     "chrome": {
       "today": "오늘",
       "day": "일",
@@ -2189,6 +2235,7 @@
     "personal": {
       "title": "개인 일정",
       "addEvent": "일정 추가",
+      "untitled": "제목 없는 일정",
       "empty": "아직 개인 일정이 없습니다 — 지금 추가해 보세요.",
       "modalTitle": "개인 일정 추가",
       "save": "일정 저장",

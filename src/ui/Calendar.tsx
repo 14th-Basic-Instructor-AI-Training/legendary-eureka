@@ -33,6 +33,33 @@ export type CalendarEntry = {
   categoryId?: string;
 };
 
+/**
+ * Neutral event shape passed back to the feature layer when the user creates,
+ * edits, drags, or deletes an event directly on the calendar grid. Dates are
+ * ISO `YYYY-MM-DD` — DayFlow's internal Temporal values are normalised here so
+ * the UI layer stays framework-agnostic.
+ */
+export type CalendarEventInput = {
+  id: string;
+  title: string;
+  description?: string;
+  start: string;
+  end: string;
+  allDay: boolean;
+  /** The DayFlow calendar/group the event was created under. */
+  categoryId?: string;
+};
+
+/**
+ * Neutral calendar-group (DayFlow "calendar") shape passed back when the user
+ * creates / renames / deletes a group via the sidebar.
+ */
+export type CalendarGroupInput = {
+  id: string;
+  name: string;
+  color: string;
+};
+
 export type CalendarView = "day" | "week" | "month" | "agenda";
 
 /** Translated chrome labels handed to DayFlow's locale. */
@@ -60,6 +87,25 @@ export type UICalendarProps = {
   messages?: CalendarMessages;
   /** Read-only view (no drag/create). Defaults to true. */
   readOnly?: boolean;
+  /** Calendar/group new grid-created events default to (e.g. "personal"). */
+  defaultCalendarId?: string;
+  /** Fired when the user creates an event directly on the calendar grid. */
+  onEventCreate?: (event: CalendarEventInput) => void | Promise<void>;
+  /** Fired when the user edits/drags/resizes an event on the grid. */
+  onEventUpdate?: (event: CalendarEventInput) => void | Promise<void>;
+  /** Fired when the user deletes an event from the grid. */
+  onEventDelete?: (id: string) => void | Promise<void>;
+  /** Fired when the user creates a new calendar group in the sidebar. */
+  onCalendarCreate?: (group: CalendarGroupInput) => void | Promise<void>;
+  /** Fired when the user renames/recolors a calendar group. */
+  onCalendarUpdate?: (group: CalendarGroupInput) => void | Promise<void>;
+  /** Fired when the user deletes a calendar group. */
+  onCalendarDelete?: (id: string) => void | Promise<void>;
+  /**
+   * Translated label of the group that gets the inline "+" add-calendar button.
+   * Only the sidebar source heading matching this text shows the button.
+   */
+  addCalendarSourceLabel?: string;
   /** Extra classes for the sized container (defaults to a tall panel). */
   className?: string;
   /**
@@ -79,7 +125,7 @@ export function Calendar({ className, version, ...props }: UICalendarProps) {
   return (
     <div
       className={cn(
-        "border-border bg-surface h-[76vh] min-h-[520px] w-full overflow-hidden rounded-xl border",
+        "border-border bg-surface h-fit min-h-fit w-full overflow-hidden rounded-xl border",
         className,
       )}
     >

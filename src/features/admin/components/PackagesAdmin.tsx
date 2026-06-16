@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Trash, Box1, SearchNormal1, Filter } from "iconsax-reactjs";
 import { Button, Chip, ListBox, Select, StatusChip, Tabs, useConfirm } from "@/ui";
 import { formatPrice } from "@/lib/format";
+import { useLocalizedRouter } from "@/lib/locale";
 import { useSession } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 import { sendRealtime, TOURS_CHANGED } from "@/lib/realtime";
@@ -15,7 +16,6 @@ import {
   publishPackageAction,
 } from "@/actions/tours";
 import { TourApprovalsQueue } from "@/features/tours/components/TourApprovalsQueue";
-import { useToursStore } from "@/features/tours/store";
 import type { TourPackageResponse } from "@/lib/api/packages";
 import type { PackageApprovalStatus } from "@/features/tours/schema";
 
@@ -38,12 +38,21 @@ const APPROVAL_STATUS_FILTERS: Array<{ value: ApprovalFilter; labelKey: string }
   { value: "rejected", labelKey: "status.rejected" },
 ];
 
-export function PackagesAdmin({ packages }: { packages: TourPackageResponse[] }) {
+export function PackagesAdmin({
+  packages,
+  approvals = [],
+}: {
+  packages: TourPackageResponse[];
+  approvals?: TourPackageResponse[];
+}) {
   const { t, i18n } = useTranslation();
   const { role } = useSession();
   const router = useRouter();
+  const localizedRouter = useLocalizedRouter();
   const confirm = useConfirm();
   const canManage = can(role, "managePackages");
+
+  const openDetail = (id: string) => localizedRouter.push(`/admin/content/packages/${id}`);
 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -65,10 +74,8 @@ export function PackagesAdmin({ packages }: { packages: TourPackageResponse[] })
 
   const publishedCount = packages.filter((p) => p.status === "PUBLISHED").length;
 
-  // Pending package-approval requests come from the tours store (Flow 2 — mock).
-  const pendingApprovals = useToursStore(
-    (s) => s.packages.filter((p) => p.status === "pending").length,
-  );
+  // Pending package-approval requests (GET /tours/approvals), fetched server-side.
+  const pendingApprovals = approvals.filter((p) => p.approvalStatus === "PENDING").length;
 
   /**
    * Run a mutation server action (publish / archive / delete), refresh the
@@ -107,7 +114,7 @@ export function PackagesAdmin({ packages }: { packages: TourPackageResponse[] })
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       {/* Summary */}
       <div className="flex flex-wrap gap-3">
         <div className="bg-surface border-border flex items-center gap-2 rounded-xl border px-4 py-2">
@@ -187,9 +194,16 @@ export function PackagesAdmin({ packages }: { packages: TourPackageResponse[] })
         ) : null}
       </div>
 
+      {/* Only the list scrolls — the summary + search/filter rows stay fixed. */}
+      <div className="-mr-2 min-h-0 flex-1 overflow-y-auto pr-2">
       {/* Package-approval requests live under the "Request approval" filter */}
       {showApprovals ? (
-        <TourApprovalsQueue hidePendingBanner statusFilter={approvalStatus} search={search} />
+        <TourApprovalsQueue
+          packages={approvals}
+          hidePendingBanner
+          statusFilter={approvalStatus}
+          search={search}
+        />
       ) : filtered.length === 0 ? (
         <p className="text-muted py-8 text-center text-sm">{t("admin.packages.empty")}</p>
       ) : (
@@ -199,7 +213,16 @@ export function PackagesAdmin({ packages }: { packages: TourPackageResponse[] })
             return (
               <li
                 key={pkg.id}
-                className="bg-surface border-border flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4"
+                role="button"
+                tabIndex={0}
+                onClick={() => openDetail(pkg.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openDetail(pkg.id);
+                  }
+                }}
+                className="bg-surface border-border hover:ring-primary/30 flex cursor-pointer flex-wrap items-center justify-between gap-3 rounded-xl border p-4 transition hover:ring-1"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="bg-purple-500/10 text-purple-600 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
@@ -227,7 +250,7 @@ export function PackagesAdmin({ packages }: { packages: TourPackageResponse[] })
                   </Chip>
 
                   {canManage ? (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                       {status === "published" ? (
                         <Button
                           variant="secondary"
@@ -265,6 +288,7 @@ export function PackagesAdmin({ packages }: { packages: TourPackageResponse[] })
           })}
         </ul>
       )}
+      </div>
     </div>
   );
 }

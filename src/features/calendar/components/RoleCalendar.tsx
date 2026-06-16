@@ -1,14 +1,30 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Calendar, type CalendarCategory, type CalendarEntry } from "@/ui";
+import {
+  Button,
+  Calendar,
+  type CalendarCategory,
+  type CalendarEntry,
+  type CalendarEventInput,
+  type CalendarGroupInput,
+} from "@/ui";
 import { useResource } from "@/lib/useResource";
 import type { Role } from "@/features/auth/schema";
-import type { PersonalEventResponse } from "@/lib/api/calendar";
+import {
+  createPersonalEvent,
+  updatePersonalEvent,
+  deletePersonalEvent,
+  createPersonalCalendar,
+  updatePersonalCalendar,
+  deletePersonalCalendar,
+} from "@/services/calendar.service";
 import { eventsGetterFor } from "../data";
 import type { CalendarEvent } from "../schema";
-import { PersonalEventsPanel } from "./PersonalEventsPanel";
+
+const PERSONAL_GROUP = "personal";
+const PERSONAL_COLOR = "#10B981";
 
 /**
  * Shared per-role calendar screen.
@@ -16,10 +32,15 @@ import { PersonalEventsPanel } from "./PersonalEventsPanel";
  * - Traveler: "Booked Tours" group (blue) + "Personal Events" group (green)
  * - Agency/Admin: one colour group per tour package + "Personal Events" group
  *
- * Personal events are included in the combined data returned by the role getter.
- * The `PersonalEventsPanel` below the calendar derives its list from that data
- * and fires `onChanged` (increments `refreshKey`) when a personal event is
- * added/deleted, which causes the getter to re-run via a new function reference.
+ * Events are created/edited directly on the calendar grid:
+ *   1. Double-click a day  → `onEventCreate` → POST a personal event (gets a
+ *      real server id). DayFlow keeps the new event on screen so the editor
+ *      stays open — we deliberately do NOT reload here.
+ *   2. Adjust date/time + save → `onEventUpdate` → PUT the change, then reload.
+ *
+ * DayFlow assigns its own temporary id to a newly drawn event, while the API
+ * returns a different server id; `dayflowToServerId` bridges the two so the
+ * follow-up update/delete targets the right record.
  */
 
 function dayflowLocaleCode(lng: string): string {
@@ -46,7 +67,7 @@ export function RoleCalendar({ role }: { role: Role }) {
   // ── DayFlow entries ───────────────────────────────────────────────────────────
   const entries = useMemo<CalendarEntry[]>(
     () =>
-      (data ?? []).map((e: CalendarEvent) => ({
+      (data?.events ?? []).map((e: CalendarEvent) => ({
         id: e.id,
         title: e.title,
         description: [e.subtitle, e.status ? t(`status.${e.status}`) : null]
@@ -72,7 +93,21 @@ export function RoleCalendar({ role }: { role: Role }) {
     const bookedLabel = t("calendar.groups.bookings");
     const personalLabel = t("calendar.groups.personal");
 
-    for (const e of data ?? []) {
+    // Personal group always exists so grid-created events have a home and the
+    // sidebar shows it even before the first personal event is added.
+    groupMap.set(PERSONAL_GROUP, {
+      name: personalLabel,
+      color: PERSONAL_COLOR,
+      source: personalLabel,
+    });
+
+    // User-defined personal calendars become sub-groups under "Personal Events".
+    // Registered before events so an event in a custom calendar picks it up.
+    for (const cal of data?.calendars ?? []) {
+      groupMap.set(cal.id, { name: cal.name, color: cal.color, source: personalLabel });
+    }
+
+    for (const e of data?.events ?? []) {
       const gid = e.group ?? e.type;
       if (!groupMap.has(gid)) {
         const isPersonalGroup = gid === "personal";
@@ -123,36 +158,137 @@ export function RoleCalendar({ role }: { role: Role }) {
     [t],
   );
 
-  // ── Personal events for the side panel ───────────────────────────────────────
-  const panelPersonalEvents = useMemo<PersonalEventResponse[]>(
-    () =>
-      (data ?? [])
-        .filter((e) => e.isPersonal)
-        .map((e) => ({
-          id: e.id,
-          title: e.title,
-          description: e.subtitle,
-          startDate: e.start,
-          endDate: e.end,
-          allDay: e.allDay,
-          createdAt: "",
-        })),
+  // IDs of events that are personal (and therefore safe to edit/delete via the
+  // personal-events API). Bookings/trips are not editable here.
+  const personalIds = useMemo(
+    () => new Set((data?.events ?? []).filter((e) => e.isPersonal).map((e) => e.id)),
     [data],
   );
 
-  const handlePersonalEventChanged = useCallback(() => {
-    setRefreshKey((k) => k + 1);
-  }, []);
+  // IDs of user-defined personal calendars (safe to rename/delete via the API).
+  const personalCalendarIds = useMemo(
+    () => new Set((data?.calendars ?? []).map((c) => c.id)),
+    [data],
+  );
+
+  // Maps DayFlow's temporary event id (assigned when a new event is drawn on the
+  // grid) to the server id returned by POST, so the follow-up save can update it.
+  const dayflowToServerId = useRef<Map<string, string>>(new Map());
+
+  // Resolve a grid event id to its persisted server id, if any.
+  const resolveServerId = useCallback(
+    (id: string): string | null => {
+      const mapped = dayflowToServerId.current.get(id);
+      if (mapped) return mapped;
+      return personalIds.has(id) ? id : null;
+    },
+    [personalIds],
+  );
+
+  // Resolve the DayFlow calendar an event sits under to a personal-calendar id
+  // (null for the default "personal" group or non-personal calendars).
+  const resolveCalendarId = useCallback(
+    (categoryId?: string): string | null =>
+      categoryId && personalCalendarIds.has(categoryId) ? categoryId : null,
+    [personalCalendarIds],
+  );
+
+  // Double-click create: persist immediately so the event survives a refresh.
+  // No reload — DayFlow keeps the event/editor open for the follow-up save.
+  // Personal events are date-only → always all-day.
+  const handleEventCreate = useCallback(
+    async (e: CalendarEventInput) => {
+      const created = await createPersonalEvent({
+        title: e.title?.trim() || t("calendar.personal.untitled"),
+        description: e.description || undefined,
+        startDate: e.start,
+        endDate: e.end,
+        allDay: true,
+        calendarId: resolveCalendarId(e.categoryId),
+      });
+      dayflowToServerId.current.set(e.id, created.id);
+    },
+    [resolveCalendarId, t],
+  );
+
+  // Save after editing (or drag/resize/recategorize): persist the change.
+  // Bookings are not editable, so a reload reverts any change made to them.
+  const handleEventUpdate = useCallback(
+    async (e: CalendarEventInput) => {
+      const serverId = resolveServerId(e.id);
+      if (serverId) {
+        await updatePersonalEvent(serverId, {
+          title: e.title?.trim() || t("calendar.personal.untitled"),
+          description: e.description || undefined,
+          startDate: e.start,
+          endDate: e.end,
+          allDay: true,
+          calendarId: resolveCalendarId(e.categoryId),
+        });
+      }
+      setRefreshKey((k) => k + 1);
+    },
+    [resolveServerId, resolveCalendarId, t],
+  );
+
+  const handleEventDelete = useCallback(
+    async (id: string) => {
+      const serverId = resolveServerId(id);
+      if (serverId) {
+        await deletePersonalEvent(serverId);
+      }
+      setRefreshKey((k) => k + 1);
+    },
+    [resolveServerId],
+  );
+
+  // Creating a calendar via the "+" on the Personal group: persist it, then
+  // reload so it re-renders (with its real id) under the Personal Events heading.
+  const handleCalendarCreate = useCallback(
+    async (g: CalendarGroupInput) => {
+      await createPersonalCalendar({
+        name: g.name?.trim() || t("calendar.calendars.untitled"),
+        color: g.color,
+      });
+      setRefreshKey((k) => k + 1);
+    },
+    [t],
+  );
+
+  // Rename/recolor and delete only apply to user-defined personal calendars;
+  // the default "personal" group and booking groups are system-managed.
+  const handleCalendarUpdate = useCallback(
+    async (g: CalendarGroupInput) => {
+      if (personalCalendarIds.has(g.id)) {
+        await updatePersonalCalendar(g.id, {
+          name: g.name?.trim() || t("calendar.calendars.untitled"),
+          color: g.color,
+        });
+      }
+      setRefreshKey((k) => k + 1);
+    },
+    [personalCalendarIds, t],
+  );
+
+  const handleCalendarDelete = useCallback(
+    async (id: string) => {
+      if (personalCalendarIds.has(id)) {
+        await deletePersonalCalendar(id);
+      }
+      setRefreshKey((k) => k + 1);
+    },
+    [personalCalendarIds],
+  );
 
   return (
-    <div className="mx-auto flex h-full max-w-full flex-col gap-6">
+    <div className="mx-auto flex max-w-full max-h-fit flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold tracking-tight">{t("calendar.title")}</h1>
         <p className="text-muted text-sm">{t(`calendar.subtitle.${role}`)}</p>
       </header>
 
       {status === "loading" ? (
-        <div className="border-border bg-surface h-[76vh] min-h-[520px] w-full animate-pulse rounded-xl border" />
+        <div className="border-border bg-surface h-fit !min-h-fit w-full overflow-hidden rounded-xl border" />
       ) : status === "error" ? (
         <div className="border-border flex flex-col items-center gap-3 rounded-2xl border border-dashed py-16 text-center">
           <p className="text-muted text-sm">{t("calendar.states.error")}</p>
@@ -161,23 +297,24 @@ export function RoleCalendar({ role }: { role: Role }) {
           </Button>
         </div>
       ) : (
-        <>
-          {/* DayFlow calendar — sidebar shows the legend + mini-calendar natively */}
-          <Calendar
-            entries={entries}
-            categories={categories}
-            defaultView="month"
-            localeCode={dayflowLocaleCode(lng)}
-            messages={messages}
-            version={calendarVersion}
-          />
-
-          {/* Personal events panel — add / delete personal events */}
-          <PersonalEventsPanel
-            events={panelPersonalEvents}
-            onChanged={handlePersonalEventChanged}
-          />
-        </>
+        /* DayFlow calendar — sidebar shows the legend + mini-calendar natively.
+           Double-click a day to add a personal event directly on the grid. */
+        <Calendar
+          entries={entries}
+          categories={categories}
+          defaultView="month"
+          localeCode={dayflowLocaleCode(lng)}
+          messages={messages}
+          version={calendarVersion}
+          defaultCalendarId={PERSONAL_GROUP}
+          onEventCreate={handleEventCreate}
+          onEventUpdate={handleEventUpdate}
+          onEventDelete={handleEventDelete}
+          onCalendarCreate={handleCalendarCreate}
+          onCalendarUpdate={handleCalendarUpdate}
+          onCalendarDelete={handleCalendarDelete}
+          addCalendarSourceLabel={t("calendar.groups.personal")}
+        />
       )}
     </div>
   );

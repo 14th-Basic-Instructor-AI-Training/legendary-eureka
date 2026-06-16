@@ -46,6 +46,30 @@ export function deletePackage(id: string): Promise<void> {
   return apiFetch(`/tours/${id}`, { method: "DELETE" });
 }
 
+// ── Package approval workflow ───────────────────────────────────────────────
+
+/** Admin queue: packages submitted for approval (all submitted when no status param). */
+export function getApprovalPackages(
+  params?: PageParams,
+): Promise<PagedData<TourPackageResponse>> {
+  return apiFetch("/tours/approvals", { params });
+}
+
+/** Agency/owner: submit a draft package for admin approval. */
+export function submitPackage(id: string): Promise<TourPackageResponse> {
+  return apiFetch(`/tours/${id}/submit`, { method: "POST" });
+}
+
+/** Admin: approve a pending package (also publishes it). */
+export function approvePackage(id: string): Promise<TourPackageResponse> {
+  return apiFetch(`/tours/${id}/approve`, { method: "PUT" });
+}
+
+/** Admin: reject a pending package with an optional reason. */
+export function rejectPackage(id: string, reason?: string): Promise<TourPackageResponse> {
+  return apiFetch(`/tours/${id}/reject`, { method: "PUT", body: { reason } });
+}
+
 // ── Tour agenda items ─────────────────────────────────────────────────────────
 
 export function addAgendaItem(

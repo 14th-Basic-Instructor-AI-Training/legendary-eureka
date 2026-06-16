@@ -5,10 +5,12 @@
  */
 export * from "./response";
 export * from "./enums";
+export * from "./paged";
 export * from "./destination";
 export * from "./tour";
 export * from "./agency";
 export * from "./booking";
 export * from "./traveler";
 export * from "./review";
+export * from "./trip-inspiration";
 export * from "./tripPlan";

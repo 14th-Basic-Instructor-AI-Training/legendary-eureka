@@ -33,6 +33,8 @@ export {
   type UICalendarProps,
   type CalendarEntry,
   type CalendarCategory,
+  type CalendarEventInput,
+  type CalendarGroupInput,
   type CalendarView,
   type CalendarMessages,
 } from "./Calendar";
