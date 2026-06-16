@@ -5,18 +5,11 @@ import { useTranslation } from "react-i18next";
 import { Star1 } from "iconsax-reactjs";
 import { Reveal } from "@/ui";
 import { cn } from "@/lib/utils";
-import { avatar } from "../images";
+import type { Result } from "@/features/destinations/data";
+import type { LandingReview } from "@/types/review";
 import { SectionHeading } from "./SectionHeading";
 
-/** Testimonials are static marketing content: quote copy is localized, names
- * are proper nouns, avatars are placeholders. The middle card is highlighted. */
-const TESTIMONIALS = [
-  { key: "one", name: "Sophea Chan", avatarId: 5, stars: 5, featured: false },
-  { key: "two", name: "Min-jun Park", avatarId: 33, stars: 5, featured: true },
-  { key: "three", name: "Dara Kim", avatarId: 12, stars: 4, featured: false },
-] as const;
-
-/** Trust-strip stats shown above the cards; values + labels are localized. */
+/** Trust-strip stats shown above the cards; values + labels are localized marketing copy. */
 const STATS = [
   { value: "stats.rating", label: "stats.ratingLabel", star: true },
   { value: "stats.reviews", label: "stats.reviewsLabel", star: false },
@@ -47,8 +40,14 @@ function Stars({ rating, featured }: { rating: number; featured: boolean }) {
   );
 }
 
-export function Testimonials() {
+/**
+ * Real traveler reviews from the backend (`/reviews/recent`). The middle card is
+ * highlighted. The trust-strip stats above remain static marketing copy. Renders an empty
+ * state when there are no reviews yet.
+ */
+export function Testimonials({ result }: { result: Result<LandingReview[]> }) {
   const { t } = useTranslation();
+  const reviews = result.ok ? result.data : [];
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 md:px-8 md:py-16">
@@ -76,59 +75,68 @@ export function Testimonials() {
         ))}
       </Reveal>
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-        {TESTIMONIALS.map(({ key, name, avatarId, stars, featured }, i) => (
-          <Reveal key={key} delay={Math.min(i, 3) * 0.08}>
-            <div className={cn("relative h-full", featured && "md:-translate-y-3")}>
-              <figure
-                className={cn(
-                  "flex h-full min-h-[260px] flex-col gap-4 rounded-3xl border p-6 transition-all duration-300 hover:-translate-y-1",
-                  featured
-                    ? "border-transparent bg-primary text-white shadow-lg"
-                    : "border-border bg-background shadow-primary hover:shadow-lg",
-                )}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <span
-                    aria-hidden
+      {reviews.length === 0 ? (
+        <div className="border-border rounded-2xl border border-dashed py-12 text-center">
+          <p className="text-muted text-sm">{t("destinations.states.empty")}</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+          {reviews.map((review, i) => {
+            const featured = reviews.length >= 3 && i === 1;
+            return (
+              <Reveal key={review.id} delay={Math.min(i, 3) * 0.08}>
+                <div className={cn("relative h-full", featured && "md:-translate-y-3")}>
+                  <figure
                     className={cn(
-                      "font-serif text-6xl leading-[0.6]",
-                      featured ? "text-white/30" : "text-primary/20",
+                      "flex h-full min-h-[260px] flex-col gap-4 rounded-3xl border p-6 transition-all duration-300 hover:-translate-y-1",
+                      featured
+                        ? "border-transparent bg-primary text-white shadow-lg"
+                        : "border-border bg-background shadow-primary hover:shadow-lg",
                     )}
                   >
-                    &ldquo;
-                  </span>
-                  <Stars rating={stars} featured={featured} />
+                    <div className="flex items-start justify-between gap-3">
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "font-serif text-6xl leading-[0.6]",
+                          featured ? "text-white/30" : "text-primary/20",
+                        )}
+                      >
+                        &ldquo;
+                      </span>
+                      <Stars rating={review.rating} featured={featured} />
+                    </div>
+
+                    <blockquote
+                      className={cn("flex-1 text-sm", featured ? "text-white/90" : "text-muted")}
+                    >
+                      {review.comment}
+                    </blockquote>
+
+                    <figcaption className="flex items-center gap-3">
+                      <span className="relative h-10 w-10 overflow-hidden rounded-full">
+                        <Image
+                          src={review.authorAvatar}
+                          alt=""
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
+                      </span>
+                      <span className="flex flex-col">
+                        <span className="text-sm font-semibold">{review.authorName}</span>
+                        <span className={cn("text-xs", featured ? "text-white/75" : "text-muted")}>
+                          {t("landing.testimonials.role")}
+                        </span>
+                      </span>
+                    </figcaption>
+                  </figure>
                 </div>
-
-                <blockquote
-                  className={cn("flex-1 text-sm", featured ? "text-white/90" : "text-muted")}
-                >
-                  {t(`landing.testimonials.items.${key}`)}
-                </blockquote>
-
-                <figcaption className="flex items-center gap-3">
-                  <span className="relative h-10 w-10 overflow-hidden rounded-full">
-                    <Image
-                      src={avatar(avatarId)}
-                      alt=""
-                      fill
-                      sizes="40px"
-                      className="object-cover"
-                    />
-                  </span>
-                  <span className="flex flex-col">
-                    <span className="text-sm font-semibold">{name}</span>
-                    <span className={cn("text-xs", featured ? "text-white/75" : "text-muted")}>
-                      {t("landing.testimonials.role")}
-                    </span>
-                  </span>
-                </figcaption>
-              </figure>
-            </div>
-          </Reveal>
-        ))}
-      </div>
+              </Reveal>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }

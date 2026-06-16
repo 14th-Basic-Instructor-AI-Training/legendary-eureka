@@ -1,37 +1,41 @@
-import type { ApiResponse, ApiListResponse, ApiPageResponse } from "./response";
-import type { ContentCategory, TravelType } from "./enums";
+import { z } from "zod";
+import { pagedSchema } from "./paged";
 
 /**
- * Destination — raw API DTO (the `content/destination` feature on the backend).
- * Domain type (`Destination`) is the Zod-validated shape used across the UI and
- * is re-exported here so the entity's raw + domain types live in one file.
+ * Destination — backend wire DTO (`feature/content` `DestinationResponse`). Zod is the
+ * source of truth for response validation in `services/destination.service.ts`. Nullable
+ * text fields mirror the Java record, whose fields are always present but may be null.
  */
-export interface DestinationDto {
-  id: string;
-  slug: string;
-  name: string;
-  country: string;
-  city: string;
-  province: string;
-  category: ContentCategory;
-  travelType: TravelType;
-  shortDescription: string;
-  heroImage: string;
-  rating: number;
-  reviewCount: number;
-  priceFrom: number;
-  currency: string;
-  durationLabel?: string;
-  tags: string[];
-  featured: boolean;
-  trending: boolean;
-  lat: number;
-  lng: number;
-}
+export const DestinationResponseSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  name: z.string(),
+  description: z.string().nullish(),
+  shortDescription: z.string().nullish(),
+  province: z.string().nullish(),
+  city: z.string().nullish(),
+  country: z.string().nullish(),
+  travelType: z.string().nullish(),
+  category: z.string().nullish(),
+  coverImageUrl: z.string().nullish(),
+  heroImage: z.string().nullish(),
+  priceFrom: z.number().nullish(),
+  currency: z.string().nullish(),
+  latitude: z.number().nullish(),
+  longitude: z.number().nullish(),
+  lat: z.number().nullish(),
+  lng: z.number().nullish(),
+  featured: z.boolean().default(false),
+  trending: z.boolean().default(false),
+  tags: z.array(z.string()).default([]),
+  rating: z.number().default(0),
+  reviewCount: z.number().int().default(0),
+  ownerId: z.string().nullish(),
+  createdAt: z.string().nullish(),
+  photos: z.array(z.string()).default([]),
+});
 
-export type DestinationResponse = ApiResponse<DestinationDto>;
-export type DestinationListResponse = ApiListResponse<DestinationDto>;
-export type DestinationPageResponse = ApiPageResponse<DestinationDto>;
+export type DestinationResponse = z.infer<typeof DestinationResponseSchema>;
 
-/** Unwrapped domain type (Zod source of truth). */
-export type { Destination, DestinationCategory } from "@/features/destinations/schema";
+export const DestinationPageSchema = pagedSchema(DestinationResponseSchema);
+export type DestinationPage = z.infer<typeof DestinationPageSchema>;

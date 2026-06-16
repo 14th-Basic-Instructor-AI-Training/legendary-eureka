@@ -1,31 +1,30 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { useSession } from "@/lib/auth";
-import { can } from "@/lib/permissions";
-import { getTrendingDestinations } from "@/features/destinations/data";
-import { RecommendedCardJalat } from "./RecommendedCardJalat";
-import { DestinationSection } from "./DestinationSection";
+import type { Result } from "@/features/destinations/data";
+import type { FeaturedTour } from "@/features/destinations/schema";
+import { FeaturedTours } from "./FeaturedTours";
 
 /**
- * Signed-in travelers only. Guests and non-traveler roles (agency/admin) see
- * nothing here — the gate is `can(role, "createTripPlan")`, which is the
- * traveler-only capability — so this personalized, name-greeted recommendations
- * strip is hidden for everyone else.
+ * Signed-in travelers only (the server gates rendering on the traveler-only
+ * "createTripPlan" capability). A personalized, name-greeted strip of recommended tour
+ * packages — the highest-rated tours from the backend's `/tours/recommended` endpoint.
  */
-export function RecommendedForYou() {
+export function RecommendedForYou({
+  result,
+  name,
+}: {
+  result: Result<FeaturedTour[]>;
+  name: string;
+}) {
   const { t } = useTranslation();
-  const { user, role } = useSession();
-
-  if (!user || !can(role, "createTripPlan")) return null;
 
   return (
-    <DestinationSection
+    <FeaturedTours
       id="recommended"
-      title={t("landing.recommended.title", { name: user.name })}
+      title={t("landing.recommended.title", { name })}
       subtitle={t("landing.recommended.subtitle")}
-      fetcher={getTrendingDestinations}
-      renderCard={(destination) => <RecommendedCardJalat destination={destination} />}
+      result={result}
     />
   );
 }

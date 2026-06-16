@@ -1,29 +1,30 @@
-import type { ApiResponse, ApiListResponse, ApiPageResponse } from "./response";
-import type { AgencyStatus } from "./enums";
+import { z } from "zod";
+import { pagedSchema } from "./paged";
 
 /**
- * Tour agency public profile — raw API DTO (the `profile` feature on the
- * backend). 1:1 with a `TOUR_AGENCY` user.
+ * Tour agency public profile — backend wire DTO (`feature/profile` `AgencyProfileResponse`).
+ * Source of truth for response validation in `services/agency.service.ts` (top-rated row).
  */
-export interface AgencyProfileDto {
-  id: string;
-  slug: string;
-  name: string;
-  logo: string;
-  province: string;
-  status: AgencyStatus;
-  rating: number;
-  reviewCount: number;
-  tourCount: number;
-  contactEmail?: string;
-  contactPhone?: string;
-  lat?: number;
-  lng?: number;
-}
+export const AgencyProfileResponseSchema = z.object({
+  id: z.string(),
+  slug: z.string().nullish(),
+  agencyName: z.string().nullish(),
+  bio: z.string().nullish(),
+  avatarUrl: z.string().nullish(),
+  contactEmail: z.string().nullish(),
+  contactPhone: z.string().nullish(),
+  website: z.string().nullish(),
+  address: z.string().nullish(),
+  status: z.string(),
+  rejectionReason: z.string().nullish(),
+  averageRating: z.number().default(0),
+  reviewCount: z.number().int().default(0),
+  ratingsBreakdown: z.record(z.string(), z.number()).nullish(),
+  createdAt: z.string().nullish(),
+  updatedAt: z.string().nullish(),
+});
 
-export type AgencyResponse = ApiResponse<AgencyProfileDto>;
-export type AgencyListResponse = ApiListResponse<AgencyProfileDto>;
-export type AgencyPageResponse = ApiPageResponse<AgencyProfileDto>;
+export type AgencyProfileResponse = z.infer<typeof AgencyProfileResponseSchema>;
 
-/** Unwrapped domain type (Zod source of truth). */
-export type { AgencyProfile } from "@/features/destinations/schema";
+export const AgencyProfilePageSchema = pagedSchema(AgencyProfileResponseSchema);
+export type AgencyProfilePage = z.infer<typeof AgencyProfilePageSchema>;
