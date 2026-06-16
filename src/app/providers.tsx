@@ -8,6 +8,7 @@ import "sileo/styles.css";
 import i18n from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 import { ConfirmRoot } from "@/ui";
+import { KnockProviders } from "./KnockProviders";
 
 /**
  * Client-side providers, scoped under `[locale]`. The active locale comes from
@@ -37,7 +38,8 @@ export function Providers({
   return (
     <SessionProvider>
       <I18nextProvider i18n={i18n}>
-        {children}
+        {/* Knock in-app feed client, scoped to the signed-in user (no-op for guests). */}
+        <KnockProviders>{children}</KnockProviders>
         {/* Single app-wide confirmation modal, driven imperatively by useConfirm(). */}
         <ConfirmRoot />
         {/* App-wide Sileo toast host. */}

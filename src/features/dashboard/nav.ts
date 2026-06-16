@@ -93,6 +93,7 @@ export const SIDEBAR_NAV: Record<Role, NavGroup[]> = {
       items: [
         { labelKey: "agency.tabs.bookings", Icon: ClipboardText, href: "/agency/bookings" },
         { labelKey: "calendar.nav.title", Icon: Calendar, href: "/agency/calendar" },
+        { labelKey: "notifications.nav.title", Icon: Notification, href: "/agency/notifications" },
       ],
     },
   ],
