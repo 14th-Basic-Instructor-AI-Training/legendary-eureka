@@ -1,6 +1,6 @@
 import { getMyPackages } from "@/services/packages.service";
 import { getDestinations, getMyDestinations } from "@/services/destinations.service";
-import { ToursWorkspace } from "@/features/tours/components/ToursWorkspace";
+import { PackagesClient } from "./PackagesClient";
 
 export default async function AgencyToursPage() {
   const [packagesPage, myDestinationsPage, publicDestinationsPage] = await Promise.all([
@@ -9,11 +9,19 @@ export default async function AgencyToursPage() {
     getDestinations({ page: 0, size: 100 }),
   ]);
 
+  const allDestinations = [
+    ...publicDestinationsPage.content,
+    ...myDestinationsPage.content.filter(
+      (d) =>
+        d.approvalStatus?.toUpperCase() === "APPROVED" &&
+        !publicDestinationsPage.content.some((p) => p.id === d.id),
+    ),
+  ];
+
   return (
-    <ToursWorkspace
+    <PackagesClient
       initialPackages={packagesPage.content}
-      initialDestinations={myDestinationsPage.content}
-      publicDestinations={publicDestinationsPage.content}
+      destinations={allDestinations}
     />
   );
 }

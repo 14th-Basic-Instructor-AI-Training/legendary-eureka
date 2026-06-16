@@ -1067,7 +1067,10 @@
       "statusPending": "Pending",
       "statusApproved": "Approved",
       "statusRejected": "Rejected",
-      "adminEmpty": "No admin destinations available yet."
+      "deleteTitle": "Delete destination",
+      "deleteDescription": "Are you sure you want to delete \"{{name}}\"? This cannot be undone.",
+      "adminEmpty": "No admin destinations available yet.",
+      "noImage": "No image"
     },
     "packages": {
       "title": "Your tour packages",

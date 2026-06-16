@@ -1065,7 +1065,10 @@
       "statusPending": "រង់ចាំ",
       "statusApproved": "បានអនុម័ត",
       "statusRejected": "បានបដិសេធ",
-      "adminEmpty": "គ្មានគោលដៅពីអ្នកគ្រប់គ្រងទេ"
+      "deleteTitle": "លុបគោលដៅ",
+      "deleteDescription": "តើអ្នកប្រាកដថាចង់លុប \"{{name}}\"? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+      "adminEmpty": "គ្មានគោលដៅពីអ្នកគ្រប់គ្រងទេ",
+      "noImage": "គ្មានរូបភាព"
     },
     "packages": {
       "title": "កញ្ចប់ដំណើររបស់អ្នក",

@@ -12,6 +12,7 @@ import {
   Setting2,
   Notification,
   Location,
+  Routing2,
 } from "iconsax-reactjs";
 import type { Role } from "@/features/auth/schema";
 import type { IconType } from "./config";
@@ -82,7 +83,8 @@ export const SIDEBAR_NAV: Record<Role, NavGroup[]> = {
     {
       labelKey: "agency.nav.groups.content",
       items: [
-        { labelKey: "tours.nav.tours", Icon: Location, href: "/agency/tours" },
+        { labelKey: "tours.nav.destinations", Icon: Location, href: "/agency/destinations" },
+        { labelKey: "tours.nav.tours", Icon: Routing2, href: "/agency/tours" },
         { labelKey: "agency.tabs.activities", Icon: Category, href: "/agency/activities" },
       ],
     },
