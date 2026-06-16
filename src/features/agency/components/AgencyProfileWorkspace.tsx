@@ -22,22 +22,6 @@ import { LocationMap } from "@/features/destinations/components/LocationMap";
 import { saveProfileAction, uploadAvatarAction, uploadFileAction } from "@/actions/agencyProfile";
 import type { AgencyProfile, ProfileReview } from "../schema";
 
-const CAMBODIA_PROVINCES = [
-  "Phnom Penh",
-  "Siem Reap",
-  "Sihanoukville",
-  "Kampot",
-  "Battambang",
-  "Kratie",
-  "Mondulkiri",
-  "Ratanakiri",
-  "Kep",
-  "Kampong Cham",
-  "Kampong Speu",
-  "Prey Veng",
-  "Takeo",
-];
-
 /** Province options keyed by the backend `Province` enum (value sent to the API). */
 const PROVINCE_OPTIONS: { id: string; label: string }[] = [
   { id: "PHNOM_PENH", label: "Phnom Penh" },
@@ -275,9 +259,9 @@ function ProfileInfoTab({
             </Select.Trigger>
             <Select.Popover>
               <ListBox>
-                {CAMBODIA_PROVINCES.map((p) => (
-                  <ListBox.Item key={p} id={p} textValue={p}>
-                    {p}
+                {PROVINCE_OPTIONS.map((p) => (
+                  <ListBox.Item key={p.id} id={p.id} textValue={p.label}>
+                    {p.label}
                   </ListBox.Item>
                 ))}
               </ListBox>
@@ -334,7 +318,7 @@ function ProfileInfoTab({
                 <div className="flex items-center gap-2 py-2">
                   <Location size={14} variant="Linear" color="#9CA3AF" />
                   <span className="text-foreground/70">
-                    {form.province}, Cambodia
+                    {(PROVINCE_OPTIONS.find((p) => p.id === form.province)?.label ?? form.province)}, Cambodia
                   </span>
                 </div>
               )}
@@ -388,15 +372,14 @@ function LocationTab({
     ? `${profile.streetAddress}${profile.city ? `, ${profile.city}` : ""}${provinceLabel ? `, ${provinceLabel}` : ""}, Cambodia`
     : t("agency.profile.location.noAddress");
 
-  // Live pin: the form coords while editing, otherwise the saved profile pin.
-  const parsedLat = isEditing ? Number(form.latitude) : profile.lat;
-  const parsedLng = isEditing ? Number(form.longitude) : profile.lng;
-  const hasPin =
-    parsedLat !== undefined &&
-    parsedLng !== undefined &&
-    Number.isFinite(parsedLat) &&
-    Number.isFinite(parsedLng) &&
-    !(parsedLat === 0 && parsedLng === 0);
+  // The pin the agency has saved (shown read-only when not editing).
+  const savedHasPin =
+    profile.lat !== undefined &&
+    profile.lng !== undefined &&
+    !(profile.lat === 0 && profile.lng === 0);
+  // Coords currently typed/picked in the form (0 = none yet → map falls back to center).
+  const formLat = Number(form.latitude);
+  const formLng = Number(form.longitude);
 
   async function handleSaveLocation() {
     setSaving(true);
@@ -415,9 +398,26 @@ function LocationTab({
 
   return (
     <div className="space-y-6">
-      {/* Real per-place map when a pin exists, else a placeholder prompt. */}
-      {hasPin ? (
-        <LocationMap lat={parsedLat as number} lng={parsedLng as number} label={profile.name} />
+      {/* Editing → interactive 3D map to drop/drag the pin; viewing → static map
+          when a pin is saved; otherwise a prompt to add one. */}
+      {isEditing ? (
+        <div className="space-y-2">
+          <LocationMap
+            lat={Number.isFinite(formLat) ? formLat : 0}
+            lng={Number.isFinite(formLng) ? formLng : 0}
+            label={profile.name}
+            interactive
+            onPositionChange={(la, ln) =>
+              setForm((f) => ({ ...f, latitude: la.toFixed(6), longitude: ln.toFixed(6) }))
+            }
+          />
+          <p className="text-muted flex items-center gap-1.5 text-xs">
+            <Location size={13} variant="Linear" color="currentColor" />
+            {t("agency.profile.location.dropPinHint")}
+          </p>
+        </div>
+      ) : savedHasPin ? (
+        <LocationMap lat={profile.lat as number} lng={profile.lng as number} label={profile.name} />
       ) : (
         <div className="border-border flex h-80 w-full items-center justify-center overflow-hidden rounded-2xl border bg-slate-100">
           <div className="flex flex-col items-center gap-3 text-slate-400">
@@ -666,6 +666,7 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
         description: form.description || undefined,
         contactPhone: form.phone || undefined,
         website: form.website || undefined,
+        province: form.province || undefined,
       });
       if (result.ok) {
         setSaved(true);
@@ -797,7 +798,25 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
           </div>
         </div>
 
-        <div className="absolute bottom-3 right-0 flex items-center gap-3">
+      </div>
+
+      {/* ─── Agency name + tagline + save action (normal flow, no overlap) ──── */}
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4 pl-28">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-foreground text-2xl font-bold leading-none tracking-tight">
+              {form.name}
+            </h1>
+            {initialProfile.isVerified && (
+              <ShieldTick size={22} variant="Linear" color="#185FA5" />
+            )}
+          </div>
+          {form.tagline && (
+            <p className="text-muted mt-1.5 text-sm">{form.tagline}</p>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3">
           {saved && (
             <span className="flex items-center gap-1.5 text-sm text-green-600">
               <TickCircle size={16} variant="Bold" color="#16a34a" />
@@ -817,21 +836,6 @@ export function AgencyProfileWorkspace({ initialProfile, initialReviews }: Props
             </Button>
           )}
         </div>
-      </div>
-
-      {/* ─── Agency name + tagline ─────────────────────────────────────────── */}
-      <div className="mb-6 pl-28">
-        <div className="flex items-center gap-2">
-          <h1 className="text-foreground text-2xl font-bold leading-none tracking-tight">
-            {form.name}
-          </h1>
-          {initialProfile.isVerified && (
-            <ShieldTick size={22} variant="Linear" color="#185FA5" />
-          )}
-        </div>
-        {form.tagline && (
-          <p className="text-muted mt-1.5 text-sm">{form.tagline}</p>
-        )}
       </div>
 
       {/* ─── Tab navigation ────────────────────────────────────────────────── */}

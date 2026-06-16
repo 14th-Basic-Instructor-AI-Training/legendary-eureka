@@ -1426,7 +1426,8 @@
         "province": "지역"
       },
       "location": {
-        "mapPlaceholder": "3D 인터랙티브 지도 출시 예정",
+        "mapPlaceholder": "아직 위치가 설정되지 않았습니다 — 편집하여 핀을 놓으세요",
+        "dropPinHint": "지도를 클릭하거나 핀을 드래그하여 위치를 설정하세요",
         "currentAddress": "현재 주소",
         "noAddress": "아직 주소가 등록되지 않았습니다",
         "editLocation": "위치 편집",

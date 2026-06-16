@@ -1426,7 +1426,8 @@
         "province": "Province"
       },
       "location": {
-        "mapPlaceholder": "Interactive 3D map coming soon",
+        "mapPlaceholder": "No location set yet — edit to drop a pin",
+        "dropPinHint": "Click the map or drag the pin to set your location",
         "currentAddress": "Current Address",
         "noAddress": "No address set yet",
         "editLocation": "Edit Location",
